@@ -1,0 +1,124 @@
+.section {
+  padding: 0; /* Handled by GSAP pinning, we need full height */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--color-cream);
+  overflow: hidden;
+}
+
+.header {
+  padding-left: 10vw;
+  margin-bottom: var(--space-2xl);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--color-violet);
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 700;
+  letter-spacing: -2px;
+  color: var(--color-text);
+}
+
+.scrollWrapper {
+  width: 100vw;
+  overflow: hidden;
+}
+
+.scrollContainer {
+  display: flex;
+  gap: var(--space-xl);
+  padding: 0 10vw;
+  width: fit-content;
+}
+
+.eventCard {
+  width: 400px;
+  height: 400px;
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  text-decoration: none;
+  transition: all var(--transition-mid);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--color-cream-darker);
+}
+
+.eventCard:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-violet-light);
+}
+
+.iconWrapper {
+  color: var(--color-violet);
+  display: block;
+  margin-bottom: var(--space-md);
+  opacity: 0.8;
+  transition: all var(--transition-mid);
+}
+
+.eventCard:hover .iconWrapper {
+  opacity: 1;
+  transform: scale(1.1);
+  color: var(--color-violet-mid);
+}
+
+.cardTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.cardDesc {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.arrow {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  color: var(--color-violet);
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all var(--transition-mid);
+}
+
+.eventCard:hover .arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding-left: 20px;
+  }
+  
+  .scrollContainer {
+    padding: 0 20px;
+  }
+  
+  .eventCard {
+    width: 300px;
+    height: 350px;
+    padding: var(--space-xl);
+  }
+}

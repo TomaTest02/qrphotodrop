@@ -1,0 +1,96 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--color-violet);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+.logo {
+  padding: var(--space-lg);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-white);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius-full);
+  margin-left: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav {
+  flex: 1;
+  padding: var(--space-lg) var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.link:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--color-white);
+}
+
+.active {
+  background: rgba(255,255,255,0.15);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.footer {
+  padding: var(--space-lg);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.backLink {
+  display: block;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-white);
+}
+
+/* Content area */
+.content {
+  margin-left: 240px;
+  min-height: 100vh;
+  background: var(--color-cream);
+  padding: var(--space-xl);
+}

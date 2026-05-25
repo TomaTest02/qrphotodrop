@@ -1,0 +1,141 @@
+.section {
+  padding: 140px 20px 80px;
+}
+
+.inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-violet-light);
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+
+.subtitle {
+  font-size: 17px;
+  color: var(--color-text-muted);
+  max-width: 450px;
+  margin: var(--space-md) auto 0;
+  line-height: 1.8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.articleCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-cream-darker);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.articleCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-violet-light);
+}
+
+.coverPlaceholder {
+  height: 200px;
+  background: var(--color-violet-ultra);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coverText {
+  font-size: 13px;
+  color: var(--color-text-light);
+  letter-spacing: 0.05em;
+}
+
+.content {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.category {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-violet);
+  background: var(--color-violet-ultra);
+  border-radius: var(--radius-full);
+}
+
+.date {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.articleTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  line-height: 1.4;
+}
+
+.articleTitleLink {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.articleTitleLink:hover {
+  color: var(--color-violet);
+}
+
+.excerpt {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: var(--space-md);
+  flex: 1;
+}
+
+.readMore {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-violet);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: auto;
+}
+
+.readMore:hover {
+  text-decoration: underline;
+}

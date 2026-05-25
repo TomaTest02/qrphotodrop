@@ -1,0 +1,140 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  margin-bottom: var(--space-xl);
+}
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-cream-darker);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  text-align: center;
+}
+
+.statIcon {
+  font-size: 32px;
+  margin-bottom: var(--space-sm);
+}
+
+.statValue {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-violet);
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cardLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-violet);
+  text-decoration: none;
+}
+
+.cardLink:hover {
+  text-decoration: underline;
+}
+
+.emptyText {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--color-cream);
+  border-radius: var(--radius-md);
+}
+
+.itemMain {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.itemSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-gold-light);
+  color: var(--color-text);
+  border-radius: var(--radius-full);
+}
+
+.price {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-violet);
+}

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybernova — Hero Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; -webkit-font-smoothing: antialiased; }
+
+  /* ── Navigation UI ── */
+  .nav-ui {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .nav-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.06em;
+  }
+
+  .nav-label strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .nav-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    border: none;
+  }
+
+  .nav-dot.active {
+    background: #fff;
+    transform: scale(1.25);
+  }
+
+  .nav-arrows {
+    display: flex;
+    gap: 8px;
+  }
+
+  .arrow-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+
+  .arrow-btn:hover { background: rgba(255,255,255,0.15); }
+
+  /* ── Slides ── */
+  .slides {
+    height: 100%;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+
+  /* ══════════════════════════════════════════
+     SLIDE 1 — Pure Black Centered (Apple.com)
+  ══════════════════════════════════════════ */
+  .s1 {
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 40px 60px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .s1-eyebrow {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+    margin-bottom: 22px;
+  }
+
+  .s1-title {
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+
+  .s1-sub {
+    font-size: clamp(15px, 1.8vw, 19px);
+    line-height: 1.6;
+    color: rgba(255,255,255,0.4);
+    max-width: 480px;
+    margin: 0 auto 36px;
+    font-weight: 400;
+  }
+
+  .s1-btns {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .s1-btn-primary {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 980px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+  }
+
+  .s1-btn-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2997ff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .s1-btn-link::after { content: '›'; font-size: 20px; line-height: 1; }
+
+  .s1-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 16px 0;
+  }
+
+  .s1-strip span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.22);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Navbar sim */
+  .s1-nav {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 48px;
+  }
+
+  .s1-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  .s1-nav-links {
+    display: flex;
+    gap: 28px;
+  }
+
+  .s1-nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+
+  .s1-nav-cta {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff;
+    padding: 7px 16px;
+    border-radius: 980px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+
+  /* ══════════════════════════════════════════
+     SLIDE 2 — Light Mode (Apple f5f5f7)
+  ══════════════════════════════════════════ */
+  .s2 {
+    background: #f5f5f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 40px 60px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .s2-nav {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 48px;
+  }
+
+  .s2-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d1d1f;
+    letter-spacing: -0.02em;
+  }
+
+  .s2-nav-links {
+    display: flex; gap: 28px;
+  }
+
+  .s2-nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(0,0,0,0.45);
+    text-decoration: none;
+  }
+
+  .s2-nav-cta {
+    background: #1d1d1f;
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 980px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .s2-eyebrow {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.35);
+    margin-bottom: 22px;
+  }
+
+  .s2-title {
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    color: #1d1d1f;
+    margin-bottom: 20px;
+  }
+
+  .s2-sub {
+    font-size: clamp(15px, 1.8vw, 19px);
+    line-height: 1.6;
+    color: rgba(0,0,0,0.42);
+    max-width: 480px;
+    margin: 0 auto 36px;
+    font-weight: 400;
+  }
+
+  .s2-btns {
+    display: flex; gap: 20px; justify-content: center; align-items: center;
+  }
+
+  .s2-btn-primary {
+    background: #1d1d1f;
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 980px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .s2-btn-link {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0071e3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .s2-btn-link::after { content: '›'; font-size: 20px; line-height: 1; }
+
+  .s2-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 16px 0;
+  }
+
+  .s2-strip span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(0,0,0,0.22);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+
+  /* ══════════════════════════════════════════
+     SLIDE 3 — Dark Left / MacBook-style
+  ══════════════════════════════════════════ */
+  .s3 {
+    background: #161617;
+    display: flex;
+    align-items: center;
+    padding: 80px 80px 60px;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    gap: 60px;
+  }
+
+  .s3-nav {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 48px;
+  }
+
+  .s3-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f5f5f7;
+    letter-spacing: -0.02em;
+  }
+
+  .s3-nav-links { display: flex; gap: 28px; }
+
+  .s3-nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.38);
+    text-decoration: none;
+  }
+
+  .s3-nav-cta {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 7px 16px;
+    border-radius: 980px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .s3-content {
+    flex: 1;
+  }
+
+  .s3-eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 20px;
+  }
+
+  .s3-title {
+    font-size: clamp(38px, 5vw, 62px);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    color: #f5f5f7;
+    margin-bottom: 18px;
+  }
+
+  .s3-sub {
+    font-size: clamp(14px, 1.6vw, 17px);
+    line-height: 1.65;
+    color: rgba(255,255,255,0.35);
+    max-width: 400px;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  .s3-btns {
+    display: flex; gap: 16px; align-items: center;
+  }
+
+  .s3-btn-primary {
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: none;
+    padding: 13px 26px;
+    border-radius: 980px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .s3-btn-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2997ff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .s3-btn-link::after { content: '›'; font-size: 18px; }
+
+  /* Device window mockup */
+  .s3-device {
+    flex: 0 0 45%;
+    max-width: 520px;
+    background: #1c1c1e;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+
+  .s3-device-bar {
+    height: 38px;
+    background: #111;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 6px;
+  }
+
+  .s3-device-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .s3-device-url {
+    flex: 1;
+    height: 18px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    margin: 0 14px;
+  }
+
+  .s3-device-body {
+    padding: 24px;
+  }
+
+  .s3-dh1 {
+    height: 18px;
+    background: rgba(255,255,255,0.13);
+    border-radius: 6px;
+    width: 70%;
+    margin-bottom: 8px;
+  }
+
+  .s3-dh2 {
+    height: 18px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    width: 85%;
+    margin-bottom: 12px;
+  }
+
+  .s3-dp {
+    height: 11px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+
+  .s3-dp:last-of-type { width: 60%; }
+
+  .s3-dbtn-row {
+    display: flex; gap: 10px; margin: 16px 0;
+  }
+
+  .s3-dbtn {
+    height: 28px;
+    border-radius: 980px;
+  }
+
+  .s3-dbtn.p { width: 100px; background: rgba(255,255,255,0.85); }
+  .s3-dbtn.s { width: 80px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09); }
+
+  .s3-dgrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .s3-dblock {
+    height: 56px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+
+  .s3-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 16px 0;
+  }
+
+  .s3-strip span {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── bottom bar ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .select-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 980px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .select-btn:hover { background: #e8e8e8; }
+
+  .slide-counter {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    min-width: 60px;
+    text-align: center;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<div class="nav-ui">
+  <span class="nav-label">Cybernova Systems — <strong id="current-name">Opțiunea A</strong></span>
+  <div class="nav-dots">
+    <button class="nav-dot active" onclick="goTo(0)"></button>
+    <button class="nav-dot" onclick="goTo(1)"></button>
+    <button class="nav-dot" onclick="goTo(2)"></button>
+  </div>
+  <div class="nav-arrows">
+    <button class="arrow-btn" onclick="prev()">‹</button>
+    <button class="arrow-btn" onclick="next()">›</button>
+  </div>
+</div>
+
+<!-- Slides -->
+<div class="slides">
+
+  <!-- SLIDE 1: Pure Black Centered -->
+  <div class="slide s1 active" data-index="0">
+    <div class="s1-nav">
+      <div class="s1-logo">Cybernova</div>
+      <div class="s1-nav-links">
+        <a href="#">Servicii</a>
+        <a href="#">Proiecte</a>
+        <a href="#">Despre</a>
+        <a href="#">Blog</a>
+      </div>
+      <button class="s1-nav-cta">Contact</button>
+    </div>
+    <p class="s1-eyebrow">Agenție digitală — România</p>
+    <h1 class="s1-title">Construim produse<br>digitale excepționale.</h1>
+    <p class="s1-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+    <div class="s1-btns">
+      <button class="s1-btn-primary">Hai să vorbim</button>
+      <button class="s1-btn-link">Proiectele noastre</button>
+    </div>
+    <div class="s1-strip">
+      <span>Website-uri</span>
+      <span>Web Apps</span>
+      <span>Mobile</span>
+      <span>AI & Automatizare</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Light Mode -->
+  <div class="slide s2" data-index="1">
+    <div class="s2-nav">
+      <div class="s2-logo">Cybernova</div>
+      <div class="s2-nav-links">
+        <a href="#">Servicii</a>
+        <a href="#">Proiecte</a>
+        <a href="#">Despre</a>
+        <a href="#">Blog</a>
+      </div>
+      <button class="s2-nav-cta">Contact</button>
+    </div>
+    <p class="s2-eyebrow">Agenție digitală — România</p>
+    <h1 class="s2-title">Soluții digitale<br>care fac diferența.</h1>
+    <p class="s2-sub">De la idee la produs — website-uri, apps, AI și automatizări construite cu atenție la fiecare detaliu.</p>
+    <div class="s2-btns">
+      <button class="s2-btn-primary">Pornește un proiect</button>
+      <button class="s2-btn-link">Explorează serviciile</button>
+    </div>
+    <div class="s2-strip">
+      <span>Website-uri</span>
+      <span>Web Apps</span>
+      <span>Mobile</span>
+      <span>AI & Automatizare</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: Dark Left Split -->
+  <div class="slide s3" data-index="2">
+    <div class="s3-nav">
+      <div class="s3-logo">Cybernova</div>
+      <div class="s3-nav-links">
+        <a href="#">Servicii</a>
+        <a href="#">Proiecte</a>
+        <a href="#">Despre</a>
+        <a href="#">Blog</a>
+      </div>
+      <button class="s3-nav-cta">Contact</button>
+    </div>
+    <div class="s3-content">
+      <p class="s3-eyebrow">Agenție digitală</p>
+      <h1 class="s3-title">Digitalizăm<br>afacerea ta.</h1>
+      <p class="s3-sub">Website-uri, aplicații web & mobile, AI integrat și automatizări care funcționează de la prima zi.</p>
+      <div class="s3-btns">
+        <button class="s3-btn-primary">Discutăm acum</button>
+        <button class="s3-btn-link">Serviciile noastre</button>
+      </div>
+    </div>
+    <div class="s3-device">
+      <div class="s3-device-bar">
+        <div class="s3-device-dot"></div>
+        <div class="s3-device-dot"></div>
+        <div class="s3-device-dot"></div>
+        <div class="s3-device-url"></div>
+      </div>
+      <div class="s3-device-body">
+        <div class="s3-dh1"></div>
+        <div class="s3-dh2"></div>
+        <div class="s3-dp"></div>
+        <div class="s3-dp"></div>
+        <div class="s3-dp"></div>
+        <div class="s3-dbtn-row">
+          <div class="s3-dbtn p"></div>
+          <div class="s3-dbtn s"></div>
+        </div>
+        <div class="s3-dgrid">
+          <div class="s3-dblock"></div>
+          <div class="s3-dblock"></div>
+          <div class="s3-dblock"></div>
+        </div>
+      </div>
+    </div>
+    <div class="s3-strip">
+      <span>Website-uri</span>
+      <span>Web Apps</span>
+      <span>Mobile</span>
+      <span>AI & Automatizare</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <button class="arrow-btn" onclick="prev()">‹</button>
+  <span class="slide-counter" id="counter">1 / 3</span>
+  <button class="arrow-btn" onclick="next()">›</button>
+  <button class="select-btn" onclick="selectCurrent()">Aleg această direcție</button>
+</div>
+
+<script>
+  const names = ['Opțiunea A — Pure Black', 'Opțiunea B — Light Mode', 'Opțiunea C — Dark Split'];
+  const choices = ['pure-black', 'light-mode', 'dark-split'];
+  let current = 0;
+
+  function goTo(i) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('active'));
+    document.querySelectorAll('.slide')[i].classList.add('active');
+    document.querySelectorAll('.nav-dot')[i].classList.add('active');
+    document.getElementById('current-name').textContent = names[i];
+    document.getElementById('counter').textContent = (i+1) + ' / 3';
+    current = i;
+  }
+
+  function next() { goTo((current + 1) % 3); }
+  function prev() { goTo((current + 2) % 3); }
+
+  function selectCurrent() {
+    if (typeof recordSelection === 'function') {
+      recordSelection(choices[current], names[current]);
+    }
+    document.querySelector('.select-btn').textContent = '✓ Selectat!';
+    setTimeout(() => { document.querySelector('.select-btn').textContent = 'Aleg această direcție'; }, 2000);
+  }
+</script>
+</body>
+</html>

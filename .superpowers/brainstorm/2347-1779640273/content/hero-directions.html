@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybernova Systems — 3 Direcții Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0f;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 24px 80px;
+  }
+
+  .page-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .page-subtitle {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 48px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .card-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    cursor: pointer;
+  }
+
+  .card-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+    padding: 0 4px;
+  }
+
+  .card-wrap.selected .card-preview {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+  }
+
+  .card-wrap.selected .card-label {
+    color: #fff;
+  }
+
+  .card-preview {
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16/10;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-preview:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .card-meta {
+    padding: 0 4px;
+  }
+
+  .card-meta h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .card-meta p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  .card-palette {
+    display: flex;
+    gap: 6px;
+    padding: 0 4px;
+    margin-top: 8px;
+  }
+
+  .swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .swatch-label {
+    font-size: 11px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+
+  /* ─── DESIGN 1: CYBER GRID ─────────────────────────────── */
+
+  .hero-1 {
+    background: #020B18;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 28px 24px;
+  }
+
+  .hero-1::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,255,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .hero-1::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: -40px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(0,102,255,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .hero-1-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+
+  .badge-1 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,200,255,0.1);
+    border: 1px solid rgba(0,200,255,0.25);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #00C8FF;
+    margin-bottom: 12px;
+  }
+
+  .badge-dot {
+    width: 5px;
+    height: 5px;
+    background: #00C8FF;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .hero-1-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .hero-1-h1 span {
+    background: linear-gradient(90deg, #00C8FF, #0066FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-1-sub {
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+    max-width: 200px;
+    margin-bottom: 14px;
+  }
+
+  .hero-1-btns {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-primary-1 {
+    background: linear-gradient(135deg, #0066FF, #00C8FF);
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary-1::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  }
+
+  .btn-secondary-1 {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .hero-1-visual {
+    position: relative;
+    z-index: 2;
+    width: 42%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cyber-card {
+    background: rgba(0,102,255,0.08);
+    border: 1px solid rgba(0,200,255,0.2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+  }
+
+  .cyber-card-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 8px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .cyber-icon {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #0066FF22, #00C8FF22);
+    border: 1px solid rgba(0,200,255,0.3);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+  }
+
+  .cyber-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #0066FF, #00C8FF);
+    border-radius: 2px;
+    margin-top: 4px;
+  }
+
+  .cyber-stats {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 13px;
+    font-weight: 800;
+    color: #00C8FF;
+  }
+
+  .stat-label {
+    font-size: 7px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+  }
+
+
+  /* ─── DESIGN 2: GRADIENT MESH PREMIUM ─────────────────── */
+
+  .hero-2 {
+    background: #07022B;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 28px 24px;
+  }
+
+  .mesh-blob-1 {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(108,99,255,0.35) 0%, transparent 70%);
+    border-radius: 50%;
+    top: -80px;
+    left: -60px;
+    filter: blur(40px);
+  }
+
+  .mesh-blob-2 {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(255,107,157,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    bottom: -60px;
+    right: -40px;
+    filter: blur(30px);
+  }
+
+  .mesh-blob-3 {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(0,212,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    top: 20%;
+    right: 20%;
+    filter: blur(30px);
+  }
+
+  .hero-2-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+
+  .badge-2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.4);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a08fff;
+    margin-bottom: 12px;
+  }
+
+  .hero-2-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .grad-text {
+    background: linear-gradient(135deg, #fff 0%, #a08fff 40%, #FF6B9D 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-2-sub {
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+    max-width: 200px;
+    margin-bottom: 14px;
+  }
+
+  .hero-2-btns {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-primary-2 {
+    background: linear-gradient(135deg, #6C63FF, #FF6B9D);
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-secondary-2 {
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .hero-2-visual {
+    position: relative;
+    z-index: 2;
+    width: 42%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .glass-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 9px 11px;
+    backdrop-filter: blur(20px);
+  }
+
+  .glass-card-header {
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .glass-tag {
+    display: inline-block;
+    background: rgba(108,99,255,0.2);
+    border: 1px solid rgba(108,99,255,0.3);
+    color: #a08fff;
+    padding: 1px 6px;
+    border-radius: 100px;
+    font-size: 7px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .glass-tag.pink {
+    background: rgba(255,107,157,0.15);
+    border-color: rgba(255,107,157,0.3);
+    color: #FF6B9D;
+  }
+
+  .glass-tag.cyan {
+    background: rgba(0,212,255,0.15);
+    border-color: rgba(0,212,255,0.3);
+    color: #00D4FF;
+  }
+
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.06);
+    border-radius: 100px;
+    height: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #6C63FF, #FF6B9D);
+  }
+
+
+  /* ─── DESIGN 3: DARK BOLD GEOMETRIC ───────────────────── */
+
+  .hero-3 {
+    background: #000;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 28px 24px;
+  }
+
+  .geo-circle {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    border: 1px solid rgba(0,71,255,0.15);
+    border-radius: 50%;
+    top: 50%;
+    right: -120px;
+    transform: translateY(-50%);
+  }
+
+  .geo-circle-2 {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border: 1px solid rgba(0,71,255,0.08);
+    border-radius: 50%;
+    top: 50%;
+    right: -80px;
+    transform: translateY(-50%);
+  }
+
+  .geo-circle-inner {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: #0047FF;
+    border-radius: 50%;
+    top: 50%;
+    right: 60px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 0 60px rgba(0,71,255,0.5);
+  }
+
+  .geo-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,71,255,0.12), transparent);
+  }
+
+  .hero-3-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    max-width: 60%;
+  }
+
+  .badge-3 {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #0047FF;
+    margin-bottom: 12px;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .badge-3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 2px;
+    background: #0047FF;
+  }
+
+  .hero-3-h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-3-h1 .accent-word {
+    color: #0047FF;
+  }
+
+  .hero-3-sub {
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.6;
+    max-width: 190px;
+    margin-bottom: 16px;
+  }
+
+  .hero-3-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-primary-3 {
+    background: #0047FF;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .btn-secondary-3 {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .arrow-icon {
+    font-size: 11px;
+    color: #0047FF;
+  }
+
+  .hero-3-services {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .service-chip {
+    font-size: 7.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+
+  /* ─── SELECTION OVERLAY ────────────────────────────────── */
+
+  .card-wrap {
+    position: relative;
+  }
+
+  .select-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .card-wrap.selected .select-check {
+    display: flex;
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  /* legend */
+  .footer-note {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    color: #444;
+  }
+</style>
+<script>
+  function select(el) {
+    document.querySelectorAll('.card-wrap').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const choice = el.dataset.choice;
+    const label = el.querySelector('.card-meta h3').textContent;
+    if (window.recordSelection) window.recordSelection(choice, label);
+  }
+</script>
+</head>
+<body>
+
+<p class="page-title">Cybernova Systems — Direcții Vizuale Hero</p>
+<h2 class="page-subtitle">Alege direcția care rezonează cu viziunea ta</h2>
+
+<div class="cards-grid">
+
+  <!-- CARD 1 -->
+  <div class="card-wrap" data-choice="cyber-grid" onclick="select(this)">
+    <div class="select-check">✓</div>
+    <div class="card-label">Opțiunea A</div>
+
+    <div class="card-preview">
+      <div class="hero-1">
+        <div class="hero-1-content">
+          <div class="badge-1">
+            <span class="badge-dot"></span>
+            Digital Agency
+          </div>
+          <div class="hero-1-h1">
+            Construim<br>
+            <span>viitorul digital</span><br>
+            al afacerii tale
+          </div>
+          <div class="hero-1-sub">Website-uri, Web Apps, Mobile, Automatizări & AI — tot ce ai nevoie într-o singură agenție.</div>
+          <div class="hero-1-btns">
+            <button class="btn-primary-1">Pornește proiectul →</button>
+            <button class="btn-secondary-1">Vezi lucrările</button>
+          </div>
+        </div>
+        <div class="hero-1-visual">
+          <div class="cyber-card">
+            <div class="cyber-card-row">
+              <div class="cyber-icon">🤖</div>
+              <div>
+                <div style="font-size:8px;font-weight:600;color:#fff">AI Integration</div>
+                <div style="font-size:7px;color:rgba(255,255,255,0.4)">Active deployment</div>
+              </div>
+            </div>
+            <div class="cyber-bar" style="width:78%"></div>
+            <div class="cyber-card-row" style="margin-top:8px">
+              <div class="cyber-icon">⚡</div>
+              <div>
+                <div style="font-size:8px;font-weight:600;color:#fff">Automation</div>
+                <div style="font-size:7px;color:rgba(255,255,255,0.4)">Running</div>
+              </div>
+            </div>
+            <div class="cyber-bar" style="width:93%"></div>
+            <div class="cyber-stats">
+              <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Proiecte</div></div>
+              <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Satisfacție</div></div>
+              <div class="stat"><div class="stat-num">4.9★</div><div class="stat-label">Rating</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <h3>Cyber Grid — Tech & Putere</h3>
+      <p>Dark navy profund, grid lines subtile de circuit, accente electric cyan/blue. Feel de tech company puternic, autoritar, AI-driven.</p>
+    </div>
+    <div class="card-palette">
+      <div class="swatch" style="background:#020B18" title="Background"></div>
+      <div class="swatch" style="background:#0066FF" title="Primary Blue"></div>
+      <div class="swatch" style="background:#00C8FF" title="Neon Cyan"></div>
+      <div class="swatch" style="background:#ffffff" title="Text"></div>
+      <span class="swatch-label">Navy → Electric Blue → Cyan</span>
+    </div>
+  </div>
+
+
+  <!-- CARD 2 -->
+  <div class="card-wrap" data-choice="gradient-mesh" onclick="select(this)">
+    <div class="select-check">✓</div>
+    <div class="card-label">Opțiunea B</div>
+
+    <div class="card-preview">
+      <div class="hero-2">
+        <div class="mesh-blob-1"></div>
+        <div class="mesh-blob-2"></div>
+        <div class="mesh-blob-3"></div>
+
+        <div class="hero-2-content">
+          <div class="badge-2">✦ Digital Innovation</div>
+          <div class="hero-2-h1">
+            <span class="grad-text">Transformăm<br>ideile în produse<br>digitale remarcabile</span>
+          </div>
+          <div class="hero-2-sub">De la concept la lansare — website-uri, apps și soluții AI care fac diferența pe piață.</div>
+          <div class="hero-2-btns">
+            <button class="btn-primary-2">Hai să construim →</button>
+            <button class="btn-secondary-2">Explorează</button>
+          </div>
+        </div>
+
+        <div class="hero-2-visual">
+          <div class="glass-card">
+            <div class="glass-card-header">🌐 Servicii active</div>
+            <div>
+              <span class="glass-tag">Web Apps</span>
+              <span class="glass-tag pink">Mobile</span>
+              <span class="glass-tag cyan">AI</span>
+            </div>
+            <div class="progress-bar-wrap" style="margin-top:8px">
+              <div class="progress-bar-fill" style="width:82%"></div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div class="glass-card-header">⚡ Automatizare</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.4)">Workflow automatizat complet</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width:96%;background:linear-gradient(90deg,#FF6B9D,#6C63FF)"></div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:8px;color:rgba(255,255,255,0.5)">Proiecte livrate</span>
+              <span style="font-size:14px;font-weight:800;color:#fff">50+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <h3>Gradient Mesh — Creativitate & Lux</h3>
+      <p>Deep purple/violet cu blobs colorate, glassmorphism, gradient text multicolor. Feel premium, creativ, modern 2026.</p>
+    </div>
+    <div class="card-palette">
+      <div class="swatch" style="background:#07022B" title="Deep Purple Background"></div>
+      <div class="swatch" style="background:#6C63FF" title="Violet"></div>
+      <div class="swatch" style="background:#FF6B9D" title="Pink"></div>
+      <div class="swatch" style="background:#00D4FF" title="Cyan"></div>
+      <span class="swatch-label">Deep Purple → Violet → Pink Gradient</span>
+    </div>
+  </div>
+
+
+  <!-- CARD 3 -->
+  <div class="card-wrap" data-choice="dark-geometric" onclick="select(this)">
+    <div class="select-check">✓</div>
+    <div class="card-label">Opțiunea C</div>
+
+    <div class="card-preview">
+      <div class="hero-3">
+        <div class="geo-circle"></div>
+        <div class="geo-circle-2"></div>
+        <div class="geo-circle-inner">⚡</div>
+        <div class="geo-line" style="top:30%"></div>
+        <div class="geo-line" style="top:70%"></div>
+
+        <div class="hero-3-content">
+          <div class="badge-3">Web · Apps · AI</div>
+          <div class="hero-3-h1">
+            Soluții digitale<br>
+            <span class="accent-word">fără compromisuri</span>
+          </div>
+          <div class="hero-3-sub">Cybernova Systems livrează website-uri, aplicații și implementări AI care convertesc și performează.</div>
+          <div class="hero-3-btns">
+            <button class="btn-primary-3">Contactează-ne</button>
+            <button class="btn-secondary-3">Vezi proiecte <span class="arrow-icon">→</span></button>
+          </div>
+          <div class="hero-3-services">
+            <div class="service-chip">Website</div>
+            <div class="service-chip">Web App</div>
+            <div class="service-chip">Mobile</div>
+            <div class="service-chip">AI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <h3>Dark Geometric — Bold & Minimalist</h3>
+      <p>Negru pur, un singur accent albastru electric intens, forme geometrice, tipografie masivă. Feel serios, confident, de impact maxim.</p>
+    </div>
+    <div class="card-palette">
+      <div class="swatch" style="background:#000000" title="Pure Black"></div>
+      <div class="swatch" style="background:#0047FF" title="Electric Blue"></div>
+      <div class="swatch" style="background:#ffffff" title="White"></div>
+      <div class="swatch" style="background:#111111" title="Dark Surface"></div>
+      <span class="swatch-label">Pure Black → Electric Blue (accent unic)</span>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer-note">Click pe un card pentru a-l selecta · Poi descrie ce îți place și ce nu la fiecare</p>
+
+<script>
+  // Wire up to visual companion selection system
+  document.querySelectorAll('.card-wrap').forEach(card => {
+    card.addEventListener('click', function() {
+      const choice = this.dataset.choice;
+      const name = this.querySelector('.card-meta h3').textContent;
+      // Emit event for companion to capture
+      if (typeof window.__companion_select === 'function') {
+        window.__companion_select(choice, name);
+      }
+      // Also try the global recordSelection
+      if (typeof window.recordSelection === 'function') {
+        window.recordSelection(choice, name);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+.section {
+  padding: 140px 20px 80px;
+}
+
+.inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-violet-light);
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+
+.subtitle {
+  font-size: 17px;
+  color: var(--color-text-muted);
+  max-width: 450px;
+  margin: var(--space-md) auto 0;
+  line-height: 1.8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-cream-darker);
+}
+
+.successState {
+  text-align: center;
+  padding: var(--space-2xl) 0;
+}
+
+.successIcon {
+  font-size: 48px;
+  margin-bottom: var(--space-md);
+  color: var(--color-success, #22c55e);
+}
+
+.successTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.successText {
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 500px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-cream-darker);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-family: var(--font-sans);
+  outline: none;
+  background: white;
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--color-violet-light);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.submitBtn {
+  padding: 16px 32px;
+  background: var(--color-violet);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-violet-light);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.infoCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-cream-darker);
+}
+
+.infoTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.infoItemLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.infoItemValue {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.infoItemSub {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.perksCard {
+  background: var(--color-violet-ultra);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-violet-pale);
+}
+
+.perksTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+.perksList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.perkItem {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.perkIcon {
+  color: var(--color-success, #22c55e);
+  font-weight: 700;
+}

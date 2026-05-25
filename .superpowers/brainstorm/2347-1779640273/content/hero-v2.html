@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybernova Systems — Hero Directions v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0a;
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 48px 32px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    font-size: 15px;
+    color: #555;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    cursor: pointer;
+    border-radius: 16px;
+    overflow: hidden;
+    outline: 2px solid transparent;
+    transition: outline-color 0.15s, transform 0.2s;
+  }
+
+  .card:hover { transform: translateY(-4px); }
+
+  .card.selected {
+    outline-color: #fff;
+  }
+
+  .preview {
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .label {
+    padding: 20px 20px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    background: #111;
+  }
+
+  .info {
+    background: #111;
+    padding: 12px 20px 20px;
+  }
+
+  .info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .info p {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .palette {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .palette span {
+    font-size: 11px;
+    color: #3a3a3a;
+    margin-left: 4px;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     OPTION A — Apple-style Pure Black
+  ═══════════════════════════════════════════ */
+
+  .hero-a {
+    background: #000;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 36px 28px;
+    position: relative;
+  }
+
+  /* Subtle ambient glow - barely visible, just depth */
+  .hero-a::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .a-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 14px;
+  }
+
+  .a-headline {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .a-sub {
+    font-size: 11px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.4);
+    max-width: 240px;
+    margin: 0 auto 20px;
+  }
+
+  .a-cta-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .a-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 980px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+  }
+
+  .a-link {
+    font-size: 10px;
+    font-weight: 500;
+    color: #0071e3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .a-link::after {
+    content: '›';
+    font-size: 13px;
+  }
+
+  /* bottom services strip */
+  .a-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 0;
+  }
+
+  .a-strip span {
+    font-size: 8px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     OPTION B — Clean White / Light
+  ═══════════════════════════════════════════ */
+
+  .hero-b {
+    background: #f5f5f7;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 36px 28px;
+    position: relative;
+  }
+
+  .b-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.4);
+    margin-bottom: 14px;
+  }
+
+  .b-headline {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #1d1d1f;
+    margin-bottom: 12px;
+  }
+
+  .b-sub {
+    font-size: 11px;
+    line-height: 1.6;
+    color: rgba(0,0,0,0.45);
+    max-width: 240px;
+    margin: 0 auto 20px;
+  }
+
+  .b-cta-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .b-btn {
+    background: #1d1d1f;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 980px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .b-link {
+    font-size: 10px;
+    font-weight: 500;
+    color: #0071e3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .b-link::after {
+    content: '›';
+    font-size: 13px;
+  }
+
+  .b-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 10px 0;
+  }
+
+  .b-strip span {
+    font-size: 8px;
+    font-weight: 500;
+    color: rgba(0,0,0,0.3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+
+  /* ═══════════════════════════════════════════
+     OPTION C — Dark Premium, Left-aligned
+     (Apple MacBook Pro style — left content)
+  ═══════════════════════════════════════════ */
+
+  .hero-c {
+    background: #161617;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 32px 28px;
+    position: relative;
+    gap: 20px;
+  }
+
+  .hero-c::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .c-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .c-eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 12px;
+  }
+
+  .c-headline {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #f5f5f7;
+    margin-bottom: 10px;
+  }
+
+  .c-sub {
+    font-size: 10.5px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.35);
+    max-width: 190px;
+    margin-bottom: 18px;
+  }
+
+  .c-cta-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .c-btn {
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 980px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .c-link {
+    font-size: 10px;
+    font-weight: 500;
+    color: #2997ff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .c-link::after {
+    content: '›';
+    font-size: 13px;
+  }
+
+  .c-visual {
+    flex-shrink: 0;
+    width: 42%;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Clean device mockup — a phone or browser window, Apple-style */
+  .device {
+    width: 100%;
+    background: #1c1c1e;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .device-bar {
+    height: 24px;
+    background: #111;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 5px;
+  }
+
+  .device-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .device-url {
+    flex: 1;
+    height: 11px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    margin: 0 8px;
+  }
+
+  .device-body {
+    padding: 14px;
+  }
+
+  .device-hero-line {
+    height: 10px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+
+  .device-hero-line.short { width: 65%; }
+  .device-hero-line.medium { width: 80%; height: 7px; background: rgba(255,255,255,0.06); }
+  .device-hero-line.short2 { width: 50%; height: 7px; background: rgba(255,255,255,0.06); }
+
+  .device-btn-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .device-btn {
+    height: 16px;
+    border-radius: 980px;
+  }
+
+  .device-btn.primary {
+    width: 56px;
+    background: rgba(255,255,255,0.9);
+  }
+
+  .device-btn.secondary {
+    width: 44px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .device-section {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .device-block {
+    height: 40px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+  }
+
+  /* ── Footer note ── */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    font-size: 13px;
+    color: #333;
+  }
+
+</style>
+<script>
+  function pick(el) {
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const choice = el.dataset.choice;
+    const name = el.querySelector('.info h3').textContent;
+    if (typeof recordSelection === 'function') recordSelection(choice, name);
+  }
+</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>3 Direcții Hero — stil Apple</h1>
+  <p>Tipografie, spațiu, claritate. Fără gradient-uri, fără decorații inutile.</p>
+</div>
+
+<div class="grid">
+
+  <!-- A: Pure Black centered -->
+  <div class="card" data-choice="pure-black" onclick="pick(this)">
+    <div class="preview">
+      <div class="hero-a">
+        <p class="a-eyebrow">Cybernova Systems</p>
+        <h1 class="a-headline">Construim<br>produse digitale<br>excepționale.</h1>
+        <p class="a-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate impecabil.</p>
+        <div class="a-cta-row">
+          <button class="a-btn">Hai să vorbim</button>
+          <button class="a-link">Proiectele noastre</button>
+        </div>
+        <div class="a-strip">
+          <span>Website-uri</span>
+          <span>Web Apps</span>
+          <span>Mobile</span>
+          <span>AI & Automatizare</span>
+        </div>
+      </div>
+    </div>
+    <div class="label">Opțiunea A</div>
+    <div class="info">
+      <h3>Centered Black — Apple.com pure</h3>
+      <p>Negru absolut, tipografie centrată masivă, un singur buton alb pill. Exact ca homepage-urile Apple pentru produse noi.</p>
+      <div class="palette">
+        <div class="dot" style="background:#000"></div>
+        <div class="dot" style="background:#ffffff"></div>
+        <div class="dot" style="background:#0071e3"></div>
+        <div class="dot" style="background:#6e6e73"></div>
+        <span>Black · White · Apple Blue (link-uri)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: Light / White -->
+  <div class="card" data-choice="clean-white" onclick="pick(this)">
+    <div class="preview">
+      <div class="hero-b">
+        <p class="b-eyebrow">Cybernova Systems</p>
+        <h1 class="b-headline">Soluții digitale<br>care fac diferența.</h1>
+        <p class="b-sub">De la idee la produs — website-uri, apps, AI și automatizări construite cu atenție la fiecare detaliu.</p>
+        <div class="b-cta-row">
+          <button class="b-btn">Pornește un proiect</button>
+          <button class="b-link">Explorează serviciile</button>
+        </div>
+        <div class="b-strip">
+          <span>Website-uri</span>
+          <span>Web Apps</span>
+          <span>Mobile</span>
+          <span>AI & Automatizare</span>
+        </div>
+      </div>
+    </div>
+    <div class="label">Opțiunea B</div>
+    <div class="info">
+      <h3>Light Mode — Curat & Profesional</h3>
+      <p>Fundal #f5f5f7 (gri Apple), text aproape-negru, fără niciun element decorativ. Transmite seriozitate și claritate maximă.</p>
+      <div class="palette">
+        <div class="dot" style="background:#f5f5f7"></div>
+        <div class="dot" style="background:#1d1d1f"></div>
+        <div class="dot" style="background:#0071e3"></div>
+        <div class="dot" style="background:#6e6e73"></div>
+        <span>Apple Gray · Charcoal · Apple Blue</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: Dark left-aligned with device -->
+  <div class="card" data-choice="dark-left" onclick="pick(this)">
+    <div class="preview">
+      <div class="hero-c">
+        <div class="c-content">
+          <p class="c-eyebrow">Agenție digitală</p>
+          <h1 class="c-headline">Digitalizăm<br>afacerea ta.</h1>
+          <p class="c-sub">Website-uri, apps web & mobile, AI integrat și automatizări care funcționează.</p>
+          <div class="c-cta-row">
+            <button class="c-btn">Discutăm acum</button>
+            <button class="c-link">Servicii</button>
+          </div>
+        </div>
+        <div class="c-visual">
+          <div class="device">
+            <div class="device-bar">
+              <div class="device-dot"></div>
+              <div class="device-dot"></div>
+              <div class="device-dot"></div>
+              <div class="device-url"></div>
+            </div>
+            <div class="device-body">
+              <div class="device-hero-line"></div>
+              <div class="device-hero-line short"></div>
+              <div class="device-hero-line medium"></div>
+              <div class="device-hero-line short2"></div>
+              <div class="device-btn-row">
+                <div class="device-btn primary"></div>
+                <div class="device-btn secondary"></div>
+              </div>
+              <div class="device-section">
+                <div class="device-block"></div>
+                <div class="device-block"></div>
+                <div class="device-block"></div>
+                <div class="device-block"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="label">Opțiunea C</div>
+    <div class="info">
+      <h3>Dark Left Split — MacBook Pro style</h3>
+      <p>Gri-negru #161617 (exact culoarea cutiei MacBook), text stânga, device mockup dreapta. Dark dar nu negru absolut.</p>
+      <div class="palette">
+        <div class="dot" style="background:#161617"></div>
+        <div class="dot" style="background:#f5f5f7"></div>
+        <div class="dot" style="background:#2997ff"></div>
+        <div class="dot" style="background:#1c1c1e"></div>
+        <span>MBP Black · White · Apple Blue</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="footer">Click pe un card pentru a-l selecta · Spune ce îți place sau nu la fiecare</p>
+
+</body>
+</html>

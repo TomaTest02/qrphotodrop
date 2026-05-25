@@ -1,0 +1,73 @@
+.section {
+  padding: var(--space-3xl) 0;
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-violet-light);
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -1.5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-lg);
+}
+
+.eventCard {
+  display: block;
+  padding: var(--space-xl);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-cream-darker);
+  text-decoration: none;
+  transition: all var(--transition-mid);
+  box-shadow: var(--shadow-sm);
+}
+
+.eventCard:hover {
+  border-color: var(--color-violet-light);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.emoji {
+  font-size: 40px;
+  display: block;
+  margin-bottom: var(--space-md);
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
+}
+
+.cardDesc {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybernova — Palete de culoare</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #0c0c0e;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #fff;
+  }
+
+  /* ── Header ── */
+  .page-head {
+    text-align: center;
+    padding: 52px 24px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 0;
+  }
+  .page-head h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  .page-head p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  /* ── Palette Row ── */
+  .palette-row {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: 360px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .palette-row:hover { background: rgba(255,255,255,0.015); }
+  .palette-row.selected { outline: 2px solid rgba(255,255,255,0.6); outline-offset: -2px; }
+
+  /* Left: info + swatches */
+  .palette-info {
+    padding: 36px 32px;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .palette-number {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+  }
+
+  .palette-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-top: -4px;
+  }
+
+  .palette-vibe {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.4);
+    flex: 1;
+  }
+
+  .swatches {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .swatch-block {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .swatch-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .swatch-role {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .swatch-hex {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .select-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    padding: 6px 14px;
+    border-radius: 980px;
+    font-size: 12px;
+    font-weight: 600;
+    align-self: flex-start;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .palette-row.selected .select-tag {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+  }
+
+  /* Right: Hero preview */
+  .palette-preview {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Specific palette themes ── */
+
+  /* 1. Navy Blue */
+  .p1-preview {
+    background: #0A1628;
+  }
+  .p1-nav { color: rgba(248,250,252,0.5); }
+  .p1-accent { color: #60A5FA; }
+  .p1-title { color: #F8FAFC; }
+  .p1-sub { color: rgba(226,232,240,0.45); }
+  .p1-btn { background: #3B82F6; color: #fff; }
+  .p1-btn2 { color: #60A5FA; background: none; border: none; }
+  .p1-surface { background: rgba(30,58,95,0.5); border-color: rgba(59,130,246,0.18); }
+  .p1-strip { border-color: rgba(248,250,252,0.07); }
+  .p1-strip-text { color: rgba(226,232,240,0.2); }
+
+  /* 2. Indigo Noapte */
+  .p2-preview {
+    background: #0F0A1E;
+  }
+  .p2-nav { color: rgba(245,243,255,0.4); }
+  .p2-accent { color: #A78BFA; }
+  .p2-title { color: #F5F3FF; }
+  .p2-sub { color: rgba(221,214,254,0.4); }
+  .p2-btn { background: #7C3AED; color: #fff; }
+  .p2-btn2 { color: #A78BFA; background: none; border: none; }
+  .p2-surface { background: rgba(30,21,51,0.7); border-color: rgba(124,58,237,0.2); }
+  .p2-strip { border-color: rgba(245,243,255,0.06); }
+  .p2-strip-text { color: rgba(221,214,254,0.18); }
+
+  /* 3. Slate + Emerald */
+  .p3-preview {
+    background: #0F172A;
+  }
+  .p3-nav { color: rgba(241,245,249,0.4); }
+  .p3-accent { color: #34D399; }
+  .p3-title { color: #F1F5F9; }
+  .p3-sub { color: rgba(203,213,225,0.45); }
+  .p3-btn { background: #10B981; color: #fff; }
+  .p3-btn2 { color: #34D399; background: none; border: none; }
+  .p3-surface { background: rgba(30,41,59,0.7); border-color: rgba(16,185,129,0.18); }
+  .p3-strip { border-color: rgba(241,245,249,0.06); }
+  .p3-strip-text { color: rgba(203,213,225,0.18); }
+
+  /* 4. Zinc + Amber */
+  .p4-preview {
+    background: #18181B;
+  }
+  .p4-nav { color: rgba(250,250,250,0.4); }
+  .p4-accent { color: #FB923C; }
+  .p4-title { color: #FAFAFA; }
+  .p4-sub { color: rgba(228,228,231,0.4); }
+  .p4-btn { background: #F97316; color: #fff; }
+  .p4-btn2 { color: #FB923C; background: none; border: none; }
+  .p4-surface { background: rgba(39,39,42,0.8); border-color: rgba(249,115,22,0.18); }
+  .p4-strip { border-color: rgba(250,250,250,0.06); }
+  .p4-strip-text { color: rgba(228,228,231,0.18); }
+
+  /* 5. Deep Teal */
+  .p5-preview {
+    background: #061C23;
+  }
+  .p5-nav { color: rgba(240,253,250,0.4); }
+  .p5-accent { color: #2DD4BF; }
+  .p5-title { color: #F0FDFA; }
+  .p5-sub { color: rgba(204,251,241,0.4); }
+  .p5-btn { background: #0D9488; color: #fff; }
+  .p5-btn2 { color: #2DD4BF; background: none; border: none; }
+  .p5-surface { background: rgba(8,51,68,0.7); border-color: rgba(45,212,191,0.18); }
+  .p5-strip { border-color: rgba(240,253,250,0.06); }
+  .p5-strip-text { color: rgba(204,251,241,0.18); }
+
+  /* ── Hero preview layout (same structure for all) ── */
+  .hero-prev {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px 50px;
+    position: relative;
+  }
+
+  .hp-nav {
+    position: absolute;
+    top: 24px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .hp-logo { font-weight: 800; font-size: 14px; letter-spacing: -0.01em; }
+
+  .hp-links {
+    display: flex; gap: 24px;
+    font-size: 12px; font-weight: 500;
+  }
+
+  .hp-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    opacity: 0.5;
+  }
+
+  .hp-title {
+    font-size: clamp(28px, 3.5vw, 46px);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    margin-bottom: 14px;
+  }
+
+  .hp-sub {
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 420px;
+    margin: 0 auto 28px;
+    font-weight: 400;
+  }
+
+  .hp-btns {
+    display: flex; gap: 14px; justify-content: center; align-items: center;
+  }
+
+  .hp-btn {
+    padding: 11px 24px;
+    border-radius: 980px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .hp-btn2 {
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .hp-btn2::after { content: '›'; font-size: 17px; }
+
+  .hp-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 14px 0;
+    border-top-width: 1px;
+    border-top-style: solid;
+  }
+
+  .hp-strip span {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Decorative surface card inside preview */
+  .hp-floater {
+    display: none;
+  }
+
+</style>
+<script>
+  let selected = null;
+
+  function toggleSelect(idx, el) {
+    const rows = document.querySelectorAll('.palette-row');
+    if (selected === idx) {
+      rows[idx].classList.remove('selected');
+      selected = null;
+      return;
+    }
+    rows.forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    selected = idx;
+    const name = el.querySelector('.palette-name').textContent;
+    if (typeof recordSelection === 'function') recordSelection('palette-' + idx, name);
+  }
+</script>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Palete de culoare — Cybernova Systems</h1>
+  <p>Fiecare paletă aplicată direct pe un hero real. Click pe o paletă pentru a o selecta.</p>
+</div>
+
+
+<!-- ══ PALETA 1: NAVY BLUE ══ -->
+<div class="palette-row" onclick="toggleSelect(0, this)">
+  <div class="palette-info">
+    <span class="palette-number">Paleta 01</span>
+    <div class="palette-name">Navy Profund</div>
+    <div class="palette-vibe">Albastru marin adânc cu accente electric blue. Transmite autoritate, stabilitate și tehnologie serioasă. Ideal dacă vrei să arăți ca o firmă de încredere cu experiență solidă.</div>
+    <div class="swatches">
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#0A1628"></div>
+        <div class="swatch-meta"><span class="swatch-role">Background</span><span class="swatch-hex">#0A1628</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#3B82F6"></div>
+        <div class="swatch-meta"><span class="swatch-role">Accent principal</span><span class="swatch-hex">#3B82F6</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#1E3A5F"></div>
+        <div class="swatch-meta"><span class="swatch-role">Surface / carduri</span><span class="swatch-hex">#1E3A5F</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#F8FAFC"></div>
+        <div class="swatch-meta"><span class="swatch-role">Text primar</span><span class="swatch-hex">#F8FAFC</span></div>
+      </div>
+    </div>
+    <div class="select-tag">→ Alege paleta</div>
+  </div>
+  <div class="palette-preview p1-preview">
+    <div class="hero-prev">
+      <div class="hp-nav">
+        <span class="hp-logo p1-title">Cybernova</span>
+        <div class="hp-links p1-nav">
+          <span>Servicii</span><span>Proiecte</span><span>Contact</span>
+        </div>
+      </div>
+      <p class="hp-eyebrow p1-nav">Agenție digitală</p>
+      <h1 class="hp-title p1-title">Construim produse<br>digitale excepționale.</h1>
+      <p class="hp-sub p1-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+      <div class="hp-btns">
+        <button class="hp-btn p1-btn">Hai să vorbim</button>
+        <button class="hp-btn2 p1-btn2">Proiectele noastre</button>
+      </div>
+      <div class="hp-strip p1-strip">
+        <span class="p1-strip-text">Website-uri</span>
+        <span class="p1-strip-text">Web Apps</span>
+        <span class="p1-strip-text">Mobile</span>
+        <span class="p1-strip-text">AI & Automatizare</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PALETA 2: INDIGO NOAPTE ══ -->
+<div class="palette-row" onclick="toggleSelect(1, this)">
+  <div class="palette-info">
+    <span class="palette-number">Paleta 02</span>
+    <div class="palette-name">Indigo Noapte</div>
+    <div class="palette-vibe">Violet-negru profund cu accente mov electric. Feel premium, AI-native, de startup tech avansat. Exact ce folosesc Notion, Linear sau Vercel — sofisticat fără să fie agresiv.</div>
+    <div class="swatches">
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#0F0A1E"></div>
+        <div class="swatch-meta"><span class="swatch-role">Background</span><span class="swatch-hex">#0F0A1E</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#7C3AED"></div>
+        <div class="swatch-meta"><span class="swatch-role">Accent principal</span><span class="swatch-hex">#7C3AED</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#1E1533"></div>
+        <div class="swatch-meta"><span class="swatch-role">Surface / carduri</span><span class="swatch-hex">#1E1533</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#F5F3FF"></div>
+        <div class="swatch-meta"><span class="swatch-role">Text primar</span><span class="swatch-hex">#F5F3FF</span></div>
+      </div>
+    </div>
+    <div class="select-tag">→ Alege paleta</div>
+  </div>
+  <div class="palette-preview p2-preview">
+    <div class="hero-prev">
+      <div class="hp-nav">
+        <span class="hp-logo p2-title">Cybernova</span>
+        <div class="hp-links p2-nav">
+          <span>Servicii</span><span>Proiecte</span><span>Contact</span>
+        </div>
+      </div>
+      <p class="hp-eyebrow p2-nav">Agenție digitală</p>
+      <h1 class="hp-title p2-title">Construim produse<br>digitale excepționale.</h1>
+      <p class="hp-sub p2-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+      <div class="hp-btns">
+        <button class="hp-btn p2-btn">Hai să vorbim</button>
+        <button class="hp-btn2 p2-btn2">Proiectele noastre</button>
+      </div>
+      <div class="hp-strip p2-strip">
+        <span class="p2-strip-text">Website-uri</span>
+        <span class="p2-strip-text">Web Apps</span>
+        <span class="p2-strip-text">Mobile</span>
+        <span class="p2-strip-text">AI & Automatizare</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PALETA 3: SLATE EMERALD ══ -->
+<div class="palette-row" onclick="toggleSelect(2, this)">
+  <div class="palette-info">
+    <span class="palette-number">Paleta 03</span>
+    <div class="palette-name">Slate + Emerald</div>
+    <div class="palette-vibe">Gri-albastru închis cu verde-smarald vibrant. Rar folosit de agențiile din România — deci imediat memorabil. Transmite inovație, prospețime și seriozitate simultan.</div>
+    <div class="swatches">
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#0F172A"></div>
+        <div class="swatch-meta"><span class="swatch-role">Background</span><span class="swatch-hex">#0F172A</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#10B981"></div>
+        <div class="swatch-meta"><span class="swatch-role">Accent principal</span><span class="swatch-hex">#10B981</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#1E293B"></div>
+        <div class="swatch-meta"><span class="swatch-role">Surface / carduri</span><span class="swatch-hex">#1E293B</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#F1F5F9"></div>
+        <div class="swatch-meta"><span class="swatch-role">Text primar</span><span class="swatch-hex">#F1F5F9</span></div>
+      </div>
+    </div>
+    <div class="select-tag">→ Alege paleta</div>
+  </div>
+  <div class="palette-preview p3-preview">
+    <div class="hero-prev">
+      <div class="hp-nav">
+        <span class="hp-logo p3-title">Cybernova</span>
+        <div class="hp-links p3-nav">
+          <span>Servicii</span><span>Proiecte</span><span>Contact</span>
+        </div>
+      </div>
+      <p class="hp-eyebrow p3-nav">Agenție digitală</p>
+      <h1 class="hp-title p3-title">Construim produse<br>digitale excepționale.</h1>
+      <p class="hp-sub p3-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+      <div class="hp-btns">
+        <button class="hp-btn p3-btn">Hai să vorbim</button>
+        <button class="hp-btn2 p3-btn2">Proiectele noastre</button>
+      </div>
+      <div class="hp-strip p3-strip">
+        <span class="p3-strip-text">Website-uri</span>
+        <span class="p3-strip-text">Web Apps</span>
+        <span class="p3-strip-text">Mobile</span>
+        <span class="p3-strip-text">AI & Automatizare</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PALETA 4: ZINC AMBER ══ -->
+<div class="palette-row" onclick="toggleSelect(3, this)">
+  <div class="palette-info">
+    <span class="palette-number">Paleta 04</span>
+    <div class="palette-name">Zinc + Amber</div>
+    <div class="palette-vibe">Gri cald-întunecat cu portocaliu vibrant. Cel mai energetic și bold din setul acesta. Scoate în evidență CTA-urile instant — rata de conversie mai bună. Memorabil, diferit, curajos.</div>
+    <div class="swatches">
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#18181B"></div>
+        <div class="swatch-meta"><span class="swatch-role">Background</span><span class="swatch-hex">#18181B</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#F97316"></div>
+        <div class="swatch-meta"><span class="swatch-role">Accent principal</span><span class="swatch-hex">#F97316</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#27272A"></div>
+        <div class="swatch-meta"><span class="swatch-role">Surface / carduri</span><span class="swatch-hex">#27272A</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#FAFAFA"></div>
+        <div class="swatch-meta"><span class="swatch-role">Text primar</span><span class="swatch-hex">#FAFAFA</span></div>
+      </div>
+    </div>
+    <div class="select-tag">→ Alege paleta</div>
+  </div>
+  <div class="palette-preview p4-preview">
+    <div class="hero-prev">
+      <div class="hp-nav">
+        <span class="hp-logo p4-title">Cybernova</span>
+        <div class="hp-links p4-nav">
+          <span>Servicii</span><span>Proiecte</span><span>Contact</span>
+        </div>
+      </div>
+      <p class="hp-eyebrow p4-nav">Agenție digitală</p>
+      <h1 class="hp-title p4-title">Construim produse<br>digitale excepționale.</h1>
+      <p class="hp-sub p4-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+      <div class="hp-btns">
+        <button class="hp-btn p4-btn">Hai să vorbim</button>
+        <button class="hp-btn2 p4-btn2">Proiectele noastre</button>
+      </div>
+      <div class="hp-strip p4-strip">
+        <span class="p4-strip-text">Website-uri</span>
+        <span class="p4-strip-text">Web Apps</span>
+        <span class="p4-strip-text">Mobile</span>
+        <span class="p4-strip-text">AI & Automatizare</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ PALETA 5: DEEP TEAL ══ -->
+<div class="palette-row" onclick="toggleSelect(4, this)">
+  <div class="palette-info">
+    <span class="palette-number">Paleta 05</span>
+    <div class="palette-name">Deep Teal</div>
+    <div class="palette-vibe">Verde-petrol adânc cu accente cyan-turcoaz. Cel mai rar și mai sofisticat din setul acesta. Zero agenții românești nu folosesc asta — risc mic, diferențiere maximă. Calm și autoritar.</div>
+    <div class="swatches">
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#061C23"></div>
+        <div class="swatch-meta"><span class="swatch-role">Background</span><span class="swatch-hex">#061C23</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#0D9488"></div>
+        <div class="swatch-meta"><span class="swatch-role">Accent principal</span><span class="swatch-hex">#0D9488</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#083344"></div>
+        <div class="swatch-meta"><span class="swatch-role">Surface / carduri</span><span class="swatch-hex">#083344</span></div>
+      </div>
+      <div class="swatch-row">
+        <div class="swatch-block" style="background:#F0FDFA"></div>
+        <div class="swatch-meta"><span class="swatch-role">Text primar</span><span class="swatch-hex">#F0FDFA</span></div>
+      </div>
+    </div>
+    <div class="select-tag">→ Alege paleta</div>
+  </div>
+  <div class="palette-preview p5-preview">
+    <div class="hero-prev">
+      <div class="hp-nav">
+        <span class="hp-logo p5-title">Cybernova</span>
+        <div class="hp-links p5-nav">
+          <span>Servicii</span><span>Proiecte</span><span>Contact</span>
+        </div>
+      </div>
+      <p class="hp-eyebrow p5-nav">Agenție digitală</p>
+      <h1 class="hp-title p5-title">Construim produse<br>digitale excepționale.</h1>
+      <p class="hp-sub p5-sub">Website-uri, aplicații web & mobile, automatizări și soluții AI — livrate cu atenție la fiecare detaliu.</p>
+      <div class="hp-btns">
+        <button class="hp-btn p5-btn">Hai să vorbim</button>
+        <button class="hp-btn2 p5-btn2">Proiectele noastre</button>
+      </div>
+      <div class="hp-strip p5-strip">
+        <span class="p5-strip-text">Website-uri</span>
+        <span class="p5-strip-text">Web Apps</span>
+        <span class="p5-strip-text">Mobile</span>
+        <span class="p5-strip-text">AI & Automatizare</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="height:60px"></div>
+
+</body>
+</html>
