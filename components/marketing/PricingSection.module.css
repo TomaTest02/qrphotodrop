@@ -7,6 +7,6 @@
 .tabs { display: flex; justify-content: center; gap: var(--space-sm); margin: var(--space-xl) 0 var(--space-2xl); flex-wrap: wrap; }
 .tab { padding: 10px 20px; font-size: 13px; font-weight: 600; border: 2px solid var(--color-cream-darker); border-radius: var(--radius-md); background: transparent; color: var(--color-text-muted); cursor: pointer; transition: all var(--transition-fast); }
 .tab:hover { border-color: var(--color-violet-light); color: var(--color-violet); }
-.tabActive { background: var(--color-violet); color: var(--color-white); border-color: var(--color-violet); }
+.tabActive { background: var(--color-violet); color: #050505; border-color: var(--color-violet); }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); align-items: stretch; }
 @media (max-width: 900px) { .grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; } }

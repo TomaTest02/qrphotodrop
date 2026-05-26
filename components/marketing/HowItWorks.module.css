@@ -1,6 +1,6 @@
 .section {
   position: relative;
-  background: var(--color-white);
+  background: var(--color-cream-dark);
 }
 
 .container {
@@ -71,7 +71,7 @@
   font-size: 120px;
   font-weight: 900;
   color: var(--color-violet);
-  opacity: 0.1;
+  opacity: 0.18;
   line-height: 1;
   margin-bottom: var(--space-md);
 }

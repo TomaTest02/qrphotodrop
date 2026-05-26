@@ -6,46 +6,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Fundal principal */
-  --color-cream:        #f5f0e8;
-  --color-cream-dark:   #ede8df;
-  --color-cream-darker: #e0d9cc;
+  /* Fundal principal - Luxury Pearl White & Cream */
+  --color-cream:        #faf9f5;
+  --color-cream-dark:   #f4f3ee;
+  --color-cream-darker: #e5e3db;
 
-  /* Accent principal */
-  --color-violet:       #2d1b69;
-  --color-violet-mid:   #4a3580;
-  --color-violet-light: #6b5ca5;
-  --color-violet-pale:  #e8e4f5;
-  --color-violet-ultra: #f3f0fc;
+  /* Accent principal - Satin Gold & Champagne */
+  --color-violet:       #b89025;
+  --color-violet-mid:   #94721c;
+  --color-violet-light: #d4af37;
+  --color-violet-pale:  rgba(184, 144, 37, 0.05);
+  --color-violet-ultra: rgba(184, 144, 37, 0.02);
 
-  /* Text */
-  --color-text:         #1a0f3c;
-  --color-text-muted:   #6b7280;
-  --color-text-light:   #9ca3af;
+  /* Text - Deep Luxury Charcoal Contrast */
+  --color-text:         #111111;
+  --color-text-muted:   #55545c;
+  --color-text-light:   #88878f;
 
   /* Accent secundar */
-  --color-gold:         #c9a227;
-  --color-gold-light:   #f5d76e;
+  --color-gold:         #d4af37;
+  --color-gold-light:   #f3e5ab;
 
   /* Stări */
   --color-success:      #10b981;
   --color-error:        #ef4444;
   --color-warning:      #f59e0b;
 
-  /* Alb */
+  /* Alb / Negru de bază */
   --color-white:        #ffffff;
+  --color-card-bg:      #ffffff;
   
-  /* Glassmorphism */
-  --glass-bg:           rgba(255, 255, 255, 0.6);
-  --glass-border:       rgba(255, 255, 255, 0.4);
+  /* Glassmorphism deschis */
+  --glass-bg:           rgba(255, 255, 255, 0.9);
+  --glass-border:       rgba(184, 144, 37, 0.15);
   --glass-blur:         blur(16px);
 
-  /* Umbre */
-  --shadow-sm:    0 1px 3px rgba(45,27,105,0.08);
-  --shadow-md:    0 4px 16px rgba(45,27,105,0.12);
-  --shadow-lg:    0 8px 32px rgba(45,27,105,0.16);
-  --shadow-xl:    0 16px 64px rgba(45,27,105,0.20);
-  --shadow-glow:  0 0 40px rgba(45,27,105,0.15);
+  /* Umbre & Glow soft */
+  --shadow-sm:    0 2px 8px rgba(0,0,0,0.03);
+  --shadow-md:    0 8px 24px rgba(0,0,0,0.06);
+  --shadow-lg:    0 16px 40px rgba(0,0,0,0.08);
+  --shadow-xl:    0 24px 64px rgba(0,0,0,0.12);
+  --shadow-glow:  0 0 25px rgba(184, 144, 37, 0.12);
 
   /* Border radius */
   --radius-sm:    6px;
