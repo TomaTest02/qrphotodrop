@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Camera, Sparkles, GlassWater, Music } from 'lucide-react';
+import Image from 'next/image';
 import styles from './Hero.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -25,8 +25,8 @@ export default function Hero() {
       gsap.set(photosRef.current, { 
         opacity: 0, 
         scale: 0.8, 
-        y: 100, 
-        rotation: () => gsap.utils.random(-30, 30) 
+        y: 60, 
+        rotation: (i) => [-25, -20, 25, 18, -18, 18][i] || 0
       });
 
       // Intro sequence
@@ -59,7 +59,7 @@ export default function Hero() {
         opacity: 1,
         scale: 1,
         y: 0,
-        rotation: (i) => [-15, 10, 15, -8][i],
+        rotation: (i) => [-12, -10, 12, 8, -8, 8][i] || 0,
         duration: 1.5,
         stagger: 0.1,
         ease: 'back.out(1.2)',
@@ -73,16 +73,17 @@ export default function Hero() {
           end: 'bottom top',
           scrub: true,
         },
-        yPercent: 40,
+        yPercent: 30,
         opacity: 0,
         ease: 'none'
       });
 
       // Subtle float animation for photos
       photosRef.current.forEach((photo, i) => {
+        if (!photo) return;
         gsap.to(photo, {
-          y: '+=15',
-          rotation: '+=2',
+          y: '+=8',
+          rotation: '+=1.5',
           duration: 3 + i,
           repeat: -1,
           yoyo: true,
@@ -107,7 +108,14 @@ export default function Hero() {
           ref={el => photosRef.current[0] = el}
         >
           <div className={styles.photoInner}>
-            <Camera size={48} className={styles.photoIcon} />
+            <Image 
+              src="/images/hero/wedding.jpg" 
+              alt="Nuntă" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
           </div>
         </div>
         <div 
@@ -115,7 +123,14 @@ export default function Hero() {
           ref={el => photosRef.current[1] = el}
         >
           <div className={styles.photoInner}>
-            <Sparkles size={48} className={styles.photoIcon} />
+            <Image 
+              src="/images/hero/botez.jpg" 
+              alt="Botez" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
           </div>
         </div>
         <div 
@@ -123,7 +138,14 @@ export default function Hero() {
           ref={el => photosRef.current[2] = el}
         >
           <div className={styles.photoInner}>
-            <GlassWater size={48} className={styles.photoIcon} />
+            <Image 
+              src="/images/hero/toast.jpg" 
+              alt="Cocktails" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
           </div>
         </div>
         <div 
@@ -131,7 +153,44 @@ export default function Hero() {
           ref={el => photosRef.current[3] = el}
         >
           <div className={styles.photoInner}>
-            <Music size={48} className={styles.photoIcon} />
+            <Image 
+              src="/images/hero/corporate.jpg" 
+              alt="Eveniment Corporate" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
+          </div>
+        </div>
+        <div 
+          className={`${styles.photo} ${styles.photo5}`} 
+          ref={el => photosRef.current[4] = el}
+        >
+          <div className={styles.photoInner}>
+            <Image 
+              src="/images/hero/aniversare.jpg" 
+              alt="Aniversare" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
+          </div>
+        </div>
+        <div 
+          className={`${styles.photo} ${styles.photo6}`} 
+          ref={el => photosRef.current[5] = el}
+        >
+          <div className={styles.photoInner}>
+            <Image 
+              src="/images/hero/botez2.jpg" 
+              alt="Botez Decor" 
+              fill
+              sizes="(max-width: 992px) 160px, 220px"
+              priority
+              className={styles.heroImage}
+            />
           </div>
         </div>
       </div>
