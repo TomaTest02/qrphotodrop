@@ -81,7 +81,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  background: linear-gradient(135deg, #f5d76e 0%, var(--color-gold) 50%, #aa7c11 100%);
+  background: linear-gradient(135deg, #b58c4f 0%, #92643e 50%, #710927 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -113,17 +113,17 @@
   padding: 20px 40px;
   font-size: 16px;
   font-weight: 600;
-  color: #050505;
-  background: var(--color-violet);
+  color: #ffffff;
+  background: var(--color-burgundy);
   border-radius: var(--radius-full);
   text-decoration: none;
   transition: all var(--transition-mid);
 }
 
 .primaryBtn:hover {
-  background: var(--color-violet-mid);
+  background: #58051c;
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(197, 160, 67, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(113, 9, 39, 0.4);
 }
 
 .secondaryBtn {
@@ -133,7 +133,7 @@
   padding: 20px 40px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-violet);
+  color: var(--color-burgundy);
   background: transparent;
   border: 1px solid var(--color-cream-darker);
   border-radius: var(--radius-full);
@@ -143,7 +143,7 @@
 
 .secondaryBtn:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: var(--color-violet);
+  border-color: var(--color-burgundy);
   box-shadow: var(--shadow-sm);
 }
 

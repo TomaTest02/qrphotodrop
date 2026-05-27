@@ -34,30 +34,38 @@ export default function Testimonials() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Fade in header
-      gsap.from(`.${styles.header}`, {
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 85%',
-        },
-        opacity: 0,
-        y: 30,
-        duration: 1,
-        ease: 'power3.out'
-      });
+      gsap.fromTo(`.${styles.header}`, 
+        { opacity: 0, y: 30 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+          },
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: 'power3.out',
+          overwrite: 'auto'
+        }
+      );
 
       // Cards staggered fade in
-      gsap.from(`.${styles.card}`, {
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 70%',
-        },
-        opacity: 0,
-        y: 40,
-        scale: 0.96,
-        duration: 1.2,
-        stagger: 0.12,
-        ease: 'power3.out'
-      });
+      gsap.fromTo(`.${styles.card}`, 
+        { opacity: 0, y: 40, scale: 0.96 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+          },
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1.2,
+          stagger: 0.12,
+          ease: 'power3.out',
+          overwrite: 'auto'
+        }
+      );
     }, containerRef);
 
     return () => ctx.revert();

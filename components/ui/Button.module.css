@@ -38,32 +38,33 @@
 
 /* Variants */
 .primary {
-  background: var(--color-violet);
+  background: var(--color-burgundy);
   color: var(--color-white);
-  border-color: var(--color-violet);
+  border-color: var(--color-burgundy);
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--color-violet-mid);
+  background: #58051c;
+  border-color: #58051c;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .outline {
   background: transparent;
-  color: var(--color-violet);
-  border-color: var(--color-violet);
+  color: var(--color-burgundy);
+  border-color: var(--color-burgundy);
 }
 
 .outline:hover:not(:disabled) {
-  background: var(--color-violet);
+  background: var(--color-burgundy);
   color: var(--color-white);
   transform: translateY(-2px);
 }
 
 .ghost {
   background: transparent;
-  color: var(--color-violet);
+  color: var(--color-burgundy);
   border-color: transparent;
 }
 

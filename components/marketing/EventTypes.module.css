@@ -1,11 +1,18 @@
 .section {
-  padding: 0; /* Handled by GSAP pinning, we need full height */
-  height: 100vh;
+  padding: 80px 0;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   background: var(--color-cream);
   overflow: hidden;
+}
+
+@media (min-width: 993px) {
+  .section {
+    padding: 0;
+    height: 100vh;
+  }
 }
 
 .header {
@@ -32,7 +39,17 @@
 
 .scrollWrapper {
   width: 100vw;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 20px;
+}
+
+@media (min-width: 993px) {
+  .scrollWrapper {
+    overflow: hidden;
+    padding-bottom: 0;
+  }
 }
 
 .scrollContainer {
@@ -50,18 +67,18 @@
   padding: var(--space-2xl);
   text-decoration: none;
   transition: all var(--transition-mid);
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(184, 144, 37, 0.08);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(181, 140, 79, 0.08);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid rgba(184, 144, 37, 0.3);
+  border: 1px solid rgba(181, 140, 79, 0.3);
 }
 
 .eventCard:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(184, 144, 37, 0.18);
+  box-shadow: 0 20px 50px rgba(181, 140, 79, 0.18);
   border-color: var(--color-violet-light);
 }
 

@@ -1,24 +1,24 @@
 .section {
   position: relative;
   background: var(--color-cream-dark);
+  padding: 100px 0;
+  overflow: hidden;
+  border-top: 1px solid var(--glass-border);
 }
 
 .container {
-  display: flex;
-  max-width: 1400px;
+  max-width: 1100px;
   margin: 0 auto;
-}
-
-.leftCol {
-  width: 50%;
-  height: 100vh;
+  padding: 0 var(--space-xl);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 var(--space-3xl);
 }
 
-.leftContent {
-  max-width: 500px;
+.headerContent {
+  text-align: center;
+  max-width: 700px;
+  margin-bottom: 80px;
 }
 
 .eyebrow {
@@ -32,88 +32,600 @@
 }
 
 .title {
-  font-size: clamp(48px, 6vw, 72px);
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 4vw, 56px);
   font-weight: 700;
-  letter-spacing: -2px;
-  color: var(--color-text);
-  line-height: 1.1;
+  letter-spacing: -1.5px;
+  color: var(--color-burgundy);
+  line-height: 1.15;
   margin-bottom: var(--space-lg);
 }
 
 .description {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.6;
   color: var(--color-text-muted);
 }
 
-.rightCol {
-  width: 50%;
-  padding: 0 var(--space-3xl);
-}
-
-.stepsSpacer {
-  height: 40vh;
+/* Steps Container */
+.stepsContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* Elegant gap between always-expanded steps */
 }
 
 .step {
-  min-height: 50vh;
+  width: 100%;
+  padding: var(--space-xl) 0;
+  border-bottom: 1px solid rgba(181, 140, 79, 0.18);
   display: flex;
-  align-items: center;
-  transition: opacity var(--transition-mid);
+  flex-direction: column;
 }
 
-.stepContent {
-  max-width: 500px;
+.step:first-child {
+  border-top: 1px solid rgba(181, 140, 79, 0.18);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-md);
 }
 
 .number {
   font-family: var(--font-serif);
-  font-size: 120px;
+  font-size: 48px;
   font-weight: 900;
   color: var(--color-violet);
-  opacity: 0.18;
+  opacity: 0.85;
   line-height: 1;
-  margin-bottom: var(--space-md);
 }
 
 .stepTitle {
-  font-size: 36px;
+  font-family: var(--font-serif);
+  font-size: 32px;
   font-weight: 700;
   color: var(--color-text);
-  margin-bottom: var(--space-md);
-  letter-spacing: -1px;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* Content Wrapper (always open) */
+.accordionContent {
+  width: 100%;
+}
+
+.accordionInner {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 64px;
+  align-items: center;
+  padding-bottom: var(--space-lg);
+  width: 100%;
+}
+
+.accordionText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .stepDesc {
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Visual showcases inside the accordion */
+.visualShowcase {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 360px;
+}
+
+.visualCardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.95);
+}
+
+/* 1. Dashboard Mockup */
+.dashboardMock {
+  width: 290px;
+  background: var(--color-white);
+  border: 1px solid rgba(181, 140, 79, 0.18);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 20px 40px rgba(181, 140, 79, 0.03);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.mockHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-cream-dark);
+  padding-bottom: var(--space-xs);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-cream-darker);
+}
+
+.mockTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mockBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.mockSub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.mockTypes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.mockType {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-cream-dark);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.mockTypeActive {
+  background: var(--color-burgundy);
+  color: var(--color-white);
+  box-shadow: 0 4px 12px rgba(113, 9, 39, 0.15);
+}
+
+.check {
+  font-weight: 700;
+}
+
+.sliderContainer {
+  margin-bottom: var(--space-md);
+}
+
+.sliderTrack {
+  height: 6px;
+  background: var(--color-cream-dark);
+  border-radius: var(--radius-full);
+  position: relative;
+  margin-bottom: var(--space-xs);
+}
+
+.sliderFill {
+  height: 100%;
+  width: 60%;
+  background: var(--color-violet);
+  border-radius: var(--radius-full);
+}
+
+.sliderKnob {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  border: 3px solid var(--color-violet);
+  position: absolute;
+  top: 50%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+  box-shadow: var(--shadow-sm);
+}
+
+.sliderInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
+.goldText {
+  color: var(--color-violet);
+  font-weight: 700;
+}
+
+.mockBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-violet);
+  color: var(--color-white);
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.mockBtn:hover {
+  background: var(--color-violet-dark, #5a189a);
+}
+
+/* 2. Phone Mockup & Place Card */
+.phoneMock {
+  width: 170px;
+  height: 290px;
+  background: #111;
+  border: 8px solid #222;
+  border-radius: 24px;
+  box-shadow: var(--shadow-xl), 0 20px 40px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  position: relative;
+  transform: translateX(-35px);
+  display: flex;
+  flex-direction: column;
+}
+
+.phoneHeader {
+  height: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background: #111;
+  padding: 4px 0;
+}
+
+.phoneCamera {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: #2a2a2a;
+}
+
+.phoneSpeaker {
+  width: 30px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: #2a2a2a;
+}
+
+.phoneScreen {
+  flex: 1;
+  background: #f5efe6;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHeader {
+  background: var(--color-burgundy);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-white);
+}
+
+.avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.chatName {
+  font-size: 9px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.chatStatus {
+  font-size: 7px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.chatBody {
+  flex: 1;
+  padding: 10px;
+}
+
+.chatBubble {
+  background: var(--color-white);
+  padding: 8px 10px;
+  border-radius: 8px 8px 8px 0;
+  max-width: 90%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.bubbleText {
+  font-size: 9px;
+  line-height: 1.4;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  margin-top: 0;
+}
+
+.chatLink {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--color-violet);
+  text-decoration: underline;
+  display: block;
+}
+
+.tableCardMock {
+  position: absolute;
+  bottom: 25px;
+  right: 15px;
+  width: 135px;
+  background: var(--color-white);
+  border: 1px solid rgba(181, 140, 79, 0.2);
+  box-shadow: var(--shadow-lg), 0 15px 30px rgba(181, 140, 79, 0.06);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+  transform: rotate(4deg);
+}
+
+.cardHeader {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  margin-bottom: var(--space-xs);
+}
+
+.cardQr {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-xs);
+}
+
+.goldIcon {
+  color: var(--color-violet);
+}
+
+.cardFooter {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+}
+
+/* 3. Live Photo Wall Mockup */
+.memoriesMock {
+  position: relative;
+  width: 280px;
+  height: 310px;
+}
+
+.photoWall {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.wallPhoto {
+  position: absolute;
+  background: var(--color-white);
+  padding: 6px 6px 18px 6px;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(181, 140, 79, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.wallPhotoInner {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.wallPhoto1 {
+  width: 80px;
+  height: 100px;
+  top: 10px;
+  left: 10px;
+  transform: rotate(-10deg);
+}
+.wallPhoto1 .wallPhotoInner {
+  background: linear-gradient(135deg, #710927 0%, #b58c4f 100%);
+}
+
+.wallPhoto2 {
+  width: 90px;
+  height: 110px;
+  top: 50px;
+  right: 10px;
+  transform: rotate(8deg);
+}
+.wallPhoto2 .wallPhotoInner {
+  background: linear-gradient(135deg, #b58c4f 0%, #d9c3a6 100%);
+}
+
+.wallPhoto3 {
+  width: 80px;
+  height: 100px;
+  bottom: 60px;
+  left: 20px;
+  transform: rotate(-6deg);
+}
+.wallPhoto3 .wallPhotoInner {
+  background: linear-gradient(135deg, #2d2c4a 0%, #92643e 100%);
+}
+
+.wallPhotoLabel {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  text-align: center;
+  margin-top: 6px;
+}
+
+.downloadCard {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 170px;
+  background: var(--color-white);
+  border: 1px solid rgba(113, 9, 39, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-sm);
+  box-shadow: var(--shadow-lg), 0 15px 30px rgba(113, 9, 39, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.downloadIconWrapper {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: rgba(113, 9, 39, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-burgundy);
+  margin-bottom: var(--space-sm);
+  animation: floatIcon 2s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.downloadIcon {
+  color: var(--color-burgundy);
+}
+
+.downloadTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  margin-bottom: 2px;
+}
+
+.downloadProgress {
+  font-size: 10px;
+  color: var(--color-text-light);
+}
+
+/* Responsive configurations */
 @media (max-width: 992px) {
+  .section {
+    padding: 60px 0;
+  }
+  
   .container {
-    flex-direction: column;
+    padding: 0 var(--space-lg);
   }
   
-  .leftCol {
-    width: 100%;
-    height: auto;
-    padding: var(--space-3xl) var(--space-xl);
-    position: relative !important; /* Overrides GSAP pin on mobile */
+  .headerContent {
+    margin-bottom: 40px;
   }
   
-  .rightCol {
-    width: 100%;
-    padding: 0 var(--space-xl) var(--space-3xl);
+  .stepsContainer {
+    gap: 30px;
   }
-  
-  .stepsSpacer {
-    height: 0;
-  }
-  
+
   .step {
-    min-height: auto;
-    padding: var(--space-2xl) 0;
-    opacity: 1 !important; /* Always visible on mobile */
+    padding: var(--space-lg) 0;
+  }
+  
+  .number {
+    font-size: 32px;
+  }
+  
+  .stepTitle {
+    font-size: 22px;
+  }
+  
+  .accordionInner {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
+  }
+  
+  .stepDesc {
+    font-size: 15px;
+  }
+  
+  .visualShowcase {
+    height: 320px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+  }
+  
+  .visualCardInner {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 28px !important;
+  }
+  .description {
+    font-size: 15px;
+  }
+  .stepTitle {
+    font-size: 18px !important;
+  }
+  .stepDesc {
+    font-size: 14px;
+  }
+  .number {
+    font-size: 26px !important;
+  }
+  .visualShowcase {
+    height: 300px;
+  }
+  .visualCardInner {
+    transform: scale(0.85);
   }
 }

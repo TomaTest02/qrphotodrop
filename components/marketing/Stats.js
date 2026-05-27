@@ -19,18 +19,22 @@ export default function Stats() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(`.${styles.card}`, {
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 85%',
-        },
-        opacity: 0,
-        y: 30,
-        scale: 0.95,
-        duration: 1,
-        stagger: 0.12,
-        ease: 'power3.out'
-      });
+      gsap.fromTo(`.${styles.card}`, 
+        { opacity: 0, y: 30, scale: 0.95 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+          },
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1,
+          stagger: 0.12,
+          ease: 'power3.out',
+          overwrite: 'auto'
+        }
+      );
     }, containerRef);
 
     return () => ctx.revert();

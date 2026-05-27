@@ -15,7 +15,7 @@ export async function GET(request) {
       width: parseInt(size),
       margin: 2,
       color: {
-        dark: '#231e33', // Dark violet
+        dark: '#2d2c4a', // Dark slate navy
         light: '#ffffff' // White background
       }
     });

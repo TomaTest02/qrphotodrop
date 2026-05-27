@@ -19,18 +19,18 @@
 
 .card {
   background: #ffffff;
-  border: 1px solid rgba(184, 144, 37, 0.3);
+  border: 1px solid rgba(181, 140, 79, 0.3);
   border-radius: var(--radius-lg);
   padding: var(--space-xl) var(--space-lg);
   text-align: center;
   transition: all var(--transition-mid);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(184, 144, 37, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(181, 140, 79, 0.08);
 }
 
 .card:hover {
   transform: translateY(-5px);
   border-color: var(--color-violet-light);
-  box-shadow: 0 15px 40px rgba(184, 144, 37, 0.18);
+  box-shadow: 0 15px 40px rgba(181, 140, 79, 0.18);
 }
 
 .number {

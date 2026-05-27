@@ -28,7 +28,7 @@
   font-family: var(--font-serif);
   font-size: 24px;
   font-weight: 700;
-  color: var(--color-violet);
+  color: var(--color-burgundy);
   text-decoration: none;
   letter-spacing: -0.5px;
 }
@@ -126,15 +126,15 @@
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 600;
-  color: #050505;
-  background: var(--color-violet);
+  color: #ffffff;
+  background: var(--color-burgundy);
   border-radius: var(--radius-md);
   text-decoration: none;
   transition: all var(--transition-mid);
 }
 
 .cta:hover {
-  background: var(--color-violet-mid);
+  background: #58051c;
   transform: translateY(-1px);
 }
 

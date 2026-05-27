@@ -20,23 +20,38 @@ export default function EventTypes() {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const scrollWidth = scrollRef.current.scrollWidth - window.innerWidth + 80;
+    const mm = gsap.matchMedia();
 
-      gsap.to(scrollRef.current, {
+    mm.add("(min-width: 993px)", () => {
+      const container = containerRef.current;
+      const scroll = scrollRef.current;
+      if (!container || !scroll) return;
+
+      const scrollWidth = scroll.scrollWidth - window.innerWidth + 80;
+
+      gsap.to(scroll, {
         x: -scrollWidth,
         ease: 'none',
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: container,
           pin: true,
           scrub: 1,
-          start: 'center center',
+          start: 'top top',
           end: () => `+=${scrollWidth}`,
+          invalidateOnRefresh: true,
         }
       });
-    }, containerRef);
+    });
 
-    return () => ctx.revert();
+    // Force a ScrollTrigger recalculation to sync offsets after page hydration
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 400);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      mm.revert();
+    };
   }, []);
 
   return (

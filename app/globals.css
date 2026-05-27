@@ -6,26 +6,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Fundal principal - Luxury Pearl White & Cream */
-  --color-cream:        #faf9f5;
-  --color-cream-dark:   #f4f3ee;
-  --color-cream-darker: #e5e3db;
+  /* Fundal principal - Luxury Pearl White & Cream nisipiu */
+  --color-cream:        #faf7f2;
+  --color-cream-dark:   #f0e7db;
+  --color-cream-darker: #d9c3a6;
 
-  /* Accent principal - Satin Gold & Champagne */
-  --color-violet:       #b89025;
-  --color-violet-mid:   #94721c;
-  --color-violet-light: #d4af37;
-  --color-violet-pale:  rgba(184, 144, 37, 0.05);
-  --color-violet-ultra: rgba(184, 144, 37, 0.02);
+  /* Accent principal - Satin Gold & Champagne (#B58C4F - cel mai utilizat) */
+  --color-violet:       #b58c4f;
+  --color-violet-mid:   #92643e; /* Bronze ca hover state */
+  --color-violet-light: #c8a572;
+  --color-violet-pale:  rgba(181, 140, 79, 0.06);
+  --color-violet-ultra: rgba(181, 140, 79, 0.02);
 
-  /* Text - Deep Luxury Charcoal Contrast */
-  --color-text:         #111111;
-  --color-text-muted:   #55545c;
-  --color-text-light:   #88878f;
+  /* Text - Deep Navy Contrast (#2D2C4A) */
+  --color-text:         #2d2c4a;
+  --color-text-muted:   #525072;
+  --color-text-light:   #7a789a;
 
-  /* Accent secundar */
-  --color-gold:         #d4af37;
-  --color-gold-light:   #f3e5ab;
+  /* Accent secundar - Burgundy (#710927) și Nisip (#D9C3A6) */
+  --color-gold:         #b58c4f;
+  --color-gold-light:   #d9c3a6;
+  --color-burgundy:     #710927;
 
   /* Stări */
   --color-success:      #10b981;
@@ -38,7 +39,7 @@
   
   /* Glassmorphism deschis */
   --glass-bg:           rgba(255, 255, 255, 0.9);
-  --glass-border:       rgba(184, 144, 37, 0.15);
+  --glass-border:       rgba(181, 140, 79, 0.15);
   --glass-blur:         blur(16px);
 
   /* Umbre & Glow soft */
@@ -46,7 +47,7 @@
   --shadow-md:    0 8px 24px rgba(0,0,0,0.06);
   --shadow-lg:    0 16px 40px rgba(0,0,0,0.08);
   --shadow-xl:    0 24px 64px rgba(0,0,0,0.12);
-  --shadow-glow:  0 0 25px rgba(184, 144, 37, 0.12);
+  --shadow-glow:  0 0 25px rgba(181, 140, 79, 0.12);
 
   /* Border radius */
   --radius-sm:    6px;
@@ -134,7 +135,7 @@ ul, ol {
 /* ─── Tipografie de bază ─── */
 h1, h2, h3 {
   font-family: var(--font-serif);
-  color: var(--color-text);
+  color: var(--color-burgundy);
   line-height: 1.15;
 }
 

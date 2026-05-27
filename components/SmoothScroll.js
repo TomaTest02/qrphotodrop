@@ -26,17 +26,24 @@ export default function SmoothScroll({ children }) {
 
     lenis.on('scroll', ScrollTrigger.update);
 
-    gsap.ticker.add((time) => {
+    const tickHandler = (time) => {
       lenis.raf(time * 1000);
-    });
+    };
+    gsap.ticker.add(tickHandler);
 
     gsap.ticker.lagSmoothing(0);
 
+    const refreshHandler = () => {
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener('load', refreshHandler);
+    const refreshTimer = setTimeout(refreshHandler, 1000);
+
     return () => {
+      window.removeEventListener('load', refreshHandler);
+      clearTimeout(refreshTimer);
       lenis.destroy();
-      gsap.ticker.remove((time) => {
-        lenis.raf(time * 1000);
-      });
+      gsap.ticker.remove(tickHandler);
     };
   }, []);
 

@@ -1,6 +1,6 @@
 .card {
   background: #ffffff;
-  border: 1px solid rgba(184, 144, 37, 0.3);
+  border: 1px solid rgba(181, 140, 79, 0.3);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
   display: flex;
@@ -8,22 +8,22 @@
   transition: all var(--transition-mid);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(184, 144, 37, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(181, 140, 79, 0.08);
 }
 
 .card:hover {
   border-color: var(--color-violet);
-  box-shadow: 0 15px 40px rgba(184, 144, 37, 0.15);
+  box-shadow: 0 15px 40px rgba(181, 140, 79, 0.15);
   transform: translateY(-6px);
 }
 
 .popular {
   border: 2px solid var(--color-violet-light);
-  box-shadow: 0 15px 40px rgba(184, 144, 37, 0.18);
+  box-shadow: 0 15px 40px rgba(181, 140, 79, 0.18);
 }
 
 .popular:hover {
-  box-shadow: 0 20px 50px rgba(184, 144, 37, 0.25);
+  box-shadow: 0 20px 50px rgba(181, 140, 79, 0.25);
 }
 
 .badge {
@@ -119,25 +119,25 @@
 }
 
 .btnPrimary {
-  background: var(--color-violet);
-  color: #050505;
-  border-color: var(--color-violet);
+  background: var(--color-burgundy);
+  color: #ffffff;
+  border-color: var(--color-burgundy);
 }
 
 .btnPrimary:hover {
-  background: var(--color-violet-mid);
+  background: #58051c;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(197, 160, 67, 0.3);
+  box-shadow: 0 5px 15px rgba(113, 9, 39, 0.3);
 }
 
 .btnOutline {
   background: transparent;
-  color: var(--color-violet);
-  border-color: var(--color-violet);
+  color: var(--color-burgundy);
+  border-color: var(--color-burgundy);
 }
 
 .btnOutline:hover {
-  background: var(--color-violet);
-  color: #050505;
+  background: var(--color-burgundy);
+  color: #ffffff;
 }
 

@@ -16,17 +16,21 @@ export default function Mockup() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Intro scroll animation
-      gsap.from(phoneRef.current, {
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 80%',
-        },
-        y: 80,
-        opacity: 0,
-        rotation: 8,
-        duration: 1.2,
-        ease: 'back.out(1.2)'
-      });
+      gsap.fromTo(phoneRef.current, 
+        { y: 80, opacity: 0, rotation: 8 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 80%',
+          },
+          y: 0,
+          opacity: 1,
+          rotation: 0,
+          duration: 1.2,
+          ease: 'back.out(1.2)',
+          overwrite: 'auto'
+        }
+      );
 
       // Ambient floating effect for mockup
       gsap.to(phoneRef.current, {
@@ -58,7 +62,7 @@ export default function Mockup() {
           <div className={styles.qrContainer}>
             <div className={styles.qrWrapper}>
               {/* Premium custom styled QR Code SVG */}
-              <svg viewBox="0 0 29 29" className={styles.qrImage} fill="currentColor" color="#0f0206">
+              <svg viewBox="0 0 29 29" className={styles.qrImage} fill="currentColor" color="#2d2c4a">
                 <path d="M0 0h7v7H0zm1 1v5h5V1zm8 0h3v1h-2v1h2v1h-3v3h1v-2h2v3h-3zm5 0h7v7h-7zm1 1v5h5V1zm8 0h3v3h-1v-2h-2zm-9 4h2v1h-2zm7 3v3h-1v-2h-2v-1zm-13 1h7v7H0zm1 1v5h5V9zm12 0h2v1h-2zm4 0h3v3h-1v-2h-2zm-12 3h2v1h-2zm4 0h1v1h-1zm1 1h2v2h-1v-1h-1zm3-2h2v1h-2zm5 1h2v2h-1v-1h-1zm-6 2h1v1h-1zm3 0h3v3h-1v-2h-2zm-10 1h2v1h-2zm6 2h2v1h-2zm4 0h1v1h-1z" />
               </svg>
             </div>

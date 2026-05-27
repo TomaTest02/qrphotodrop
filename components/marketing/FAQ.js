@@ -22,10 +22,18 @@ export default function FAQ({ questions = DEFAULT_QUESTIONS }) {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(`.${styles.item}`, {
-        scrollTrigger: { trigger: ref.current, start: 'top 82%' },
-        y: 30, opacity: 0, duration: 0.7, stagger: 0.08, ease: 'power2.out',
-      });
+      gsap.fromTo(`.${styles.item}`, 
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: { trigger: ref.current, start: 'top 82%' },
+          y: 0, 
+          opacity: 1, 
+          duration: 0.7, 
+          stagger: 0.08, 
+          ease: 'power2.out',
+          overwrite: 'auto'
+        }
+      );
     }, ref);
     return () => ctx.revert();
   }, []);

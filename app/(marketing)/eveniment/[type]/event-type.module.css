@@ -1,35 +1,78 @@
 .heroSection {
-  padding: 140px 20px 80px;
-  text-align: center;
+  padding: 160px 20px 100px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  background-color: var(--color-cream);
+}
+
+.heroBgContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.heroBgImage {
+  object-fit: cover;
+  filter: blur(1.5px) brightness(0.98) saturate(105%);
+  opacity: 0.65;
+  transform: scale(1.02);
+}
+
+.heroBgOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(250, 247, 242, 0.35) 0%, rgba(250, 247, 242, 0.58) 60%, var(--color-cream) 100%);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
   max-width: 800px;
+  width: 100%;
   margin: 0 auto;
+  text-align: center;
 }
 
 .eyebrow {
-  display: block;
-  font-size: 11px;
+  display: inline-block;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   color: var(--color-violet-light);
   margin-bottom: var(--space-md);
 }
 
 .title {
   font-family: var(--font-serif);
-  font-size: clamp(36px, 5vw, 56px);
+  font-size: clamp(36px, 5.5vw, 56px);
   font-weight: 700;
+  color: var(--color-burgundy);
   letter-spacing: -2px;
   line-height: 1.15;
   margin-bottom: var(--space-lg);
+  text-shadow: 0 2px 12px rgba(250, 247, 242, 0.95);
 }
 
 .desc {
   font-size: 17px;
-  color: var(--color-text-muted);
+  color: var(--color-text);
+  font-weight: 500;
   line-height: 1.8;
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto var(--space-xl);
+  text-shadow: 0 1px 8px rgba(250, 247, 242, 0.95);
 }
 
 .ctaGroup {
@@ -40,93 +83,154 @@
 }
 
 .primaryCta {
-  padding: 16px 32px;
-  background: var(--color-violet);
+  padding: 18px 36px;
+  background: var(--color-burgundy);
   color: white;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-mid);
+  box-shadow: 0 4px 14px rgba(113, 9, 39, 0.2);
 }
 
 .primaryCta:hover {
-  background: var(--color-violet-light);
+  background: #58051c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(113, 9, 39, 0.35);
 }
 
 .secondaryCta {
-  padding: 16px 32px;
-  border: 2px solid var(--color-violet);
-  color: var(--color-violet);
-  border-radius: var(--radius-md);
+  padding: 18px 36px;
+  border: 1px solid var(--color-cream-darker);
+  color: var(--color-burgundy);
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-mid);
+  background: transparent;
 }
 
 .secondaryCta:hover {
-  background: var(--color-violet-ultra);
+  border-color: var(--color-burgundy);
+  background: rgba(113, 9, 39, 0.02);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    padding: 100px 16px 60px;
+    min-height: auto;
+  }
+  .title {
+    font-size: 28px !important;
+    letter-spacing: -0.8px !important;
+  }
+  .desc {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .primaryCta, .secondaryCta {
+    padding: 14px 28px;
+    font-size: 14px;
+  }
 }
 
 .accessSection {
-  padding: var(--space-2xl) 0;
-  background: var(--color-cream-dark);
+  padding: 100px 0;
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--glass-border);
 }
 
 .accessInner {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 var(--space-xl);
+  position: relative;
+  z-index: 2;
 }
 
 .accessTitle {
   text-align: center;
   font-family: var(--font-serif);
-  font-size: 32px;
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 700;
-  margin-bottom: var(--space-xl);
+  color: var(--color-burgundy);
+  margin-bottom: var(--space-2xl);
+  letter-spacing: -1.5px;
 }
 
 .accessGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-lg);
+  gap: var(--space-xl);
 }
 
 @media (max-width: 768px) {
   .accessGrid {
     grid-template-columns: 1fr;
+    gap: var(--space-lg);
   }
 }
 
 .accessCard {
-  text-align: center;
-  padding: var(--space-lg);
   background: var(--color-white);
+  border: 1px solid rgba(181, 140, 79, 0.15);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  padding: var(--space-xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all var(--transition-slow);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02), 0 1px 3px rgba(181, 140, 79, 0.05);
 }
 
 .accessCard:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-8px);
+  border-color: var(--color-burgundy);
+  box-shadow: 0 20px 40px rgba(113, 9, 39, 0.08), 0 1px 3px rgba(113, 9, 39, 0.02);
+}
+
+.accessIconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: rgba(181, 140, 79, 0.08);
+  border: 1px solid rgba(181, 140, 79, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+  color: var(--color-burgundy);
+  transition: all var(--transition-mid);
+}
+
+.accessCard:hover .accessIconWrapper {
+  background: var(--color-burgundy);
+  color: var(--color-cream);
+  border-color: var(--color-burgundy);
+  transform: scale(1.08) rotate(5deg);
 }
 
 .accessIcon {
-  font-size: 36px;
-  display: block;
-  margin-bottom: var(--space-md);
+  transition: transform var(--transition-mid);
 }
 
 .accessCardTitle {
-  font-size: 18px;
+  font-family: var(--font-serif);
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: var(--space-sm);
+  color: var(--color-burgundy);
+  margin-bottom: var(--space-xs);
+  letter-spacing: -0.5px;
 }
 
 .accessCardDesc {
   font-size: 14px;
   color: var(--color-text-muted);
+  line-height: 1.6;
 }

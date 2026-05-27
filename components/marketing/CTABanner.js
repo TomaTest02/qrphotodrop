@@ -12,10 +12,18 @@ export default function CTABanner() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(ref.current.children[0].children, {
-        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
-        y: 40, opacity: 0, duration: 1, stagger: 0.12, ease: 'power2.out',
-      });
+      gsap.fromTo(ref.current.children[0].children, 
+        { y: 40, opacity: 0 },
+        {
+          scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+          y: 0, 
+          opacity: 1, 
+          duration: 1, 
+          stagger: 0.12, 
+          ease: 'power2.out',
+          overwrite: 'auto'
+        }
+      );
     }, ref);
     return () => ctx.revert();
   }, []);
