@@ -12,24 +12,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const PACKAGES = {
   nunta: [
-    { key: 'intim', name: 'Nuntă Intimă', price: 27900, guests: 100 },
-    { key: 'complet', name: 'Nuntă Completă', price: 36900, guests: 250, popular: true },
-    { key: 'vis', name: 'Nuntă de Vis', price: 55900, guests: 500 },
+    { key: 'intim', name: 'Nuntă Basic', price: 27900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
+    { key: 'complet', name: 'Nuntă Standard', price: 36900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
+    { key: 'vis', name: 'Nuntă Premium', price: 55900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
   ],
   botez: [
-    { key: 'intim', name: 'Botez Intim', price: 24900, guests: 50 },
-    { key: 'complet', name: 'Botez Complet', price: 32900, guests: 150, popular: true },
-    { key: 'vis', name: 'Botez de Vis', price: 48900, guests: 300 },
+    { key: 'intim', name: 'Botez Basic', price: 24900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
+    { key: 'complet', name: 'Botez Standard', price: 32900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
+    { key: 'vis', name: 'Botez Premium', price: 48900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
   ],
   aniversare: [
-    { key: 'intim', name: 'Aniversare Intimă', price: 24900, guests: 50 },
-    { key: 'complet', name: 'Aniversare Completă', price: 32900, guests: 150, popular: true },
-    { key: 'vis', name: 'Aniversare de Vis', price: 48900, guests: 300 },
+    { key: 'intim', name: 'Aniversare Basic', price: 24900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
+    { key: 'complet', name: 'Aniversare Standard', price: 32900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
+    { key: 'vis', name: 'Aniversare Premium', price: 48900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
   ],
   corporate: [
-    { key: 'intim', name: 'Corporate Basic', price: 32900, guests: 100 },
-    { key: 'complet', name: 'Corporate Standard', price: 45900, guests: 300, popular: true },
-    { key: 'vis', name: 'Corporate Premium', price: 69900, guests: 600 },
+    { key: 'intim', name: 'Corporate Basic', price: 32900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
+    { key: 'complet', name: 'Corporate Standard', price: 45900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
+    { key: 'vis', name: 'Corporate Premium', price: 69900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
   ],
 };
 
@@ -120,17 +120,28 @@ export default function PricingSection({ defaultType = 'nunta' }) {
         </div>
 
         <div className={styles.grid}>
-          {plans.map((plan) => (
-            <div key={plan.key} style={{ height: '100%' }}>
-              <PricingCard
-                name={plan.name}
-                price={plan.price}
-                guestLimit={plan.guests}
-                isPopular={plan.popular}
-                onSelect={() => handleSelect(plan)}
-              />
-            </div>
-          ))}
+          {plans.map((plan) => {
+            const planFeatures = [
+              'Album Digital & QR unic',
+              'Catalog & Design QR',
+              '3 luni stocare',
+              'Poze, urări și clipuri video (max. 2 min)',
+              plan.storage,
+              'Pagină de administrare dedicată',
+              plan.duration,
+            ];
+            return (
+              <div key={plan.key} style={{ height: '100%' }}>
+                <PricingCard
+                  name={plan.name}
+                  price={plan.price}
+                  features={planFeatures}
+                  isPopular={plan.popular}
+                  onSelect={() => handleSelect(plan)}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 

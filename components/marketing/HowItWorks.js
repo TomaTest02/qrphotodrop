@@ -39,8 +39,8 @@ export default function HowItWorks() {
                   <div className={styles.sliderKnob} />
                 </div>
                 <div className={styles.sliderInfo}>
-                  <span>Pachet: 150 invitați</span>
-                  <strong className={styles.goldText}>499 RON</strong>
+                  <span>Pachet: Standard (60 GB)</span>
+                  <strong className={styles.goldText}>369 RON</strong>
                 </div>
               </div>
               <button className={styles.mockBtn}>

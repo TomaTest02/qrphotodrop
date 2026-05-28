@@ -27,17 +27,15 @@ export default function EventTypes() {
       const scroll = scrollRef.current;
       if (!container || !scroll) return;
 
-      const scrollWidth = scroll.scrollWidth - window.innerWidth + 80;
-
       gsap.to(scroll, {
-        x: -scrollWidth,
+        x: () => -(scroll.scrollWidth - window.innerWidth + 80),
         ease: 'none',
         scrollTrigger: {
           trigger: container,
           pin: true,
           scrub: 1,
           start: 'top top',
-          end: () => `+=${scrollWidth}`,
+          end: () => `+=${scroll.scrollWidth - window.innerWidth + 80}`,
           invalidateOnRefresh: true,
         }
       });

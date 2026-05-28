@@ -32,18 +32,20 @@ export default function Navbar() {
     const nav = navRef.current;
     if (!nav) return;
 
-    ScrollTrigger.create({
-      start: 'top -80',
-      onUpdate: (self) => {
-        if (self.direction === -1) {
-          gsap.to(nav, { y: 0, duration: 0.3, ease: 'power2.out' });
-        } else {
-          gsap.to(nav, { y: '-100%', duration: 0.3, ease: 'power2.in' });
-        }
-      },
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        start: 'top -80',
+        onUpdate: (self) => {
+          if (self.direction === -1) {
+            gsap.to(nav, { y: 0, duration: 0.3, ease: 'power2.out' });
+          } else {
+            gsap.to(nav, { y: '-100%', duration: 0.3, ease: 'power2.in' });
+          }
+        },
+      });
     });
 
-    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
+    return () => ctx.revert();
   }, []);
 
   return (

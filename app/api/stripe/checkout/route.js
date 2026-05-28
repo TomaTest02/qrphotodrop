@@ -23,7 +23,7 @@ export async function POST(request) {
             currency: 'ron',
             product_data: {
               name: pkg.label,
-              description: `Pachet ${pkg.label} — până la ${pkg.guests} invitați`,
+              description: `Pachet ${pkg.label} — ${pkg.storage} stocare, valabil ${pkg.duration}`,
             },
             unit_amount: pkg.price,
           },
