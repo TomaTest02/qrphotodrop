@@ -1,12 +1,13 @@
 import styles from './PricingCard.module.css';
 
-export default function PricingCard({ name, price, features = [], isPopular, onSelect }) {
+export default function PricingCard({ name, price, subLabel, features = [], isPopular, onSelect }) {
   const displayPrice = Math.round(price / 100);
 
   return (
     <div className={`${styles.card} ${isPopular ? styles.popular : ''}`} style={{ height: '100%' }}>
       {isPopular && <span className={styles.badge}>Cel mai popular</span>}
       <h3 className={styles.name}>{name}</h3>
+      {subLabel && <p className={styles.guests}>{subLabel}</p>}
       <div className={styles.priceWrap}>
         <span className={styles.price}>{displayPrice}</span>
         <span className={styles.currency}>RON</span>

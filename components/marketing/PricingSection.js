@@ -12,24 +12,172 @@ gsap.registerPlugin(ScrollTrigger);
 
 const PACKAGES = {
   nunta: [
-    { key: 'intim', name: 'Nuntă Basic', price: 27900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
-    { key: 'complet', name: 'Nuntă Standard', price: 36900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
-    { key: 'vis', name: 'Nuntă Premium', price: 55900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
+    { 
+      key: 'intim', 
+      name: 'NUNTĂ INTIMĂ', 
+      price: 27900, 
+      subLabel: 'ideal pentru evenimente până în 100 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice'
+      ]
+    },
+    { 
+      key: 'complet', 
+      name: 'NUNTĂ COMPLETĂ', 
+      price: 36900, 
+      subLabel: 'ideal pentru evenimente până în 250 invitați',
+      popular: true,
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
+    { 
+      key: 'vis', 
+      name: 'NUNTĂ DE VIS', 
+      price: 55900, 
+      subLabel: 'ideal pentru evenimente până în 500 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
   ],
   botez: [
-    { key: 'intim', name: 'Botez Basic', price: 24900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
-    { key: 'complet', name: 'Botez Standard', price: 32900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
-    { key: 'vis', name: 'Botez Premium', price: 48900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
+    { 
+      key: 'intim', 
+      name: 'BOTEZ INTIM', 
+      price: 24900, 
+      subLabel: 'ideal pentru evenimente până în 50 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice'
+      ]
+    },
+    { 
+      key: 'complet', 
+      name: 'BOTEZ COMPLET', 
+      price: 32900, 
+      subLabel: 'ideal pentru evenimente până în 150 invitați',
+      popular: true,
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
+    { 
+      key: 'vis', 
+      name: 'BOTEZ DE VIS', 
+      price: 48900, 
+      subLabel: 'ideal pentru evenimente până în 300 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
   ],
   aniversare: [
-    { key: 'intim', name: 'Aniversare Basic', price: 24900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
-    { key: 'complet', name: 'Aniversare Standard', price: 32900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
-    { key: 'vis', name: 'Aniversare Premium', price: 48900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
+    { 
+      key: 'intim', 
+      name: 'ANIVERSARE INTIMĂ', 
+      price: 24900, 
+      subLabel: 'ideal pentru evenimente până în 50 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice'
+      ]
+    },
+    { 
+      key: 'complet', 
+      name: 'ANIVERSARE COMPLETĂ', 
+      price: 32900, 
+      subLabel: 'ideal pentru evenimente până în 150 invitați',
+      popular: true,
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
+    { 
+      key: 'vis', 
+      name: 'ANIVERSARE DE VIS', 
+      price: 48900, 
+      subLabel: 'ideal pentru evenimente până în 300 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
   ],
   corporate: [
-    { key: 'intim', name: 'Corporate Basic', price: 32900, storage: '25 GB stocare', duration: '1 LUNĂ DUPĂ EVENIMENT' },
-    { key: 'complet', name: 'Corporate Standard', price: 45900, storage: '60 GB stocare', duration: '2 LUNI DUPĂ EVENIMENT', popular: true },
-    { key: 'vis', name: 'Corporate Premium', price: 69900, storage: '100 GB stocare', duration: '3 LUNI DUPĂ EVENIMENT' },
+    { 
+      key: 'intim', 
+      name: 'CORPORATE BASIC', 
+      price: 32900, 
+      subLabel: 'ideal pentru evenimente până în 100 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice'
+      ]
+    },
+    { 
+      key: 'complet', 
+      name: 'CORPORATE STANDARD', 
+      price: 45900, 
+      subLabel: 'ideal pentru evenimente până în 300 invitați',
+      popular: true,
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
+    { 
+      key: 'vis', 
+      name: 'CORPORATE PREMIUM', 
+      price: 69900, 
+      subLabel: 'ideal pentru evenimente până în 600 invitați',
+      features: [
+        'Album Digital & QR unic',
+        'Catalog & Design Printabil pentru QR',
+        '3 luni stocare de la data evenimentului',
+        'Încărcări nelimitate',
+        'Cartonașe fizice opțional'
+      ]
+    },
   ],
 };
 
@@ -121,21 +269,13 @@ export default function PricingSection({ defaultType = 'nunta' }) {
 
         <div className={styles.grid}>
           {plans.map((plan) => {
-            const planFeatures = [
-              'Album Digital & QR unic',
-              'Catalog & Design QR',
-              '3 luni stocare',
-              'Poze, urări și clipuri video (max. 2 min)',
-              plan.storage,
-              'Pagină de administrare dedicată',
-              plan.duration,
-            ];
             return (
               <div key={plan.key} style={{ height: '100%' }}>
                 <PricingCard
                   name={plan.name}
                   price={plan.price}
-                  features={planFeatures}
+                  subLabel={plan.subLabel}
+                  features={plan.features}
                   isPopular={plan.popular}
                   onSelect={() => handleSelect(plan)}
                 />

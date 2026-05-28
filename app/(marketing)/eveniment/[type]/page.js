@@ -1,6 +1,8 @@
 import PricingSection from '@/components/marketing/PricingSection';
 import FAQ from '@/components/marketing/FAQ';
 import CTABanner from '@/components/marketing/CTABanner';
+import TechFlow from '@/components/marketing/TechFlow';
+import EventSelectorDropdown from '@/components/marketing/EventSelectorDropdown';
 import { QrCode, Layers, Link } from 'lucide-react';
 import Image from 'next/image';
 import styles from './event-type.module.css';
@@ -57,9 +59,9 @@ export default async function EventTypePage({ params }) {
       <section className={styles.heroSection}>
         {content.bgImage && (
           <div className={styles.heroBgContainer}>
-            <Image 
-              src={content.bgImage} 
-              alt={`Fundal ${content.title}`} 
+            <Image
+              src={content.bgImage}
+              alt={`Fundal ${content.title}`}
               fill
               priority
               className={styles.heroBgImage}
@@ -67,11 +69,12 @@ export default async function EventTypePage({ params }) {
             <div className={styles.heroBgOverlay} />
           </div>
         )}
-        
+
         <div className={styles.heroContent}>
           <span className={styles.eyebrow}>
             {content.title}
           </span>
+
           <h1 className={styles.title}>
             {content.hero}
           </h1>
@@ -115,6 +118,9 @@ export default async function EventTypePage({ params }) {
           </div>
         </div>
       </section>
+
+      {/* Technical Workflow Breakdown */}
+      <TechFlow type={type} />
 
       <PricingSection defaultType={type} />
       <FAQ />

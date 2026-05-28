@@ -1,0 +1,44 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  align-items: center;
+  margin: var(--space-lg) 0;
+  z-index: 10;
+  position: relative;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.select {
+  padding: 10px 24px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  background: var(--color-white);
+  border: 1px solid rgba(181, 140, 79, 0.25);
+  border-radius: var(--radius-md);
+  outline: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast) ease;
+  min-width: 200px;
+  text-align: center;
+}
+
+.select:hover {
+  border-color: var(--color-violet);
+  box-shadow: var(--shadow-md);
+}
+
+.select:focus {
+  border-color: var(--color-violet);
+  box-shadow: 0 0 0 2px var(--color-violet-pale);
+}

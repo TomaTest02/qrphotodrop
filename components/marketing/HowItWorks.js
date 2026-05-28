@@ -82,19 +82,6 @@ export default function HowItWorks() {
               <span className={styles.mockTitle}>Dashboard</span>
             </div>
             <div className={styles.mockBody}>
-              <p className={styles.mockSub}>Alege tipul evenimentului</p>
-              <div className={styles.mockTypes}>
-                <div className={`${styles.mockType} ${styles.mockTypeActive}`}>
-                  <span>👰 Nuntă</span>
-                  <span className={styles.check}>✓</span>
-                </div>
-                <div className={styles.mockType}>
-                  <span>👶 Botez</span>
-                </div>
-                <div className={styles.mockType}>
-                  <span>💼 Corporate</span>
-                </div>
-              </div>
               <div className={styles.sliderContainer}>
                 <div className={styles.sliderTrack}>
                   <div className={styles.sliderFill} />
