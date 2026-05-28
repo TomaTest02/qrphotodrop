@@ -84,6 +84,9 @@ export default function Navbar() {
             <a href="/preturi" className={styles.link}>
               Prețuri
             </a>
+            <a href="/upload/DEMO" className={styles.link} style={{ color: 'var(--color-burgundy)', fontWeight: 700 }}>
+              Încearcă DEMO 🚀
+            </a>
             <a href="/blog" className={styles.link}>
               Blog
             </a>
@@ -114,6 +117,9 @@ export default function Navbar() {
         </a>
         <a href="/preturi" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
           Prețuri
+        </a>
+        <a href="/upload/DEMO" className={styles.mobileLink} style={{ color: 'var(--color-burgundy)' }} onClick={() => setMobileOpen(false)}>
+          Încearcă DEMO 🚀
         </a>
         {EVENT_TYPES.map((et) => (
           <a

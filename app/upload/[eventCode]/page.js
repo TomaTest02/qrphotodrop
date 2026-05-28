@@ -1,11 +1,60 @@
 'use client';
 
-import { useState, use, useEffect } from 'react';
+import { useState, use, useEffect, useRef } from 'react';
+import {
+  Camera, Image, Video, Lock, ArrowLeft, Upload,
+  Check, Heart, MessageSquare, Mail, MapPin, Calendar,
+  Plus, X, Play, CloudUpload, Sparkles
+} from 'lucide-react';
+import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './upload.module.css';
+
+// ─── Floating petals animation component ──────────────────────────────────────
+function FloatingPetals() {
+  return (
+    <div className={styles.petalsWrap} aria-hidden="true">
+      {[...Array(12)].map((_, i) => (
+        <span key={i} className={styles.petal} style={{ '--i': i }} />
+      ))}
+    </div>
+  );
+}
+
+// ─── Step indicator ────────────────────────────────────────────────────────────
+function StepDots({ current, total }) {
+  return (
+    <div className={styles.stepDots}>
+      {[...Array(total)].map((_, i) => (
+        <span key={i} className={`${styles.dot} ${i === current ? styles.dotActive : i < current ? styles.dotDone : ''}`} />
+      ))}
+    </div>
+  );
+}
+
+// ─── File preview thumbnail ────────────────────────────────────────────────────
+function FileThumbnail({ file }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  if (file.type.startsWith('video/')) {
+    return (
+      <div className={styles.thumbVideo}>
+        <Play size={22} strokeWidth={1.5} style={{ opacity: 0.7 }} />
+        <span className={styles.thumbName}>{file.name.slice(0, 18)}{file.name.length > 18 ? '…' : ''}</span>
+      </div>
+    );
+  }
+  return src ? <img className={styles.thumb} src={src} alt={file.name} /> : <div className={styles.thumbLoading} />;
+}
 
 export default function GuestUploadPage({ params }) {
   const { eventCode } = use(params);
-  const [view, setView] = useState('choice'); // choice, media, uploading, uploadSuccess, wish, wishSuccess
+  // Views: landing → mediaChoice → preview → uploading → uploadSuccess → wish → wishSuccess
+  const [view, setView] = useState('landing');
   const [event, setEvent] = useState(null);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -13,82 +62,164 @@ export default function GuestUploadPage({ params }) {
   const [uploadCurrent, setUploadCurrent] = useState(0);
   const [wishForm, setWishForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  const isDemo = eventCode?.toUpperCase() === 'DEMO';
 
   useEffect(() => {
-    // Fetch event info
+    if (isDemo) {
+      setEvent({
+        id: 'DEMO',
+        event_name: 'Nunta Andreei & Mihai',
+        event_date: '2026-09-14T16:00:00.000Z',
+        event_type: 'nunta',
+        event_code: 'DEMO',
+        status: 'active',
+        couple_names: 'Andreea & Mihai',
+        location: 'Casa Nobililor, Iași'
+      });
+      return;
+    }
     fetch(`/api/events?code=${eventCode}`)
       .then(r => r.json())
-      .then(data => {
-        if (data.event) setEvent(data.event);
-      })
+      .then(data => { if (data.event) setEvent(data.event); })
       .catch(() => {});
-  }, [eventCode]);
+  }, [eventCode, isDemo]);
 
   const handleFileSelect = (e) => {
-    const selected = Array.from(e.target.files);
-    // Validate files
+    const selected = Array.from(e.target.files || []);
     const valid = selected.filter(f => {
       if (f.type.startsWith('image/') && f.size > 20 * 1024 * 1024) return false;
       if (f.type.startsWith('video/') && f.size > 200 * 1024 * 1024) return false;
       return true;
     });
-    setFiles(valid);
-    if (valid.length > 0) uploadFiles(valid);
+    if (valid.length > 0) {
+      setFiles(valid);
+      setView('preview');
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(f =>
+      f.type.startsWith('image/') || f.type.startsWith('video/')
+    );
+    if (dropped.length > 0) {
+      setFiles(dropped);
+      setView('preview');
+    }
+  };
+
+  const removeFile = (idx) => {
+    const updated = files.filter((_, i) => i !== idx);
+    setFiles(updated);
+    if (updated.length === 0) setView('mediaChoice');
   };
 
   const uploadFiles = async (filesToUpload) => {
     setView('uploading');
     setUploadTotal(filesToUpload.length);
     setUploadCurrent(0);
+    setUploadProgress(0);
+
+    if (isDemo) {
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        setUploadCurrent(i + 1);
+        setUploadProgress(Math.round((i / filesToUpload.length) * 100));
+        await new Promise(resolve => setTimeout(resolve, 900));
+
+        const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
+        let publicUrl = '';
+        if (fileType === 'photo') {
+          try {
+            publicUrl = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  const MAX = 800;
+                  let w = img.width, h = img.height;
+                  if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+                  else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+                  canvas.width = w; canvas.height = h;
+                  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                  resolve(canvas.toDataURL('image/jpeg', 0.82));
+                };
+                img.onerror = () => resolve('');
+                img.src = event.target.result;
+              };
+              reader.onerror = () => resolve('');
+              reader.readAsDataURL(file);
+            });
+          } catch { publicUrl = ''; }
+        }
+
+        const demoUploads = JSON.parse(localStorage.getItem('qrphotodrop_demo_uploads') || '[]');
+        demoUploads.unshift({
+          id: 'demo-upload-' + Date.now() + '-' + i,
+          event_id: 'DEMO',
+          file_type: fileType,
+          original_name: file.name,
+          public_url: publicUrl,
+          size_bytes: file.size,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('qrphotodrop_demo_uploads', JSON.stringify(demoUploads));
+        setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+      }
+      setView('uploadSuccess');
+      return;
+    }
 
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       setUploadCurrent(i + 1);
-      setUploadProgress(Math.round(((i) / filesToUpload.length) * 100));
-
+      setUploadProgress(Math.round((i / filesToUpload.length) * 100));
       try {
         const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
-
-        // 1. Get presigned URL
         const presignRes = await fetch('/api/upload/presigned', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ eventCode, contentType: file.type, fileType }),
         });
         const { uploadUrl, r2Key } = await presignRes.json();
-
-        // 2. Upload directly to R2
-        await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        });
-
-        // 3. Confirm upload
+        await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
         await fetch('/api/upload/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            r2Key,
-            eventCode,
-            fileType,
-            sizeBytes: file.size,
-            originalName: file.name,
-          }),
+          body: JSON.stringify({ r2Key, eventCode, fileType, sizeBytes: file.size, originalName: file.name }),
         });
-      } catch (err) {
-        console.error('Upload error:', err);
-      }
-
+      } catch (err) { console.error('Upload error:', err); }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
     }
-
     setView('uploadSuccess');
   };
 
   const handleWishSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    if (isDemo) {
+      await new Promise(resolve => setTimeout(resolve, 700));
+      const demoWishes = JSON.parse(localStorage.getItem('qrphotodrop_demo_wishes') || '[]');
+      demoWishes.unshift({
+        id: 'demo-wish-' + Date.now(),
+        event_id: 'DEMO',
+        first_name: wishForm.firstName,
+        last_name: wishForm.lastName,
+        email: wishForm.email,
+        message: wishForm.message,
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('qrphotodrop_demo_wishes', JSON.stringify(demoWishes));
+      setView('wishSuccess');
+      setLoading(false);
+      return;
+    }
     try {
       await fetch('/api/wishes', {
         method: 'POST',
@@ -96,197 +227,388 @@ export default function GuestUploadPage({ params }) {
         body: JSON.stringify({ ...wishForm, eventCode }),
       });
       setView('wishSuccess');
-    } catch {
-      alert('Eroare la trimitere. Încearcă din nou.');
-    }
+    } catch { alert('Eroare la trimitere. Încearcă din nou.'); }
     setLoading(false);
   };
 
-  const eventName = event?.event_name || 'Eveniment';
+  const eventName = event?.couple_names || event?.event_name || 'Evenimentul nostru';
   const eventDate = event?.event_date
     ? new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
+  const location = event?.location || '';
 
-  // ─── ECRAN 1: CHOICE ───
-  if (view === 'choice') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.logo}>QRPhotoDrop</div>
-          <h1 className={styles.title}>
-            Bun venit la {eventName}! 🎉
-          </h1>
-          {eventDate && <p className={styles.date}>{eventDate}</p>}
-          <div className={styles.buttons}>
-            <button className={styles.bigBtn} onClick={() => setView('media')}>
-              <span className={styles.bigBtnIcon}>📸</span>
-              <span className={styles.bigBtnText}>Încarcă o poză / video</span>
-            </button>
-            <button className={`${styles.bigBtn} ${styles.bigBtnOutline}`} onClick={() => setView('wish')}>
-              <span className={styles.bigBtnIcon}>💌</span>
-              <span className={styles.bigBtnText}>Trimite o urare</span>
-            </button>
-          </div>
+  // ── LANDING ────────────────────────────────────────────────────────────────
+  if (view === 'landing') return (
+    <PageShell isDemo={isDemo}>
+      <FloatingPetals />
+      <div className={styles.landingWrap}>
+        <div className={styles.brandPill}>
+          <span className={styles.brandDot} />
+          QRPhotoDrop
         </div>
-      </div>
-    );
-  }
 
-  // ─── ECRAN 2: MEDIA SELECT ───
-  if (view === 'media') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h2 className={styles.subtitle}>Încarcă Amintiri</h2>
-          <div className={styles.buttons}>
-            <label className={styles.bigBtn}>
-              <span className={styles.bigBtnIcon}>🖼️</span>
-              <span className={styles.bigBtnText}>Încarcă din galerie</span>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                multiple
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <label className={styles.bigBtn}>
-              <span className={styles.bigBtnIcon}>📷</span>
-              <span className={styles.bigBtnText}>Fă o fotografie</span>
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
-            </label>
+        <div className={styles.heartRing}>
+          <Heart size={38} strokeWidth={1.25} fill="#e8829e" stroke="#c45c7e" />
+        </div>
+
+        <h1 className={styles.landingTitle}>{eventName}</h1>
+        {eventDate && (
+          <div className={styles.landingMeta}>
+            <span><Calendar size={13} strokeWidth={2} /> {eventDate}</span>
+            {location && <span><MapPin size={13} strokeWidth={2} /> {location}</span>}
           </div>
-          <button className={styles.backBtn} onClick={() => setView('choice')}>
-            ← Înapoi
+        )}
+
+        <p className={styles.landingTagline}>
+          Ajută-ne să ne vedem povestea prin ochii tăi.<br />
+          Trimite-ne pozele tale sau lasă-ne un mesaj special.
+        </p>
+
+        {isDemo && (
+          <div className={styles.demoBanner}>
+            <span><Sparkles size={16} /></span>
+            <span>
+              <strong>Demo activ</strong> — Pozele apar instant în{' '}
+              <a href="/dashboard/demo" target="_blank">Dashboard Organizator →</a>
+            </span>
+          </div>
+        )}
+
+        <div className={styles.landingActions}>
+          <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
+            <div className={styles.actionCardIcon}><Camera size={26} strokeWidth={1.5} /></div>
+            <div className={styles.actionCardBody}>
+              <strong>Trimite poze & videoclipuri</strong>
+              <span>Din galerie sau direct cu camera</span>
+            </div>
+            <span className={styles.actionCardArrow}>→</span>
+          </button>
+
+          <button className={styles.actionCardSecondary} onClick={() => setView('wish')}>
+            <div className={styles.actionCardIcon}><Mail size={26} strokeWidth={1.5} /></div>
+            <div className={styles.actionCardBody}>
+              <strong>Scrie o urare</strong>
+              <span>Un mesaj din inimă pentru miri</span>
+            </div>
+            <span className={styles.actionCardArrow}>→</span>
           </button>
         </div>
-      </div>
-    );
-  }
 
-  // ─── ECRAN 3: UPLOADING ───
-  if (view === 'uploading') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.progressIcon}>☁️</div>
-          <h2 className={styles.subtitle}>Se încarcă...</h2>
-          <p className={styles.progressText}>
-            {uploadCurrent} din {uploadTotal} fișiere
-          </p>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${uploadProgress}%` }}
+        <p className={styles.landingFooter}>
+          <Lock size={12} strokeWidth={2} /> Pozele tale sunt private și accesibile doar mirilor
+        </p>
+      </div>
+    </PageShell>
+  );
+
+  // ── MEDIA CHOICE ──────────────────────────────────────────────────────────
+  if (view === 'mediaChoice') return (
+    <PageShell isDemo={isDemo} onBack={() => setView('landing')}>
+      <div className={styles.stepHeader}>
+        <StepDots current={0} total={3} />
+        <h2 className={styles.stepTitle}>Alege sursa</h2>
+        <p className={styles.stepSubtitle}>De unde vrei să încarci amintirile?</p>
+      </div>
+
+      {/* Drag & Drop Zone */}
+      <div
+        className={`${styles.dropZone} ${dragOver ? styles.dropZoneActive : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <div className={styles.dropZoneIcon}>
+          {dragOver
+            ? <Sparkles size={40} strokeWidth={1.25} style={{ color: '#710927' }} />
+            : <CloudUpload size={40} strokeWidth={1.25} style={{ color: '#710927', opacity: 0.7 }} />
+          }
+        </div>
+        <p className={styles.dropZoneText}>
+          {dragOver ? 'Eliberează pentru a adăuga' : 'Trage pozele sau clipurile aici'}
+        </p>
+        <p className={styles.dropZoneHint}>sau apasă pentru a selecta</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+        />
+      </div>
+
+      <div className={styles.orDivider}><span>sau alege</span></div>
+
+      <div className={styles.sourceGrid}>
+        <label className={styles.sourceCard}>
+          <div className={styles.sourceCardInner}>
+            <span className={styles.sourceIcon}><Image size={26} strokeWidth={1.25} /></span>
+            <strong>Din galerie</strong>
+            <span>Selectează mai multe</span>
+          </div>
+          <input type="file" accept="image/*,video/*" multiple onChange={handleFileSelect} style={{ display: 'none' }} />
+        </label>
+
+        <label className={styles.sourceCard}>
+          <div className={styles.sourceCardInner}>
+            <span className={styles.sourceIcon}><Camera size={26} strokeWidth={1.25} /></span>
+            <strong>Fa o poză</strong>
+            <span>Deschide camera</span>
+          </div>
+          <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} />
+        </label>
+
+        <label className={styles.sourceCard}>
+          <div className={styles.sourceCardInner}>
+            <span className={styles.sourceIcon}><Video size={26} strokeWidth={1.25} /></span>
+            <strong>Înregistrează</strong>
+            <span>Clipuri scurte</span>
+          </div>
+          <input type="file" accept="video/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} />
+        </label>
+      </div>
+
+      <p className={styles.fileNote}>Poze până la 20MB · Clipuri până la 200MB</p>
+    </PageShell>
+  );
+
+  // ── PREVIEW ───────────────────────────────────────────────────────────────
+  if (view === 'preview') return (
+    <PageShell isDemo={isDemo} onBack={() => setView('mediaChoice')}>
+      <div className={styles.stepHeader}>
+        <StepDots current={1} total={3} />
+        <h2 className={styles.stepTitle}>Verifică selecția</h2>
+        <p className={styles.stepSubtitle}>{files.length} {files.length === 1 ? 'fișier selectat' : 'fișiere selectate'}</p>
+      </div>
+
+      <div className={styles.previewGrid}>
+        {files.map((file, idx) => (
+          <div key={idx} className={styles.previewItem}>
+            <FileThumbnail file={file} />
+            <button className={styles.removeBtn} onClick={() => removeFile(idx)} title="Elimină"><X size={14} /></button>
+          </div>
+        ))}
+
+        {/* Add more */}
+        <label className={styles.addMoreCard}>
+          <span className={styles.addMoreIcon}><Plus size={22} strokeWidth={2} style={{ color: '#710927' }} /></span>
+          <span className={styles.addMoreText}>Adaugă</span>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            onChange={(e) => {
+              const extra = Array.from(e.target.files || []);
+              setFiles(prev => [...prev, ...extra]);
+            }}
+            style={{ display: 'none' }}
+          />
+        </label>
+      </div>
+
+      <button className={styles.uploadBtn} onClick={() => uploadFiles(files)}>
+        <CloudUpload size={18} strokeWidth={2} />
+        Încarcă {files.length} {files.length === 1 ? 'fișier' : 'fișiere'}
+      </button>
+
+      <p className={styles.privacyNote}><Lock size={12} strokeWidth={2} /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
+    </PageShell>
+  );
+
+  // ── UPLOADING ─────────────────────────────────────────────────────────────
+  if (view === 'uploading') return (
+    <PageShell isDemo={isDemo}>
+      <div className={styles.uploadingWrap}>
+        <div className={styles.uploadingOrb}>
+          <div className={styles.uploadingOrbInner}>
+            <span className={styles.uploadingPercent}>{uploadProgress}%</span>
+          </div>
+          <svg className={styles.uploadingRing} viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(113,9,39,0.1)" strokeWidth="6" />
+            <circle
+              cx="60" cy="60" r="54" fill="none"
+              stroke="url(#uploadGrad)" strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 54}`}
+              strokeDashoffset={`${2 * Math.PI * 54 * (1 - uploadProgress / 100)}`}
+              transform="rotate(-90 60 60)"
+              style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+            />
+            <defs>
+              <linearGradient id="uploadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#710927" />
+                <stop offset="100%" stopColor="#c45c7e" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <h2 className={styles.uploadingTitle}>Se încarcă amintirile…</h2>
+        <p className={styles.uploadingCount}>
+          Fișier {uploadCurrent} din {uploadTotal}
+        </p>
+
+        <div className={styles.uploadingSteps}>
+          {['Comprimare imagine', 'Criptare securizată', 'Transfer în cloud'].map((s, i) => (
+            <div key={i} className={`${styles.uploadingStep} ${uploadProgress > i * 33 ? styles.uploadingStepDone : ''}`}>
+              <span className={styles.uploadingStepDot} />
+              <span>{s}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </PageShell>
+  );
+
+  // ── UPLOAD SUCCESS ────────────────────────────────────────────────────────
+  if (view === 'uploadSuccess') return (
+    <PageShell isDemo={isDemo}>
+      <FloatingPetals />
+      <div className={styles.successWrap}>
+        <div className={styles.successOrb}>
+          <Check size={40} strokeWidth={2.5} style={{ color: '#fff' }} />
+        </div>
+        <h2 className={styles.successTitle}>Mulțumim din suflet!</h2>
+        <p className={styles.successMsg}>
+          {uploadTotal} {uploadTotal === 1 ? 'fotografie a fost adăugată' : 'fotografii au fost adăugate'} la galeria evenimentului.<br />
+          Mirilor le va fi drag să le vadă!
+        </p>
+
+        <div className={styles.successActions}>
+          <button className={styles.successBtnPrimary} onClick={() => setView('wish')}>
+            <Mail size={16} strokeWidth={2} /> Lasă și o urare
+          </button>
+          <button className={styles.successBtnSecondary} onClick={() => { setView('landing'); setFiles([]); setUploadProgress(0); }}>
+            Adaugă mai multe poze
+          </button>
+        </div>
+
+        {isDemo && (
+          <a href="/dashboard/demo" target="_blank" className={styles.successDemoLink}>
+            <Sparkles size={13} strokeWidth={2} /> Vezi în Dashboard Organizator
+          </a>
+        )}
+      </div>
+    </PageShell>
+  );
+
+  // ── WISH ──────────────────────────────────────────────────────────────────
+  if (view === 'wish') return (
+    <PageShell isDemo={isDemo} onBack={() => setView('landing')}>
+      <div className={styles.stepHeader}>
+        <div className={styles.wishEmojiBig}><Mail size={44} strokeWidth={1.1} style={{ color: '#710927' }} /></div>
+        <h2 className={styles.stepTitle}>Scrie o urare</h2>
+        <p className={styles.stepSubtitle}>Un mesaj care va rămâne pentru totdeauna</p>
+      </div>
+
+      <form onSubmit={handleWishSubmit} className={styles.form}>
+        <div className={styles.formRow}>
+          <div className={styles.field}>
+            <label className={styles.label}>Prenume <span className={styles.req}>*</span></label>
+            <input
+              className={styles.input}
+              required
+              placeholder="Maria"
+              value={wishForm.firstName}
+              onChange={(e) => setWishForm(p => ({ ...p, firstName: e.target.value }))}
             />
           </div>
-          <p className={styles.progressPercent}>{uploadProgress}%</p>
+          <div className={styles.field}>
+            <label className={styles.label}>Nume <span className={styles.req}>*</span></label>
+            <input
+              className={styles.input}
+              required
+              placeholder="Popescu"
+              value={wishForm.lastName}
+              onChange={(e) => setWishForm(p => ({ ...p, lastName: e.target.value }))}
+            />
+          </div>
         </div>
-      </div>
-    );
-  }
 
-  // ─── ECRAN 4: UPLOAD SUCCESS ───
-  if (view === 'uploadSuccess') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.successIcon}>✓</div>
-          <h2 className={styles.subtitle}>Mulțumim!</h2>
-          <p className={styles.successText}>
-            Putem să ne vedem povestea din ochii tăi!
-          </p>
-          <button
-            className={styles.closeBtn}
-            onClick={() => { setView('choice'); setFiles([]); setUploadProgress(0); }}
-          >
-            Închide
+        <div className={styles.field}>
+          <label className={styles.label}>Email <span className={styles.optional}>(opțional)</span></label>
+          <input
+            className={styles.input}
+            type="email"
+            placeholder="maria@gmail.com"
+            value={wishForm.email}
+            onChange={(e) => setWishForm(p => ({ ...p, email: e.target.value }))}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Mesajul tău <span className={styles.req}>*</span></label>
+          <textarea
+            className={styles.textarea}
+            required
+            rows={5}
+            placeholder="Dragi Andreea și Mihai, vă dorim toată fericirea din lume…"
+            value={wishForm.message}
+            onChange={(e) => setWishForm(p => ({ ...p, message: e.target.value }))}
+          />
+          <span className={styles.charHint}>{wishForm.message.length} caractere</span>
+        </div>
+
+        <button type="submit" className={styles.submitBtn} disabled={loading}>
+          {loading ? (
+            <span className={styles.loadingDots}><span /><span /><span /></span>
+          ) : (
+            <><Mail size={16} strokeWidth={2} /> Trimite urarea</>
+          )}
+        </button>
+      </form>
+    </PageShell>
+  );
+
+  // ── WISH SUCCESS ──────────────────────────────────────────────────────────
+  if (view === 'wishSuccess') return (
+    <PageShell isDemo={isDemo}>
+      <FloatingPetals />
+      <div className={styles.successWrap}>
+        <div className={`${styles.successOrb} ${styles.successOrbWish}`}>
+          <Mail size={36} strokeWidth={1.5} style={{ color: '#fff' }} />
+        </div>
+        <h2 className={styles.successTitle}>Urarea ta a ajuns!</h2>
+        <p className={styles.successMsg}>
+          Mirilor le va face extrem de mare plăcere să citească mesajul tău.<br />
+          Mulțumim că ești parte din ziua lor specială!
+        </p>
+
+        <div className={styles.successActions}>
+          <button className={styles.successBtnPrimary} onClick={() => setView('mediaChoice')}>
+            <Camera size={16} strokeWidth={2} /> Trimite și poze
+          </button>
+          <button className={styles.successBtnSecondary} onClick={() => { setView('landing'); setWishForm({ firstName: '', lastName: '', email: '', message: '' }); }}>
+            Înapoi la început
           </button>
         </div>
       </div>
-    );
-  }
+    </PageShell>
+  );
 
-  // ─── ECRAN 5: WISH FORM ───
-  if (view === 'wish') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h2 className={styles.subtitle}>Scrie o urare 💌</h2>
-          <form onSubmit={handleWishSubmit} className={styles.form}>
-            <div className={styles.formRow}>
-              <div className={styles.field}>
-                <label className={styles.label}>Prenume *</label>
-                <input
-                  className={styles.input}
-                  required
-                  value={wishForm.firstName}
-                  onChange={(e) => setWishForm(p => ({ ...p, firstName: e.target.value }))}
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Nume *</label>
-                <input
-                  className={styles.input}
-                  required
-                  value={wishForm.lastName}
-                  onChange={(e) => setWishForm(p => ({ ...p, lastName: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Email (opțional)</label>
-              <input
-                className={styles.input}
-                type="email"
-                placeholder="exemplu@gmail.com"
-                value={wishForm.email}
-                onChange={(e) => setWishForm(p => ({ ...p, email: e.target.value }))}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Mesaj *</label>
-              <textarea
-                className={styles.textarea}
-                required
-                rows={4}
-                value={wishForm.message}
-                onChange={(e) => setWishForm(p => ({ ...p, message: e.target.value }))}
-              />
-            </div>
-            <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading ? 'Se trimite...' : 'Trimite urarea 💌'}
+  return null;
+}
+
+// ─── Shared page shell ─────────────────────────────────────────────────────────
+function PageShell({ children, isDemo, onBack }) {
+  return (
+    <>
+      {isDemo && <DemoNavBar />}
+      <div className={styles.page} style={isDemo ? { paddingTop: '80px' } : {}}>
+        <div className={styles.bg}>
+          <div className={styles.bgBlob1} />
+          <div className={styles.bgBlob2} />
+        </div>
+        <div className={styles.card}>
+          {onBack && (
+            <button className={styles.backBtn} onClick={onBack}>
+              <ArrowLeft size={16} strokeWidth={2} /> Înapoi
             </button>
-          </form>
-          <button className={styles.backBtn} onClick={() => setView('choice')}>
-            ← Înapoi
-          </button>
+          )}
+          {children}
         </div>
       </div>
-    );
-  }
-
-  // ─── ECRAN 6: WISH SUCCESS ───
-  if (view === 'wishSuccess') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <div className={styles.successIcon}>💌</div>
-          <h2 className={styles.subtitle}>Mulțumim pentru urare!</h2>
-          <button
-            className={styles.closeBtn}
-            onClick={() => { setView('choice'); setWishForm({ firstName: '', lastName: '', email: '', message: '' }); }}
-          >
-            Închide
-          </button>
-        </div>
-      </div>
-    );
-  }
+    </>
+  );
 }

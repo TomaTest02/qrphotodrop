@@ -1,0 +1,119 @@
+.wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 54px;
+  background: rgba(250, 247, 242, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1.5px solid rgba(113, 9, 39, 0.12);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-burgundy);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(113, 9, 39, 0.06);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(113, 9, 39, 0.15);
+}
+
+.pulse {
+  width: 7px;
+  height: 7px;
+  background: var(--color-burgundy);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+
+.pulse::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 1px solid var(--color-burgundy);
+  border-radius: 50%;
+  animation: pulseAnim 1.6s infinite ease-out;
+  opacity: 0;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.menu {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link:hover {
+  background: rgba(181, 140, 79, 0.08);
+  color: var(--color-text);
+}
+
+.active {
+  background: var(--color-burgundy) !important;
+  color: #ffffff !important;
+  border-color: var(--color-burgundy);
+  box-shadow: 0 4px 12px rgba(113, 9, 39, 0.2);
+}
+
+@media (max-width: 900px) {
+  .wrapper {
+    height: auto;
+    padding: var(--space-sm) 0;
+  }
+  .container {
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: 0 var(--space-md);
+  }
+  .menu {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  .link {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+}

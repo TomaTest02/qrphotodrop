@@ -295,7 +295,7 @@ export default function TechFlow({ type = 'nunta' }) {
                 <div className={styles.laptopVisualFrame}>
                   <div className={styles.laptopScreen}>
                     <div className={styles.laptopTopBar}>
-                      <span className={styles.laptopLogo}>Cloud of Memories</span>
+                      <span className={styles.laptopLogo}>QRPhotoDrop</span>
                       <span className={styles.laptopTabActive}>📋 Evenimentul meu</span>
                     </div>
                     <div className={styles.laptopBody}>
@@ -353,8 +353,8 @@ export default function TechFlow({ type = 'nunta' }) {
                       <div className={styles.placeCardQrBox}>
                         <QrCode size={48} className={styles.burgundyColorIcon} />
                       </div>
-                      <p className={styles.placeCardInstruct}>Scanează codul QR pentru a trimite poze, clipuri & urări!</p>
-                      <span className={styles.placeCardLogo}>cloudofmemories.ro</span>
+                      <p className={styles.placeCardInstruct}>Vrem să ne vedem povestea prin ochii tăi! Scanează codul QR pentru a trimite instant pozele de la eveniment.</p>
+                      <span className={styles.placeCardLogo}>qrphotodrop.ro</span>
                     </div>
                   </div>
 
@@ -366,7 +366,7 @@ export default function TechFlow({ type = 'nunta' }) {
                     </div>
                     <div className={styles.chatMessage}>
                       Salutare tuturor! Aici puteți pune toate pozele de la eveniment. Doar scanați cartonașul de pe mese sau deschideți linkul: <br />
-                      <strong style={{ color: '#2d1b69' }}>cloudofmemories.ro/upload/{type}-code 🥂</strong>
+                      <strong style={{ color: '#2d1b69' }}>qrphotodrop.ro/upload/{type}-code 🥂</strong>
                     </div>
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export default function TechFlow({ type = 'nunta' }) {
                           <span className={styles.successCheckSymbol}>✓</span>
                           <div>
                             <span className={styles.successHeadingText}>Fotografie trimisă!</span>
-                            <span className={styles.successSubtext}>Mulțumim că putem să ne vedem povestea din ochii tăi!</span>
+                            <span className={styles.successSubtext}>Mulțumim că putem să ne vedem povestea prin ochii tăi!</span>
                           </div>
                         </div>
 
@@ -420,7 +420,7 @@ export default function TechFlow({ type = 'nunta' }) {
                 <div className={styles.laptopVisualFrame}>
                   <div className={styles.laptopScreen}>
                     <div className={styles.laptopTopBar}>
-                      <span className={styles.laptopLogo}>Cloud of Memories</span>
+                      <span className={styles.laptopLogo}>QRPhotoDrop</span>
                       <span className={styles.laptopTabActive}>📋 Evenimentul meu</span>
                     </div>
                     <div className={styles.laptopBodyDashboard}>

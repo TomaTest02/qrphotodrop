@@ -2,6 +2,19 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
 export async function middleware(request) {
+  const { pathname } = request.nextUrl;
+
+  // Bypass auth checks and Supabase client initialization for demo routes
+  // so the sandbox can run local-storage simulations without Supabase credentials.
+  if (pathname === '/dashboard/demo' || pathname === '/admin/demo') {
+    return NextResponse.next();
+  }
+
+  // Gracefully handle missing Supabase credentials instead of crashing the server
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -24,7 +37,6 @@ export async function middleware(request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { pathname } = request.nextUrl;
 
   // Protejează dashboard organizator
   if (pathname.startsWith('/dashboard') && !user) {
