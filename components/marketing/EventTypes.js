@@ -27,18 +27,25 @@ export default function EventTypes() {
       const scroll = scrollRef.current;
       if (!container || !scroll) return;
 
+      const getScrollAmount = () => {
+        const amount = scroll.scrollWidth - window.innerWidth + 80;
+        return amount > 0 ? amount : 0;
+      };
+
       gsap.to(scroll, {
-        x: () => -(scroll.scrollWidth - window.innerWidth + 80),
+        x: () => -getScrollAmount(),
         ease: 'none',
         scrollTrigger: {
           trigger: container,
           pin: true,
           scrub: 1,
           start: 'top top',
-          end: () => `+=${scroll.scrollWidth - window.innerWidth + 80}`,
+          end: () => `+=${getScrollAmount()}`,
           invalidateOnRefresh: true,
         }
       });
+
+      ScrollTrigger.refresh();
     });
 
     // Force a ScrollTrigger recalculation to sync offsets after page hydration

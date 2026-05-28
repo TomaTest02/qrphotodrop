@@ -52,35 +52,73 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 40px; /* Elegant gap between always-expanded steps */
+  position: relative;
+  gap: 80px; /* Elegant gap between steps */
+  padding: 40px 0;
+}
+
+/* Timeline vertical tracks */
+.trackBg {
+  position: absolute;
+  top: 90px;
+  bottom: 90px;
+  left: 30px;
+  width: 4px;
+  background: var(--color-cream-darker);
+  transform: translateX(-50%);
+  z-index: 1;
+  border-radius: var(--radius-full);
+}
+
+.trackHighlight {
+  position: absolute;
+  top: 90px;
+  left: 30px;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--color-burgundy), var(--color-violet));
+  transform: translateX(-50%);
+  z-index: 2;
+  border-radius: var(--radius-full);
+  height: 0;
 }
 
 .step {
   width: 100%;
-  padding: var(--space-xl) 0;
-  border-bottom: 1px solid rgba(181, 140, 79, 0.18);
   display: flex;
-  flex-direction: column;
+  position: relative;
+  gap: var(--space-xl);
 }
 
-.step:first-child {
-  border-top: 1px solid rgba(181, 140, 79, 0.18);
+.timelineCol {
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
 }
 
-.stepHeader {
+.node {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
-  gap: var(--space-xl);
-  margin-bottom: var(--space-md);
+  justify-content: center;
+  background: var(--color-cream);
+  border: 2px solid var(--color-cream-darker);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  z-index: 10;
+  margin-top: 10px; /* aligns with step title */
 }
 
-.number {
-  font-family: var(--font-serif);
-  font-size: 48px;
-  font-weight: 900;
-  color: var(--color-violet);
-  opacity: 0.85;
-  line-height: 1;
+.contentCol {
+  flex: 1;
 }
 
 .stepTitle {
@@ -88,15 +126,11 @@
   font-size: 32px;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0;
+  margin: 0 0 var(--space-sm) 0;
   letter-spacing: -0.5px;
 }
 
-/* Content Wrapper (always open) */
-.accordionContent {
-  width: 100%;
-}
-
+/* Content Wrapper */
 .accordionInner {
   display: grid;
   grid-template-columns: 1fr 1.1fr;
@@ -568,15 +602,36 @@
   }
   
   .stepsContainer {
-    gap: 30px;
+    gap: 50px;
+    padding: 20px 0;
+  }
+
+  .trackBg {
+    top: 60px;
+    bottom: 60px;
+    left: 20px;
+    width: 3px;
+  }
+
+  .trackHighlight {
+    top: 60px;
+    left: 20px;
+    width: 3px;
   }
 
   .step {
-    padding: var(--space-lg) 0;
+    gap: var(--space-md);
   }
-  
-  .number {
-    font-size: 32px;
+
+  .timelineCol {
+    width: 40px;
+  }
+
+  .node {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+    margin-top: 5px;
   }
   
   .stepTitle {
@@ -586,7 +641,7 @@
   .accordionInner {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
-    padding-top: var(--space-md);
+    padding-top: var(--space-xs);
     padding-bottom: var(--space-md);
   }
   
@@ -613,14 +668,32 @@
   .description {
     font-size: 15px;
   }
+  .stepsContainer {
+    gap: 40px;
+  }
+  .trackBg {
+    top: 50px;
+    bottom: 50px;
+    left: 16px;
+  }
+  .trackHighlight {
+    top: 50px;
+    left: 16px;
+  }
+  .timelineCol {
+    width: 32px;
+  }
+  .node {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    margin-top: 4px;
+  }
   .stepTitle {
     font-size: 18px !important;
   }
   .stepDesc {
     font-size: 14px;
-  }
-  .number {
-    font-size: 26px !important;
   }
   .visualShowcase {
     height: 300px;

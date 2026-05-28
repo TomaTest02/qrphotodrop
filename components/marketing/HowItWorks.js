@@ -1,5 +1,12 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { QrCode, Download } from 'lucide-react';
 import styles from './HowItWorks.module.css';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const STEPS = [
   { num: '01', title: 'Alegi pachetul', desc: 'Selectezi tipul evenimentului și primești instant codul QR unic și acces la dashboard-ul de organizator.' },
@@ -8,6 +15,61 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
+  const containerRef = useRef(null);
+  const trackHighlightRef = useRef(null);
+  const nodesRef = useRef([]);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // 1. Highlight line progress animation
+      gsap.fromTo(trackHighlightRef.current,
+        { height: '0%' },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top center+=100',
+            end: 'bottom center+=100',
+            scrub: 0.5,
+          },
+          height: '100%',
+          ease: 'none'
+        }
+      );
+
+      // 2. Node activation animations
+      nodesRef.current.forEach((node, i) => {
+        if (!node) return;
+        
+        gsap.fromTo(node,
+          {
+            backgroundColor: '#faf7f2', // var(--color-cream)
+            borderColor: '#d9c3a6', // var(--color-cream-darker)
+            color: '#525072', // var(--color-text-muted)
+            scale: 1,
+            boxShadow: '0 0 0px rgba(113, 9, 39, 0)'
+          },
+          {
+            scrollTrigger: {
+              trigger: node,
+              start: 'top center+=150',
+              end: 'bottom center-=150',
+              toggleActions: 'play reverse play reverse',
+            },
+            backgroundColor: '#710927', // var(--color-burgundy)
+            borderColor: '#710927',
+            color: '#ffffff',
+            scale: 1.15,
+            boxShadow: '0 0 20px rgba(113, 9, 39, 0.4)',
+            duration: 0.3,
+            ease: 'power2.out'
+          }
+        );
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   function renderVisual(index) {
     if (index === 0) {
       return (
@@ -120,7 +182,7 @@ export default function HowItWorks() {
   }
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} ref={containerRef}>
       <div className={styles.container}>
         
         {/* Centered Top Header */}
@@ -132,18 +194,26 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        {/* List of steps fully visible and open */}
+        {/* List of steps with scrollable route timeline */}
         <div className={styles.stepsContainer}>
+          <div className={styles.trackBg} />
+          <div className={styles.trackHighlight} ref={trackHighlightRef} />
+
           {STEPS.map((step, i) => (
             <div key={step.num} className={styles.step}>
-              <div className={styles.stepHeader}>
-                <p className={styles.number}>{step.num}</p>
-                <h3 className={styles.stepTitle}>{step.title}</h3>
+              <div className={styles.timelineCol}>
+                <div 
+                  className={styles.node} 
+                  ref={el => nodesRef.current[i] = el}
+                >
+                  {step.num}
+                </div>
               </div>
 
-              <div className={styles.accordionContent}>
+              <div className={styles.contentCol}>
                 <div className={styles.accordionInner}>
                   <div className={styles.accordionText}>
+                    <h3 className={styles.stepTitle}>{step.title}</h3>
                     <p className={styles.stepDesc}>{step.desc}</p>
                   </div>
                   <div className={styles.visualShowcase}>
