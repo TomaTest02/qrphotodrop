@@ -28,14 +28,17 @@ export default function LoginPage() {
       return;
     }
 
-    // Check if user must change password
+    // Check user profile status and role
     const { data: profile } = await supabase
       .from('users')
-      .select('must_change_password, role')
+      .select('must_change_password, role, status')
       .eq('id', data.user.id)
       .single();
 
-    if (profile?.must_change_password) {
+    if (profile?.status === 'pending') {
+      await supabase.auth.signOut();
+      window.location.href = '/pending';
+    } else if (profile?.must_change_password) {
       window.location.href = '/first-login';
     } else if (profile?.role === 'admin') {
       window.location.href = '/admin';
@@ -87,6 +90,9 @@ export default function LoginPage() {
         </form>
 
         <p className={styles.helpText}>
+          Nu ai cont? <a href="/register" className={styles.helpLink}>Creează unul aici</a>
+        </p>
+        <p className={styles.helpText} style={{ marginTop: '10px' }}>
           Ai uitat parola? <a href="/contact" className={styles.helpLink}>Contactează suportul</a>
         </p>
       </div>

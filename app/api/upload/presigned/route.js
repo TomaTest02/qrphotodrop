@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
   try {
-    const { eventCode, contentType, fileType } = await request.json();
+    const { eventCode, contentType, fileType, sizeBytes = 0 } = await request.json();
 
     if (!eventCode || !contentType) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -15,7 +15,7 @@ export async function POST(request) {
     const supabase = createAdminClient();
     const { data: event } = await supabase
       .from('events')
-      .select('id, status')
+      .select('id, status, max_storage_bytes')
       .eq('event_code', eventCode)
       .single();
 
@@ -25,6 +25,18 @@ export async function POST(request) {
 
     if (event.status !== 'active') {
       return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
+    }
+
+    // Check storage limits
+    const { data: uploadStats } = await supabase
+      .from('uploads')
+      .select('size_bytes')
+      .eq('event_id', event.id);
+
+    const totalUsed = uploadStats ? uploadStats.reduce((acc, curr) => acc + (curr.size_bytes || 0), 0) : 0;
+    
+    if (totalUsed + sizeBytes > event.max_storage_bytes) {
+      return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
     }
 
     // Generate unique key

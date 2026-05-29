@@ -12,7 +12,10 @@ export async function GET() {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const admin = createAdminClient();
-  const { data: accounts } = await admin.from('users').select('*').order('created_at', { ascending: false });
+  const { data: accounts } = await admin
+    .from('users')
+    .select('*, events(event_name, event_type, event_date)')
+    .order('created_at', { ascending: false });
 
   return NextResponse.json({ accounts: accounts || [] });
 }

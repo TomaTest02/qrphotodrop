@@ -12,13 +12,26 @@ export async function GET(request) {
   const supabase = createAdminClient();
   const { data: event, error } = await supabase
     .from('events')
-    .select('id, event_name, event_date, event_type, event_code, status')
+    .select('id, event_name, event_date, event_type, event_code, status, is_gallery_public, couple_names, location')
     .eq('event_code', code)
     .single();
 
   if (error || !event) {
+    console.error('Supabase error:', error);
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ event });
+  let photos = [];
+  if (event.is_gallery_public) {
+    const { data: uploads } = await supabase
+      .from('uploads')
+      .select('id, public_url, r2_key, original_name')
+      .eq('event_id', event.id)
+      .eq('file_type', 'photo')
+      .order('created_at', { ascending: false });
+    
+    photos = uploads || [];
+  }
+
+  return NextResponse.json({ event, photos });
 }

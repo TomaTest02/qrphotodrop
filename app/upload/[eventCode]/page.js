@@ -63,6 +63,7 @@ export default function GuestUploadPage({ params }) {
   const [wishForm, setWishForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [publicPhotos, setPublicPhotos] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -84,7 +85,10 @@ export default function GuestUploadPage({ params }) {
     }
     fetch(`/api/events?code=${eventCode}`)
       .then(r => r.json())
-      .then(data => { if (data.event) setEvent(data.event); })
+      .then(data => { 
+        if (data.event) setEvent(data.event); 
+        if (data.photos) setPublicPhotos(data.photos);
+      })
       .catch(() => {});
   }, [eventCode, isDemo]);
 
@@ -185,8 +189,19 @@ export default function GuestUploadPage({ params }) {
         const presignRes = await fetch('/api/upload/presigned', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventCode, contentType: file.type, fileType }),
+          body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
         });
+        
+        if (!presignRes.ok) {
+          const errData = await presignRes.json();
+          if (errData.error === 'Storage limit exceeded for this event') {
+            alert('Albumul a atins capacitatea maximă! Nu se mai pot adăuga poze.');
+            setView('mediaChoice');
+            return;
+          }
+          throw new Error(errData.error || 'Failed to get presigned URL');
+        }
+        
         const { uploadUrl, r2Key } = await presignRes.json();
         await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
         await fetch('/api/upload/confirm', {
@@ -295,8 +310,31 @@ export default function GuestUploadPage({ params }) {
         </div>
 
         <p className={styles.landingFooter}>
-          <Lock size={12} strokeWidth={2} /> Pozele tale sunt private și accesibile doar mirilor
+          {event?.is_gallery_public ? (
+            <Sparkles size={12} strokeWidth={2} /> 
+          ) : (
+            <Lock size={12} strokeWidth={2} /> 
+          )}
+          {event?.is_gallery_public ? 'Album public activ' : 'Pozele tale sunt private și accesibile doar mirilor'}
         </p>
+
+        {event?.is_gallery_public && publicPhotos.length > 0 && (
+          <div style={{ marginTop: 'var(--space-2xl)', padding: '0 var(--space-md)' }}>
+            <h3 style={{ fontSize: '18px', textAlign: 'center', marginBottom: 'var(--space-lg)', fontFamily: 'var(--font-serif)' }}>Galeria Evenimentului</h3>
+            <div style={{ columnCount: 2, columnGap: '12px' }}>
+              {publicPhotos.map((photo) => (
+                <div key={photo.id} style={{ breakInside: 'avoid', marginBottom: '12px' }}>
+                  <img
+                    src={photo.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${photo.r2_key}`}
+                    alt={photo.original_name}
+                    style={{ width: '100%', borderRadius: 'var(--radius-md)', display: 'block' }}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </PageShell>
   );

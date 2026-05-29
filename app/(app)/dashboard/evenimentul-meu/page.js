@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './dashboard.module.css';
+import pricingStyles from '@/components/marketing/PricingSection.module.css';
+import cardStyles from '@/components/marketing/PricingCard.module.css';
+import PricingCard from '@/components/marketing/PricingCard';
 
 export default function EvenimentulMeuPage() {
   const [event, setEvent] = useState(null);
@@ -65,6 +68,21 @@ export default function EvenimentulMeuPage() {
     setArchiveLoading(false);
   };
 
+  const togglePublicGallery = async () => {
+    const supabase = createClient();
+    const newVal = !event.is_gallery_public;
+    const { error } = await supabase
+      .from('events')
+      .update({ is_gallery_public: newVal })
+      .eq('id', event.id);
+      
+    if (!error) {
+      setEvent({ ...event, is_gallery_public: newVal });
+    } else {
+      alert('Eroare la actualizarea setării.');
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingState}>
@@ -76,14 +94,7 @@ export default function EvenimentulMeuPage() {
 
   if (!event) {
     return (
-      <div className={styles.emptyState}>
-        <p className={styles.emptyIcon}>📋</p>
-        <h2 className={styles.emptyTitle}>Niciun eveniment încă</h2>
-        <p className={styles.emptyDesc}>
-          Contactează administratorul sau comandă un pachet pentru a primi evenimentul.
-        </p>
-        <a href="/preturi" className={styles.emptyBtn}>Vezi pachetele</a>
-      </div>
+      <EventSetupForm onCreated={loadData} />
     );
   }
 
@@ -150,6 +161,19 @@ export default function EvenimentulMeuPage() {
             <p className={styles.qrCode}>
               Cod eveniment: <strong>{event.event_code}</strong>
             </p>
+            
+            <div style={{ marginTop: 'var(--space-md)', padding: 'var(--space-md)', background: 'var(--color-cream-darker)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input 
+                type="checkbox" 
+                id="galleryToggle" 
+                checked={!!event.is_gallery_public} 
+                onChange={togglePublicGallery}
+                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-violet)' }}
+              />
+              <label htmlFor="galleryToggle" style={{ fontSize: '14px', cursor: 'pointer', fontWeight: 500, color: 'var(--color-text)' }}>
+                Permite invitaților să vadă Galeria Foto publică
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -239,3 +263,208 @@ export default function EvenimentulMeuPage() {
     </div>
   );
 }
+
+function EventSetupForm({ onCreated }) {
+  const [step, setStep] = useState(1);
+  const [eventType, setEventType] = useState('nunta');
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  
+  const [eventName, setEventName] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [coupleNames, setCoupleNames] = useState('');
+  const [location, setLocation] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const PACKAGES = {
+    nunta: [
+      { key: 'intim', name: 'NUNTĂ INTIMĂ', price: 27900, guests: 100, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'NUNTĂ COMPLETĂ', price: 36900, guests: 250, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'NUNTĂ DE VIS', price: 55900, guests: 500, subLabel: 'ideal pentru evenimente până în 500 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+    ],
+    botez: [
+      { key: 'intim', name: 'BOTEZ INTIM', price: 24900, guests: 50, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'BOTEZ COMPLET', price: 32900, guests: 150, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'BOTEZ DE VIS', price: 48900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+    ],
+    aniversare: [
+      { key: 'intim', name: 'ANIVERSARE INTIMĂ', price: 24900, guests: 50, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'ANIVERSARE COMPLETĂ', price: 32900, guests: 150, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'ANIVERSARE DE VIS', price: 48900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+    ],
+    corporate: [
+      { key: 'intim', name: 'CORPORATE BASIC', price: 32900, guests: 100, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'CORPORATE STANDARD', price: 45900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'CORPORATE PREMIUM', price: 69900, guests: 600, subLabel: 'ideal pentru evenimente până în 600 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+    ],
+  };
+
+  const TABS = [
+    { key: 'nunta', label: 'Nuntă' },
+    { key: 'botez', label: 'Botez' },
+    { key: 'aniversare', label: 'Aniversare' },
+    { key: 'corporate', label: 'Corporate' },
+  ];
+
+  const plans = PACKAGES[eventType];
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setError('Nu ești autentificat.'); setSaving(false); return; }
+
+      const eventCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const { error: insertError } = await supabase.from('events').insert({
+        user_id: user.id,
+        event_name: eventName,
+        event_type: eventType,
+        event_date: eventDate,
+        couple_names: coupleNames || null,
+        location: location || null,
+        event_code: eventCode,
+        status: 'active',
+        guest_limit: selectedPlan?.guests || 100,
+      });
+
+      if (insertError) {
+        console.error('Event creation error:', insertError);
+        setError('Eroare la crearea evenimentului. Încearcă din nou.');
+        setSaving(false);
+        return;
+      }
+
+      onCreated();
+    } catch (err) {
+      console.error(err);
+      setError('Eroare neașteptată. Încearcă din nou.');
+      setSaving(false);
+    }
+  };
+
+  const fieldStyle = {
+    padding: '14px 16px', border: '1px solid var(--color-cream-darker)',
+    borderRadius: 'var(--radius-md)', fontSize: '15px', fontFamily: 'var(--font-sans)',
+    outline: 'none', width: '100%', background: '#ffffff'
+  };
+
+  const labelStyle = {
+    display: 'block', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase',
+    letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '6px'
+  };
+
+  if (step === 1) {
+    return (
+      <div style={{ padding: 'var(--space-2xl) 0', width: '100%', maxWidth: '1100px', margin: '0 auto' }}>
+        <div className={pricingStyles.header}>
+          <span className={pricingStyles.eyebrow}>Configurare Cont</span>
+          <h2 className={pricingStyles.title}>Alege pachetul potrivit</h2>
+          <p className={pricingStyles.subtitle}>
+            Selectează tipul evenimentului și planul de care ai nevoie pentru a-ți activa colecția.
+          </p>
+        </div>
+
+        <div className={pricingStyles.tabs}>
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              className={`${pricingStyles.tab} ${eventType === tab.key ? pricingStyles.tabActive : ''}`}
+              onClick={() => { setEventType(tab.key); setSelectedPlan(null); }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={pricingStyles.grid}>
+          {plans.map((plan) => (
+            <div key={plan.key} style={{ height: '100%' }}>
+              <PricingCard
+                name={plan.name}
+                price={plan.price}
+                subLabel={plan.subLabel}
+                features={plan.features}
+                isPopular={plan.popular}
+                buttonText="Alege acest pachet →"
+                onSelect={() => { setSelectedPlan(plan); setStep(2); }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: '500px', margin: '0 auto', padding: 'var(--space-2xl) 0' }}>
+      <button
+        onClick={() => setStep(1)}
+        style={{
+          background: 'none', border: 'none', color: 'var(--color-violet)',
+          fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+          marginBottom: '24px', fontFamily: 'var(--font-sans)', display: 'inline-flex', gap: '8px'
+        }}
+      >
+        ← Schimbă pachetul
+      </button>
+
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', color: 'var(--color-text)', marginBottom: '8px' }}>
+          Detalii eveniment
+        </h2>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '15px' }}>
+          Pachet ales: <strong>{selectedPlan?.name}</strong> la {Math.round(selectedPlan?.price / 100)} RON
+        </p>
+      </div>
+
+      <div style={{ background: '#ffffff', border: '1px solid rgba(181,140,79,0.3)', borderRadius: 'var(--radius-lg)', padding: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
+        {error && (
+          <div style={{ padding: '12px 16px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: '14px', marginBottom: '24px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={labelStyle}>Numele evenimentului *</label>
+            <input type="text" value={eventName} onChange={(e) => setEventName(e.target.value)} required placeholder="Ex: Nunta Ana & Mihai" style={fieldStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Data evenimentului *</label>
+            <input type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} required style={fieldStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Numele mirilor / Organizator</label>
+            <input type="text" value={coupleNames} onChange={(e) => setCoupleNames(e.target.value)} placeholder="Ex: Ana & Mihai" style={fieldStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Locația</label>
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ex: Restaurant Noblesse, București" style={fieldStyle} />
+          </div>
+
+          <button
+            type="submit"
+            disabled={saving}
+            style={{
+              background: 'var(--color-burgundy)', color: 'white', border: 'none',
+              padding: '16px', fontSize: '15px', fontWeight: 600, borderRadius: 'var(--radius-md)',
+              cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, marginTop: '8px',
+              transition: 'all 0.2s ease', fontFamily: 'var(--font-sans)'
+            }}
+          >
+            {saving ? 'Se creează...' : '🚀 Finalizează și Activează QR-ul'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+

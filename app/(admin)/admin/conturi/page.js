@@ -12,11 +12,17 @@ export default function AdminConturiPage() {
   useEffect(() => { loadAccounts(); }, []);
 
   async function loadAccounts() {
-    const supabase = createClient();
-    let query = supabase.from('users').select('*, events(event_name, event_type, event_date)').order('created_at', { ascending: false });
-    const { data } = await query;
-    setAccounts(data || []);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/admin/accounts');
+      if (res.ok) {
+        const { accounts } = await res.json();
+        setAccounts(accounts || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleApprove = async (userId) => {

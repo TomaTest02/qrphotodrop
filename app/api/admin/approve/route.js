@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { sendOTP } from '@/lib/resend';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
@@ -20,34 +19,15 @@ export async function POST(request) {
     const { data: targetUser } = await admin.from('users').select('*').eq('id', userId).single();
     if (!targetUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    // Generate temp password
-    const tempPassword = uuidv4().slice(0, 12);
-
-    // Create Supabase Auth user (if not already created)
-    const { data: authUser, error: authError } = await admin.auth.admin.createUser({
-      email: targetUser.email,
-      password: tempPassword,
-      email_confirm: true,
-    });
-
-    if (authError && authError.message !== 'User already registered') {
-      console.error('Auth create error:', authError);
-      return NextResponse.json({ error: 'Auth error' }, { status: 500 });
-    }
-
-    const authUserId = authUser?.user?.id || userId;
-
-    // Update user status
+    // Update user status to active
     await admin.from('users').update({
-      id: authUserId,
       status: 'active',
-      must_change_password: true,
     }).eq('id', userId);
 
-    // Create event for user
+    // Create event for user (if they don't have one yet)
     const eventCode = uuidv4().slice(0, 8).toUpperCase();
     await admin.from('events').upsert({
-      user_id: authUserId,
+      user_id: userId,
       event_code: eventCode,
       event_name: targetUser.event_name || 'Eveniment',
       event_type: targetUser.event_type || 'nunta',
@@ -55,8 +35,18 @@ export async function POST(request) {
       status: 'active',
     }, { onConflict: 'user_id' });
 
-    // Send OTP email
-    await sendOTP(targetUser.email, tempPassword);
+    // Try to send notification email (graceful — won't crash if Resend not configured)
+    try {
+      if (process.env.RESEND_API_KEY) {
+        const { sendAdminNotification } = await import('@/lib/resend');
+        await sendAdminNotification(
+          `Cont aprobat: ${targetUser.email}`,
+          `<p>Contul <strong>${targetUser.email}</strong> a fost aprobat cu succes.</p>`
+        );
+      }
+    } catch (emailErr) {
+      console.warn('Email notification skipped (Resend not configured):', emailErr.message);
+    }
 
     return NextResponse.json({ success: true, eventCode });
   } catch (err) {

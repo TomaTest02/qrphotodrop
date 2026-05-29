@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { sendOTP } from '@/lib/resend';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
@@ -31,8 +30,17 @@ export async function POST(request) {
     // Set must_change_password
     await admin.from('users').update({ must_change_password: true }).eq('id', userId);
 
-    // Send OTP email
-    await sendOTP(targetUser.email, tempPassword);
+    // Try to send OTP email (graceful — won't crash if Resend not configured)
+    try {
+      if (process.env.RESEND_API_KEY) {
+        const { sendOTP } = await import('@/lib/resend');
+        await sendOTP(targetUser.email, tempPassword);
+      } else {
+        console.warn(`OTP generated for ${targetUser.email}: ${tempPassword} (Resend not configured, email not sent)`);
+      }
+    } catch (emailErr) {
+      console.warn('OTP email skipped:', emailErr.message);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

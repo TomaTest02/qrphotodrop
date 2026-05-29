@@ -48,14 +48,19 @@ export async function proxy(request) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Verifică rol admin
-  if (pathname.startsWith('/admin') && user) {
+  // Check profile for status and role if user is logged in
+  if (user && (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname === '/first-login')) {
     const { data: profile } = await supabase
       .from('users')
-      .select('role')
+      .select('role, status')
       .eq('id', user.id)
       .single();
-    if (profile?.role !== 'admin') {
+
+    if (profile?.status === 'pending') {
+      return NextResponse.redirect(new URL('/pending', request.url));
+    }
+
+    if (pathname.startsWith('/admin') && profile?.role !== 'admin') {
       return NextResponse.redirect(
         new URL('/dashboard/evenimentul-meu', request.url)
       );
@@ -66,5 +71,5 @@ export async function proxy(request) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/first-login'],
 };

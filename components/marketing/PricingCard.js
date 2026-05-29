@@ -1,6 +1,6 @@
 import styles from './PricingCard.module.css';
 
-export default function PricingCard({ name, price, subLabel, features = [], isPopular, onSelect }) {
+export default function PricingCard({ name, price, subLabel, features = [], isPopular, onSelect, buttonText = 'Comanzi acum →' }) {
   const displayPrice = Math.round(price / 100);
 
   return (
@@ -25,7 +25,7 @@ export default function PricingCard({ name, price, subLabel, features = [], isPo
         className={`${styles.btn} ${isPopular ? styles.btnPrimary : styles.btnOutline}`}
         onClick={onSelect}
       >
-        Comanzi acum →
+        {buttonText}
       </button>
     </div>
   );
