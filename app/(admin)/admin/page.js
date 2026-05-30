@@ -1,8 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import styles from './admin.module.css';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
-  const supabase = await createClient();
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
 
   // Get counts
   const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
