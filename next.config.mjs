@@ -12,6 +12,12 @@ const nextConfig = {
       },
     ],
   },
+  // Permitem upload-uri mari (iPhone ProRAW + videoclipuri 4K)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2gb',
+    },
+  },
 };
 
 export default nextConfig;
