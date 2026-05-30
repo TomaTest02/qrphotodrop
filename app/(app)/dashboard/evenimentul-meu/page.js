@@ -240,16 +240,17 @@ export default function EvenimentulMeuPage() {
       </div>
 
       
+      
       {/* Design Catalog */}
-      <div className={styles.designSection} style={{ marginTop: '30px', marginBottom: '20px' }}>
-        <h2 className={styles.sectionTitle} style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--color-burgundy)', marginBottom: '8px' }}>
+      <div className={styles.designSection}>
+        <h2 className={styles.sectionTitle}>
           Alege un design din catalog
         </h2>
-        <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
+        <p className={styles.sectionSubtitle}>
           Alege un model din catalog pentru discuția cu echipa QRPhotoDrop sau descarcă în format digital!
         </p>
 
-        <div className={styles.designGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+        <div className={styles.designGrid}>
           {[
             { name: 'Classic Burgundy', image: '/images/mockups/classic_burgundy.png' },
             { name: 'Cream Elegant', image: '/images/mockups/cream_elegant.png' },
@@ -260,21 +261,14 @@ export default function EvenimentulMeuPage() {
               <div 
                 key={design.name} 
                 onClick={() => setSelectedDesign(design.name)}
-                style={{
-                  border: isSelected ? '2px solid var(--color-gold)' : '1px solid #ddd',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  background: '#fff'
-                }}
+                className={`${styles.designCard} ${isSelected ? styles.designSelected : ''}`}
               >
-                <div style={{ height: '200px', width: '100%', position: 'relative', overflow: 'hidden' }}>
-                  <img src={design.image} alt={design.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div className={styles.designPreview}>
+                  <img src={design.image} alt={design.name} className={styles.designPreviewImg} />
                 </div>
-                <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, color: '#333' }}>{design.name}</span>
-                  <span style={{ fontSize: '13px', color: isSelected ? 'var(--color-gold)' : '#888', fontWeight: isSelected ? 600 : 400, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div className={styles.designCardInfo}>
+                  <span className={styles.designCardName}>{design.name}</span>
+                  <span className={styles.designCardStatus}>
                     {isSelected ? <><Check size={12} weight="bold" /> Selectat</> : 'Alege model'}
                   </span>
                 </div>
@@ -283,23 +277,14 @@ export default function EvenimentulMeuPage() {
           })}
         </div>
 
-        <button 
-          onClick={() => { setCardText(PRESET_TEXTS[0]); setPrintModalOpen(true); }}
-          style={{
-            background: 'var(--color-burgundy)',
-            color: '#fff',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <Package size={16} /> Cere administratorului să printeze cartonașele (Taxat extra)
-        </button>
+        <div className={styles.designActions}>
+          <button 
+            onClick={() => { setCardText(PRESET_TEXTS[0]); setPrintModalOpen(true); }}
+            className={styles.printBtn}
+          >
+            <Package size={16} weight="light" /> Cere administratorului să printeze cartonașele (Taxat extra)
+          </button>
+        </div>
       </div>
 
       {/* QR Section */}
@@ -520,114 +505,102 @@ export default function EvenimentulMeuPage() {
         </div>
       )}
 
+      
       {/* ===== PRINT MODAL ===== */}
       {printModalOpen && (
-        <div 
-          onClick={() => setPrintModalOpen(false)}
-          style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.5)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-          }}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#fff', borderRadius: '16px', padding: '30px',
-              maxWidth: '500px', width: '100%', position: 'relative'
-            }}
-          >
-            <button 
-              onClick={() => setPrintModalOpen(false)}
-              style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
-            >
-              <X size={20} />
-            </button>
+        <div className={styles.modalOverlay} onClick={() => setPrintModalOpen(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            
+            <button className={styles.modalClose} onClick={() => setPrintModalOpen(false)}><X size={16} weight="light" /></button>
 
-            <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-              <Printer size={36} weight="light" style={{ color: 'var(--color-burgundy)', marginBottom: '10px' }} />
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111', marginBottom: '8px' }}>Personalizează textul de pe cartonaș</h2>
-              <p style={{ fontSize: '14px', color: '#666' }}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalEmoji}><Printer size={36} weight="light" style={{ color: '#710927' }} /></span>
+              <h2 className={styles.modalTitle}>Personalizează textul de pe cartonaș</h2>
+              <p className={styles.modalSubtitle}>
                 Alege un mesaj din variantele noastre sau scrie textul tău personalizat — îl vom imprima exact pe cartonașul <strong>{selectedDesign}</strong>.
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: '#f5f5f5', padding: '4px', borderRadius: '8px' }}>
+            {/* Mode Switcher */}
+            <div className={styles.modeSwitcher}>
               <button
+                className={`${styles.modeBtn} ${cardTextMode === 'preset' ? styles.modeBtnActive : ''}`}
                 onClick={() => { setCardTextMode('preset'); setCardText(PRESET_TEXTS[0]); }}
-                style={{
-                  flex: 1, padding: '8px', border: 'none', borderRadius: '6px',
-                  background: cardTextMode === 'preset' ? '#fff' : 'transparent',
-                  boxShadow: cardTextMode === 'preset' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  fontWeight: cardTextMode === 'preset' ? 600 : 400, color: '#333', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                }}
               >
-                <Sparkle size={14} /> Variante
+                <Sparkle size={14} weight="light" /> Variante recomandate
               </button>
               <button
+                className={`${styles.modeBtn} ${cardTextMode === 'custom' ? styles.modeBtnActive : ''}`}
                 onClick={() => { setCardTextMode('custom'); setCardText(''); }}
-                style={{
-                  flex: 1, padding: '8px', border: 'none', borderRadius: '6px',
-                  background: cardTextMode === 'custom' ? '#fff' : 'transparent',
-                  boxShadow: cardTextMode === 'custom' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  fontWeight: cardTextMode === 'custom' ? 600 : 400, color: '#333', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                }}
               >
-                <Pencil size={14} /> Personalizat
+                <Pencil size={14} weight="light" /> Text personalizat
               </button>
             </div>
 
+            {/* Preset Options */}
             {cardTextMode === 'preset' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '25px' }}>
+              <div className={styles.presetList}>
                 {PRESET_TEXTS.map((text, i) => (
                   <div
                     key={i}
+                    className={`${styles.presetOption} ${cardText === text ? styles.presetSelected : ''}`}
                     onClick={() => setCardText(text)}
-                    style={{
-                      padding: '12px 16px', borderRadius: '8px', border: cardText === text ? '2px solid var(--color-burgundy)' : '1px solid #ddd',
-                      background: cardText === text ? '#fdf8f9' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: '12px'
-                    }}
                   >
-                    <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: cardText === text ? '4px solid var(--color-burgundy)' : '2px solid #ccc', marginTop: '2px', flexShrink: 0 }} />
-                    <p style={{ fontSize: '13px', color: '#444', lineHeight: 1.4, margin: 0 }}>{text}</p>
+                    <div className={styles.presetRadio}>
+                      <span className={styles.presetRadioDot} />
+                    </div>
+                    <p className={styles.presetText}>{text}</p>
                   </div>
                 ))}
               </div>
             )}
 
+            {/* Custom Text */}
             {cardTextMode === 'custom' && (
-              <div style={{ marginBottom: '25px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#555', marginBottom: '8px' }}>Textul tău (maxim 200 caractere)</label>
+              <div className={styles.customTextArea}>
+                <label className={styles.customLabel}>Textul tău (maxim 200 caractere)</label>
                 <textarea
+                  className={styles.customTextarea}
                   rows={4}
                   maxLength={200}
                   placeholder="Ex: Îți mulțumim că ești alături de noi! Scanează QR-ul și trimite-ne o poză..."
                   value={cardText}
                   onChange={(e) => setCardText(e.target.value)}
-                  style={{
-                    width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '8px',
-                    fontSize: '14px', resize: 'none', fontFamily: 'inherit'
-                  }}
                 />
-                <div style={{ textAlign: 'right', fontSize: '12px', color: '#888', marginTop: '4px' }}>{cardText.length}/200</div>
+                <span className={styles.charCount}>{cardText.length}/200</span>
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                onClick={() => setPrintModalOpen(false)}
-                style={{ flex: 1, padding: '12px', background: '#f5f5f5', border: 'none', borderRadius: '8px', fontWeight: 600, color: '#444', cursor: 'pointer' }}
-              >
+            {/* Preview Card */}
+            {cardText.trim() && (
+              <div className={styles.cardPreviewWrap}>
+                <p className={styles.previewLabel}>Previzualizare cartonaș:</p>
+                <div className={styles.cardPreview}>
+                  <div className={styles.cardPreviewInner}>
+                    <p className={styles.cardPreviewText}>{cardText}</p>
+                    <div className={styles.cardPreviewQr}>
+                      <div className={styles.cardPreviewQrGrid} />
+                      <span className={styles.cardPreviewQrLabel}>QR CODE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className={styles.modalActions}>
+              <button className={styles.modalCancelBtn} onClick={() => setPrintModalOpen(false)}>
                 Anulează
               </button>
-              <button 
+              <button
+                className={styles.modalConfirmBtn}
                 onClick={handlePrintConfirm}
                 disabled={!cardText.trim() || printLoading}
-                style={{ flex: 2, padding: '12px', background: 'var(--color-burgundy)', border: 'none', borderRadius: '8px', fontWeight: 600, color: '#fff', cursor: 'pointer', opacity: (!cardText.trim() || printLoading) ? 0.6 : 1 }}
               >
-                {printLoading ? 'Se trimite...' : 'Trimite cererea'}
+                <Package size={15} weight="light" /> {printLoading ? 'Se trimite...' : 'Trimite cererea de printare'}
               </button>
             </div>
+
           </div>
         </div>
       )}
