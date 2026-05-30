@@ -3,7 +3,7 @@
 import { useState, use, useEffect, useRef } from 'react';
 import {
   Camera, Image, VideoCamera, Lock, ArrowLeft, UploadSimple,
-  Check, Heart, ChatBubble, Envelope, MapPin, Calendar,
+  Check, Heart, ChatCircle, Envelope, MapPin, Calendar,
   Plus, X, Play, CloudArrowUp, Sparkle
 } from '@phosphor-icons/react';
 import DemoNavBar from '@/components/marketing/DemoNavBar';

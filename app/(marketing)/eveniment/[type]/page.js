@@ -3,7 +3,7 @@ import FAQ from '@/components/marketing/FAQ';
 import CTABanner from '@/components/marketing/CTABanner';
 import TechFlow from '@/components/marketing/TechFlow';
 import EventSelectorDropdown from '@/components/marketing/EventSelectorDropdown';
-import { QrCode, Stack, Link } from '@phosphor-icons/react';
+import { QrCode, Stack, Link } from '@phosphor-icons/react/dist/ssr';
 import Image from 'next/image';
 import styles from './event-type.module.css';
 

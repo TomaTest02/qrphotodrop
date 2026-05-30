@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  LayoutDashboard, User, RefreshCw, Archive, Check, Loader2,
-  Camera, Video, MessageSquare, Download, ImageOff, Play,
-  Package, Pencil, Sparkles, Printer, X, Copy, CheckCheck,
-  Rocket, AlertCircle
-} from 'lucide-react';
+import { SquaresFour, User, ArrowsClockwise, Archive, Check, Spinner, Camera, VideoCamera, ChatCircle, DownloadSimple, ImageBroken, Play, Package, Pencil, Sparkle, Printer, X, Copy, Checks, Rocket, WarningCircle } from '@phosphor-icons/react';
 import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './dashboard-demo.module.css';
 
@@ -266,7 +261,7 @@ export default function OrganizerDemoDashboard() {
                 </div>
                 <div className={styles.headerActions}>
                   <button onClick={loadData} className={styles.refreshBtn} title="Reîmprospătează datele">
-                    <RefreshCw size={14} weight="light" /> Reîmprospătează
+                    <ArrowsClockwise size={14} weight="light" /> Reîmprospătează
                   </button>
                   {archiveState === 'idle' && (
                     <button onClick={handleGenerateArchive} className={styles.archiveBtn}>
@@ -275,7 +270,7 @@ export default function OrganizerDemoDashboard() {
                   )}
                   {archiveState === 'generating' && (
                     <button disabled className={styles.archiveBtn} style={{ background: '#b58c77', cursor: 'wait' }}>
-                      <Loader2 size={15} weight="light" style={{ animation: 'spin 1s linear infinite' }} /> Se generează...
+                      <Spinner size={15} weight="light" style={{ animation: 'spin 1s linear infinite' }} /> Se generează...
                     </button>
                   )}
                   {archiveState === 'ready' && (
@@ -289,7 +284,7 @@ export default function OrganizerDemoDashboard() {
               {/* Archive generating message banner */}
               {archiveState === 'generating' && (
                 <div className={styles.archiveBannerPending}>
-                  <AlertCircle size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva este în curs de generare, durează câteva minute. Va fi trimis un email când este gata. Recomandăm descărcarea arhivei printr-o conexiune Wi-Fi!
+                  <WarningCircle size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva este în curs de generare, durează câteva minute. Va fi trimis un email când este gata. Recomandăm descărcarea arhivei printr-o conexiune Wi-Fi!
                 </div>
               )}
               {archiveState === 'ready' && (
@@ -333,7 +328,7 @@ export default function OrganizerDemoDashboard() {
                     <div className={styles.qrLinkWrap}>
                       <span className={styles.qrLink}>{getUploadUrl()}</span>
                       <button onClick={handleCopyLink} className={styles.copyBtn}>
-                         {copied ? <><CheckCheck size={13} weight="light" /> Copiat</> : <><Copy size={13} weight="light" /> Copiază link</>}
+                         {copied ? <><Checks size={13} weight="light" /> Copiat</> : <><Copy size={13} weight="light" /> Copiază link</>}
                       </button>
                     </div>
                     <p className={styles.eventCodeLabel}>
@@ -402,7 +397,7 @@ export default function OrganizerDemoDashboard() {
                   className={`${styles.tab} ${activeTab === 'urari' ? styles.tabActive : ''}`}
                   onClick={() => setActiveTab('urari')}
                 >
-                  <MessageSquare size={14} weight="light" /> Urări ({wishes.length})
+                  <ChatCircle size={14} weight="light" /> Urări ({wishes.length})
                 </button>
               </div>
 
@@ -429,7 +424,7 @@ export default function OrganizerDemoDashboard() {
                           className={styles.photoPlaceholderGraphic}
                           style={{ display: photo.public_url ? 'none' : 'flex' }}
                         >
-                          <ImageOff size={24} weight="light" style={{ opacity: 0.4 }} />
+                          <ImageBroken size={24} weight="light" style={{ opacity: 0.4 }} />
                           <span style={{ fontSize: '10px', marginTop: '6px' }}>Imagine indisponibilă</span>
                         </div>
                         <div className={styles.photoFooter}>
