@@ -329,7 +329,7 @@ function EventSetupForm({ onCreated }) {
         location: location || null,
         event_code: eventCode,
         status: 'active',
-        guest_limit: selectedPlan?.guests || 100,
+        max_guests: selectedPlan?.guests || 100,
         max_storage_bytes: (selectedPlan?.storageGB || 25) * 1024 * 1024 * 1024,
         package_type: eventType,
         package_tier: selectedPlan?.key || 'custom',
