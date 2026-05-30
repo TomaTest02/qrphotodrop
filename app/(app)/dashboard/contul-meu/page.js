@@ -34,20 +34,33 @@ export default function ContulMeuPage() {
   useEffect(() => {
     if (!event?.event_date) return;
     
+    // Setam ca perioada activa incepe cu o saptamana inainte de eveniment
+    const startDate = new Date(event.event_date);
+    startDate.setDate(startDate.getDate() - 7);
+
+    // Expira la 3 luni (90 zile) dupa eveniment
     const expiryDate = new Date(event.event_date);
-    expiryDate.setDate(expiryDate.getDate() + 90); // 3 luni de la eveniment
+    expiryDate.setDate(expiryDate.getDate() + 90);
 
     const timer = setInterval(() => {
       const now = new Date();
-      const diff = expiryDate - now;
-      if (diff <= 0) {
-        setTimeLeft('Expirat');
-        clearInterval(timer);
+
+      if (now < startDate) {
+        // Dacă a cumpărat cu mult timp înainte, nu a început încă "timpul" activ
+        const daysUntilStart = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+        setTimeLeft(`Începe în ${daysUntilStart} zile`);
       } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const mins = Math.floor((diff / 1000 / 60) % 60);
-        setTimeLeft(`${days} zile, ${hours} ore, ${mins} min`);
+        // Este in perioada activa
+        const diff = expiryDate - now;
+        if (diff <= 0) {
+          setTimeLeft('Expirat');
+          clearInterval(timer);
+        } else {
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+          const mins = Math.floor((diff / 1000 / 60) % 60);
+          setTimeLeft(`${days} zile, ${hours} ore, ${mins} min`);
+        }
       }
     }, 1000);
 
