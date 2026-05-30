@@ -1,12 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { SquaresFour, Users, PenNib, SignOut } from '@phosphor-icons/react';
 import styles from './AdminSidebar.module.css';
 
 const LINKS = [
-  { href: '/admin', icon: '📊', label: 'Dashboard' },
-  { href: '/admin/conturi', icon: '👥', label: 'Conturi' },
-  { href: '/admin/blog', icon: '✍️', label: 'Blog CMS' },
+  { href: '/admin', icon: SquaresFour, label: 'Dashboard' },
+  { href: '/admin/conturi', icon: Users, label: 'Conturi' },
+  { href: '/admin/blog', icon: PenNib, label: 'Blog CMS' },
 ];
 
 export default function AdminSidebar() {
@@ -26,21 +27,26 @@ export default function AdminSidebar() {
       </a>
 
       <nav className={styles.nav}>
-        {LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className={`${styles.link} ${pathname === link.href ? styles.active : ''}`}
-          >
-            <span className={styles.icon}>{link.icon}</span>
-            {link.label}
-          </a>
-        ))}
+        {LINKS.map((link) => {
+          const Icon = link.icon;
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              className={`${styles.link} ${pathname === link.href ? styles.active : ''}`}
+            >
+              <span className={styles.icon}>
+                <Icon size={24} weight={pathname === link.href ? "fill" : "regular"} />
+              </span>
+              {link.label}
+            </a>
+          );
+        })}
       </nav>
 
       <div className={styles.footer}>
         <button onClick={handleLogout} className={styles.backLink} style={{ background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <SignOut size={20} weight="regular" />
           Deconectare
         </button>
       </div>
