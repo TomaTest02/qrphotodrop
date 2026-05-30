@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
     const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { id } = params;
+    const { id } = await params;
     const admin = createAdminClient();
 
     const { data: userData, error: userError } = await admin.from('users').select('*').eq('id', id).single();
@@ -41,7 +41,7 @@ export async function PUT(request, { params }) {
     const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { id } = params;
+    const { id } = await params;
     const admin = createAdminClient();
     const body = await request.json();
 
