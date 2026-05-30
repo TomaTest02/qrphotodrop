@@ -34,9 +34,9 @@ export default function ContulMeuPage() {
   useEffect(() => {
     if (!event?.event_date) return;
     
-    // Expira la 3 luni (90 zile) dupa eveniment
+    // Expira la 3 luni dupa eveniment
     const expiryDate = new Date(event.event_date);
-    expiryDate.setDate(expiryDate.getDate() + 90);
+    expiryDate.setMonth(expiryDate.getMonth() + 3);
 
     const timer = setInterval(() => {
       const now = new Date();
@@ -128,7 +128,7 @@ export default function ContulMeuPage() {
                 <p style={{ fontSize: '15px', color: 'var(--color-text)', fontWeight: 600 }}>
                   {event.event_date ? (() => {
                     const expiry = new Date(event.event_date);
-                    expiry.setDate(expiry.getDate() + 90);
+                    expiry.setMonth(expiry.getMonth() + 3); // Exact 3 luni
                     return expiry.toLocaleDateString('ro-RO');
                   })() : '—'}
                 </p>
