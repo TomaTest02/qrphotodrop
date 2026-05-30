@@ -217,33 +217,7 @@ export default function PricingSection({ defaultType = 'nunta' }) {
   const plans = PACKAGES[type] || PACKAGES.nunta;
 
   const handleSelect = (plan) => {
-    setSelectedPlan(plan);
-    setIsModalOpen(true);
-  };
-
-  const handleCheckout = async (e) => {
-    e.preventDefault();
-    if (!email || !selectedPlan) return;
-    setLoading(true);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventType: type,
-          packageType: selectedPlan.key,
-          organizerEmail: email,
-        }),
-      });
-      const data = await res.json();
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-      alert('A apărut o eroare la procesarea plății.');
-      setLoading(false);
-    }
+    window.location.href = `/register?type=${type}&plan=${plan.key}`;
   };
 
   return (
@@ -284,35 +258,6 @@ export default function PricingSection({ defaultType = 'nunta' }) {
           })}
         </div>
       </div>
-
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => { setIsModalOpen(false); setEmail(''); setLoading(false); }}
-        title="Finalizare comandă"
-      >
-        <form onSubmit={handleCheckout} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>
-            Ai ales pachetul <strong>{selectedPlan?.name}</strong>. Te rugăm să introduci adresa de email pentru a primi detaliile și link-ul platformei după plată.
-          </p>
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
-              Adresă de email
-            </label>
-            <input 
-              type="email" 
-              required 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nume@exemplu.com"
-              style={{ width: '100%', padding: '12px 16px', border: '1px solid var(--color-cream-darker)', borderRadius: 'var(--radius-md)', fontSize: '15px', fontFamily: 'var(--font-sans)', outline: 'none' }}
-              disabled={loading}
-            />
-          </div>
-          <Button type="submit" variant="primary" loading={loading} style={{ width: '100%', marginTop: 'var(--space-sm)' }}>
-            Continuă spre plată
-          </Button>
-        </form>
-      </Modal>
     </section>
   );
 }

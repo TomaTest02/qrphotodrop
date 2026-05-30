@@ -8,6 +8,7 @@ import styles from './register.module.css';
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,13 +30,21 @@ export default function RegisterPage() {
 
     setLoading(true);
 
+    // Citim daca a ales o subscriptie in prealabil
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get('plan');
+    const type = params.get('type');
+
     const supabase = createClient();
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: name
+          full_name: name,
+          phone: phone,
+          plan: plan || null,
+          plan_type: type || null
         }
       }
     });
@@ -50,8 +59,8 @@ export default function RegisterPage() {
       return;
     }
 
-    // Redirect to pending page
-    window.location.href = '/pending';
+    // Redirect to dashboard (sau pending daca implementezi validarea admin)
+    window.location.href = '/dashboard';
   };
 
   return (
@@ -89,6 +98,17 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="adresa@email.com"
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Telefon</label>
+            <input
+              className={styles.input}
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              placeholder="07XX XXX XXX"
             />
           </div>
           <div className={styles.field}>

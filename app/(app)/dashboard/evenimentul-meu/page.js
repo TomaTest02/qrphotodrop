@@ -427,6 +427,30 @@ function EventSetupForm({ onCreated }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    async function loadPreselected() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata) {
+        if (user.user_metadata.plan_type) setEventType(user.user_metadata.plan_type);
+      }
+    }
+    loadPreselected();
+  }, []);
+
+  // Set the plan after eventType is loaded, if available
+  useEffect(() => {
+    async function setPlan() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.plan && PACKAGES[eventType]) {
+        const p = PACKAGES[eventType].find(pkg => pkg.key === user.user_metadata.plan);
+        if (p) setSelectedPlan(p);
+      }
+    }
+    setPlan();
+  }, [eventType]);
+
   const PACKAGES = {
     nunta: [
       { key: 'intim', name: 'NUNTĂ INTIMĂ', price: 27900, guests: 100, storageGB: 5, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },

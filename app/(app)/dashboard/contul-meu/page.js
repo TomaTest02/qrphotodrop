@@ -6,9 +6,11 @@ import { createClient } from '@/lib/supabase/client';
 export default function ContulMeuPage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [event, setEvent] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
     loadProfile();
@@ -21,8 +23,36 @@ export default function ContulMeuPage() {
       setUser(u);
       const { data } = await supabase.from('users').select('*').eq('id', u.id).single();
       setProfile(data);
+      
+      const { data: userEvent } = await supabase.from('events').select('*').eq('user_id', u.id).single();
+      if (userEvent) {
+        setEvent(userEvent);
+      }
     }
   }
+
+  useEffect(() => {
+    if (!event?.event_date) return;
+    
+    const expiryDate = new Date(event.event_date);
+    expiryDate.setDate(expiryDate.getDate() + 90); // 3 luni de la eveniment
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const diff = expiryDate - now;
+      if (diff <= 0) {
+        setTimeLeft('Expirat');
+        clearInterval(timer);
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((diff / 1000 / 60) % 60);
+        setTimeLeft(`${days} zile, ${hours} ore, ${mins} min`);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [event]);
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
@@ -44,10 +74,10 @@ export default function ContulMeuPage() {
 
   const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '6px' };
   const inputStyle = { width: '100%', padding: '14px 16px', border: '1px solid var(--color-cream-darker)', borderRadius: 'var(--radius-md)', fontSize: '15px', fontFamily: 'var(--font-sans)', outline: 'none' };
-  const cardStyle = { background: 'var(--color-white)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-xl)', border: '1px solid var(--color-cream-darker)', marginBottom: 'var(--space-xl)' };
+  const cardStyle = { background: 'var(--color-white)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-xl)', border: '1px solid var(--color-cream-darker)', marginBottom: 'var(--space-xl)', position: 'relative' };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '100px' }}>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, letterSpacing: '-1px', marginBottom: 'var(--space-xl)' }}>
         Contul meu
       </h1>
@@ -127,6 +157,26 @@ export default function ContulMeuPage() {
           </button>
         </form>
       </div>
+
+      {/* Expiry Countdown */}
+      {timeLeft && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: 'var(--color-violet)',
+          color: 'white',
+          padding: '16px 20px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          zIndex: 100,
+          maxWidth: '280px'
+        }}>
+          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8, marginBottom: '4px', fontWeight: 600 }}>Timp rămas stocare</p>
+          <p style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-serif)', marginBottom: '6px' }}>{timeLeft}</p>
+          <p style={{ fontSize: '12px', opacity: 0.9, lineHeight: 1.4 }}>La finalul acestei perioade, galeria și toate fișierele vor fi șterse definitiv.</p>
+        </div>
+      )}
     </div>
   );
 }
