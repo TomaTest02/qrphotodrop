@@ -117,6 +117,35 @@ export default function ContulMeuPage() {
               {user?.created_at ? new Date(user.created_at).toLocaleDateString('ro-RO') : '—'}
             </p>
           </div>
+
+          {/* Event details if available */}
+          {event && (
+            <>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--color-cream-darker)', margin: 'var(--space-sm) 0' }} />
+              <div>
+                <label style={labelStyle}>Data evenimentului</label>
+                <p style={{ fontSize: '15px', color: 'var(--color-text)' }}>
+                  {event.event_date ? new Date(event.event_date).toLocaleDateString('ro-RO') : '—'}
+                </p>
+              </div>
+              <div>
+                <label style={labelStyle}>Abonament ales</label>
+                <p style={{ fontSize: '15px', color: 'var(--color-text)', textTransform: 'uppercase' }}>
+                  {event.package_type && event.package_tier ? `${event.package_type} ${event.package_tier}` : '—'}
+                </p>
+              </div>
+              <div>
+                <label style={labelStyle}>Expirare stocare</label>
+                <p style={{ fontSize: '15px', color: 'var(--color-text)', fontWeight: 600 }}>
+                  {event.event_date ? (() => {
+                    const expiry = new Date(event.event_date);
+                    expiry.setDate(expiry.getDate() + 90);
+                    return expiry.toLocaleDateString('ro-RO');
+                  })() : '—'}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -171,23 +200,30 @@ export default function ContulMeuPage() {
         </form>
       </div>
 
-      {/* Expiry Countdown */}
+      {/* Expiry Countdown Widget */}
       {timeLeft && (
         <div style={{
           position: 'fixed',
           bottom: '24px',
           right: '24px',
-          background: 'var(--color-violet)',
-          color: 'white',
-          padding: '16px 20px',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          background: '#bc965c', // Culoarea aurie/camel din imagine
+          color: '#3e405b',      // Culoarea textului (albastru închis)
+          padding: '24px',
+          borderRadius: '16px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
           zIndex: 100,
-          maxWidth: '280px'
+          maxWidth: '320px',
+          fontFamily: 'var(--font-sans)'
         }}>
-          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8, marginBottom: '4px', fontWeight: 600 }}>Timp rămas stocare</p>
-          <p style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-serif)', marginBottom: '6px' }}>{timeLeft}</p>
-          <p style={{ fontSize: '12px', opacity: 0.9, lineHeight: 1.4 }}>La finalul acestei perioade, galeria și toate fișierele vor fi șterse definitiv.</p>
+          <p style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', fontWeight: 600, color: 'rgba(62,64,91,0.8)' }}>
+            Timp rămas stocare
+          </p>
+          <p style={{ fontSize: '28px', fontWeight: 700, fontFamily: 'var(--font-serif)', marginBottom: '12px', color: '#3e405b', letterSpacing: '-0.5px' }}>
+            {timeLeft}
+          </p>
+          <p style={{ fontSize: '14px', opacity: 0.85, lineHeight: 1.5, color: '#3e405b' }}>
+            La finalul acestei perioade, galeria și toate fișierele vor fi șterse definitiv.
+          </p>
         </div>
       )}
     </div>
