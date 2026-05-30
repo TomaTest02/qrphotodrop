@@ -278,24 +278,24 @@ function EventSetupForm({ onCreated }) {
 
   const PACKAGES = {
     nunta: [
-      { key: 'intim', name: 'NUNTĂ INTIMĂ', price: 27900, guests: 100, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'NUNTĂ COMPLETĂ', price: 36900, guests: 250, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'NUNTĂ DE VIS', price: 55900, guests: 500, subLabel: 'ideal pentru evenimente până în 500 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'NUNTĂ INTIMĂ', price: 27900, guests: 100, storageGB: 5, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'NUNTĂ COMPLETĂ', price: 36900, guests: 250, storageGB: 15, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'NUNTĂ DE VIS', price: 55900, guests: 500, storageGB: 30, subLabel: 'ideal pentru evenimente până în 500 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     botez: [
-      { key: 'intim', name: 'BOTEZ INTIM', price: 24900, guests: 50, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'BOTEZ COMPLET', price: 32900, guests: 150, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'BOTEZ DE VIS', price: 48900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'BOTEZ INTIM', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'BOTEZ COMPLET', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'BOTEZ DE VIS', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     aniversare: [
-      { key: 'intim', name: 'ANIVERSARE INTIMĂ', price: 24900, guests: 50, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'ANIVERSARE COMPLETĂ', price: 32900, guests: 150, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'ANIVERSARE DE VIS', price: 48900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'ANIVERSARE INTIMĂ', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'ANIVERSARE COMPLETĂ', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'ANIVERSARE DE VIS', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     corporate: [
-      { key: 'intim', name: 'CORPORATE BASIC', price: 32900, guests: 100, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'CORPORATE STANDARD', price: 45900, guests: 300, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'CORPORATE PREMIUM', price: 69900, guests: 600, subLabel: 'ideal pentru evenimente până în 600 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'CORPORATE BASIC', price: 32900, guests: 100, storageGB: 10, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'CORPORATE STANDARD', price: 45900, guests: 300, storageGB: 25, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'CORPORATE PREMIUM', price: 69900, guests: 600, storageGB: 50, subLabel: 'ideal pentru evenimente până în 600 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
   };
 
@@ -330,6 +330,9 @@ function EventSetupForm({ onCreated }) {
         event_code: eventCode,
         status: 'active',
         guest_limit: selectedPlan?.guests || 100,
+        max_storage_bytes: (selectedPlan?.storageGB || 25) * 1024 * 1024 * 1024,
+        package_type: eventType,
+        package_tier: selectedPlan?.key || 'custom',
       });
 
       if (insertError) {
