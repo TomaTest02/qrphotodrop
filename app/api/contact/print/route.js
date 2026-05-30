@@ -28,6 +28,23 @@ Text Personalizat: "${cardText}"
 =========================================
     `;
 
+    // Initialize supabase client (we need to bypass RLS using service role since this is an API route)
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // Salvează în baza de date pentru Admin Dashboard
+    await supabase.from('contact_messages').insert({
+      first_name: name || 'Cerere',
+      last_name: 'Printare',
+      email: email,
+      phone: phone || '',
+      event_type: 'Comandă Printare',
+      message: `Eveniment: ${eventName || 'Nespecificat'}\nDesign: ${design}\nText: ${cardText}`
+    });
+
     if (process.env.RESEND_API_KEY) {
       await sendContactForm({
         firstName: 'Cerere',

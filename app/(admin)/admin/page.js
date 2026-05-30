@@ -25,6 +25,14 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // Print requests
+  const { data: printRequests } = await supabase
+    .from('contact_messages')
+    .select('*')
+    .eq('event_type', 'Comandă Printare')
+    .order('created_at', { ascending: false })
+    .limit(5);
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>
@@ -95,6 +103,37 @@ export default async function AdminDashboard() {
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+        {/* Print Requests */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Cereri Printare Cartonașe</h3>
+          </div>
+          {(!printRequests || printRequests.length === 0) ? (
+            <p className={styles.emptyText}>Nicio cerere de printare</p>
+          ) : (
+            <div className={styles.list}>
+              {printRequests.map((req) => {
+                const messageLines = req.message.split('\n');
+                const eventLine = messageLines.find(l => l.startsWith('Eveniment:')) || '';
+                const designLine = messageLines.find(l => l.startsWith('Design:')) || '';
+                return (
+                  <div key={req.id} className={styles.listItem} style={{ alignItems: 'flex-start' }}>
+                    <div>
+                      <p className={styles.itemMain}>{req.email}</p>
+                      <p className={styles.itemSub} style={{ marginTop: '4px' }}>
+                        {eventLine}<br/>
+                        {designLine}
+                      </p>
+                    </div>
+                    <span className={styles.statusBadge} style={{ background: 'var(--color-violet-pale)', color: 'var(--color-violet)' }}>
+                      Nouă
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
