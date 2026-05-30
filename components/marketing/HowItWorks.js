@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { QrCode, Download } from 'lucide-react';
+import { QrCode, DownloadSimple } from '@phosphor-icons/react';
 import styles from './HowItWorks.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -156,7 +156,7 @@ export default function HowItWorks() {
             </div>
             <div className={styles.downloadCard}>
               <div className={styles.downloadIconWrapper}>
-                <Download size={22} className={styles.downloadIcon} />
+                <DownloadSimple size={22} className={styles.downloadIcon} weight="bold" />
               </div>
               <span className={styles.downloadTitle}>Descarcă ZIP</span>
               <span className={styles.downloadProgress}>142 poze (428 MB)</span>

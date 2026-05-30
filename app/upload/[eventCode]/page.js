@@ -2,10 +2,10 @@
 
 import { useState, use, useEffect, useRef } from 'react';
 import {
-  Camera, Image, Video, Lock, ArrowLeft, Upload,
-  Check, Heart, MessageSquare, Mail, MapPin, Calendar,
-  Plus, X, Play, CloudUpload, Sparkles
-} from 'lucide-react';
+  Camera, Image, VideoCamera, Lock, ArrowLeft, UploadSimple,
+  Check, Heart, ChatBubble, Envelope, MapPin, Calendar,
+  Plus, X, Play, CloudArrowUp, Sparkle
+} from '@phosphor-icons/react';
 import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './upload.module.css';
 
@@ -43,7 +43,7 @@ function FileThumbnail({ file }) {
   if (file.type.startsWith('video/')) {
     return (
       <div className={styles.thumbVideo}>
-        <Play size={22} strokeWidth={1.5} style={{ opacity: 0.7 }} />
+        <Play size={22} weight="light" style={{ opacity: 0.7 }} />
         <span className={styles.thumbName}>{file.name.slice(0, 18)}{file.name.length > 18 ? '…' : ''}</span>
       </div>
     );
@@ -261,14 +261,14 @@ export default function GuestUploadPage({ params }) {
         </div>
 
         <div className={styles.heartRing}>
-          <Heart size={38} strokeWidth={1.25} fill="#e8829e" stroke="#c45c7e" />
+          <Heart size={38} weight="light" fill="#e8829e" stroke="#c45c7e" />
         </div>
 
         <h1 className={styles.landingTitle}>{eventName}</h1>
         {eventDate && (
           <div className={styles.landingMeta}>
-            <span><Calendar size={13} strokeWidth={2} /> {eventDate}</span>
-            {location && <span><MapPin size={13} strokeWidth={2} /> {location}</span>}
+            <span><Calendar size={13} weight="light" /> {eventDate}</span>
+            {location && <span><MapPin size={13} weight="light" /> {location}</span>}
           </div>
         )}
 
@@ -279,7 +279,7 @@ export default function GuestUploadPage({ params }) {
 
         {isDemo && (
           <div className={styles.demoBanner}>
-            <span><Sparkles size={16} /></span>
+            <span><Sparkle size={16} /></span>
             <span>
               <strong>Demo activ</strong> — Pozele apar instant în{' '}
               <a href="/dashboard/demo" target="_blank">Dashboard Organizator →</a>
@@ -289,7 +289,7 @@ export default function GuestUploadPage({ params }) {
 
         <div className={styles.landingActions}>
           <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
-            <div className={styles.actionCardIcon}><Camera size={26} strokeWidth={1.5} /></div>
+            <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
             <div className={styles.actionCardBody}>
               <strong>Trimite poze & videoclipuri</strong>
               <span>Din galerie sau direct cu camera</span>
@@ -298,7 +298,7 @@ export default function GuestUploadPage({ params }) {
           </button>
 
           <button className={styles.actionCardSecondary} onClick={() => setView('wish')}>
-            <div className={styles.actionCardIcon}><Mail size={26} strokeWidth={1.5} /></div>
+            <div className={styles.actionCardIcon}><Envelope size={26} weight="light" /></div>
             <div className={styles.actionCardBody}>
               <strong>Scrie o urare</strong>
               <span>Un mesaj din inimă pentru miri</span>
@@ -309,9 +309,9 @@ export default function GuestUploadPage({ params }) {
 
         <p className={styles.landingFooter}>
           {event?.is_gallery_public ? (
-            <Sparkles size={12} strokeWidth={2} /> 
+            <Sparkle size={12} weight="light" /> 
           ) : (
-            <Lock size={12} strokeWidth={2} /> 
+            <Lock size={12} weight="light" /> 
           )}
           {event?.is_gallery_public ? 'Album public activ' : 'Pozele tale sunt private și accesibile doar mirilor'}
         </p>
@@ -356,8 +356,8 @@ export default function GuestUploadPage({ params }) {
       >
         <div className={styles.dropZoneIcon}>
           {dragOver
-            ? <Sparkles size={40} strokeWidth={1.25} style={{ color: '#710927' }} />
-            : <CloudUpload size={40} strokeWidth={1.25} style={{ color: '#710927', opacity: 0.7 }} />
+            ? <Sparkle size={40} weight="light" style={{ color: '#710927' }} />
+            : <CloudArrowUp size={40} weight="light" style={{ color: '#710927', opacity: 0.7 }} />
           }
         </div>
         <p className={styles.dropZoneText}>
@@ -379,7 +379,7 @@ export default function GuestUploadPage({ params }) {
       <div className={styles.sourceGrid}>
         <label className={styles.sourceCard}>
           <div className={styles.sourceCardInner}>
-            <span className={styles.sourceIcon}><Image size={26} strokeWidth={1.25} /></span>
+            <span className={styles.sourceIcon}><Image size={26} weight="light" /></span>
             <strong>Din galerie</strong>
             <span>Selectează mai multe</span>
           </div>
@@ -388,7 +388,7 @@ export default function GuestUploadPage({ params }) {
 
         <label className={styles.sourceCard}>
           <div className={styles.sourceCardInner}>
-            <span className={styles.sourceIcon}><Camera size={26} strokeWidth={1.25} /></span>
+            <span className={styles.sourceIcon}><Camera size={26} weight="light" /></span>
             <strong>Fa o poză</strong>
             <span>Deschide camera</span>
           </div>
@@ -397,7 +397,7 @@ export default function GuestUploadPage({ params }) {
 
         <label className={styles.sourceCard}>
           <div className={styles.sourceCardInner}>
-            <span className={styles.sourceIcon}><Video size={26} strokeWidth={1.25} /></span>
+            <span className={styles.sourceIcon}><VideoCamera size={26} weight="light" /></span>
             <strong>Înregistrează</strong>
             <span>Clipuri scurte</span>
           </div>
@@ -428,7 +428,7 @@ export default function GuestUploadPage({ params }) {
 
         {/* Add more */}
         <label className={styles.addMoreCard}>
-          <span className={styles.addMoreIcon}><Plus size={22} strokeWidth={2} style={{ color: '#710927' }} /></span>
+          <span className={styles.addMoreIcon}><Plus size={22} weight="light" style={{ color: '#710927' }} /></span>
           <span className={styles.addMoreText}>Adaugă</span>
           <input
             type="file"
@@ -444,11 +444,11 @@ export default function GuestUploadPage({ params }) {
       </div>
 
       <button className={styles.uploadBtn} onClick={() => uploadFiles(files)}>
-        <CloudUpload size={18} strokeWidth={2} />
+        <CloudArrowUp size={18} weight="light" />
         Încarcă {files.length} {files.length === 1 ? 'fișier' : 'fișiere'}
       </button>
 
-      <p className={styles.privacyNote}><Lock size={12} strokeWidth={2} /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
+      <p className={styles.privacyNote}><Lock size={12} weight="light" /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
     </PageShell>
   );
 
@@ -503,7 +503,7 @@ export default function GuestUploadPage({ params }) {
       <FloatingPetals />
       <div className={styles.successWrap}>
         <div className={styles.successOrb}>
-          <Check size={40} strokeWidth={2.5} style={{ color: '#fff' }} />
+          <Check size={40} weight="light" style={{ color: '#fff' }} />
         </div>
         <h2 className={styles.successTitle}>Mulțumim din suflet!</h2>
         <p className={styles.successMsg}>
@@ -513,7 +513,7 @@ export default function GuestUploadPage({ params }) {
 
         <div className={styles.successActions}>
           <button className={styles.successBtnPrimary} onClick={() => setView('wish')}>
-            <Mail size={16} strokeWidth={2} /> Lasă și o urare
+            <Envelope size={16} weight="light" /> Lasă și o urare
           </button>
           <button className={styles.successBtnSecondary} onClick={() => { setView('landing'); setFiles([]); setUploadProgress(0); }}>
             Adaugă mai multe poze
@@ -522,7 +522,7 @@ export default function GuestUploadPage({ params }) {
 
         {isDemo && (
           <a href="/dashboard/demo" target="_blank" className={styles.successDemoLink}>
-            <Sparkles size={13} strokeWidth={2} /> Vezi în Dashboard Organizator
+            <Sparkle size={13} weight="light" /> Vezi în Dashboard Organizator
           </a>
         )}
       </div>
@@ -533,7 +533,7 @@ export default function GuestUploadPage({ params }) {
   if (view === 'wish') return (
     <PageShell isDemo={isDemo} onBack={() => setView('landing')}>
       <div className={styles.stepHeader}>
-        <div className={styles.wishEmojiBig}><Mail size={44} strokeWidth={1.1} style={{ color: '#710927' }} /></div>
+        <div className={styles.wishEmojiBig}><Envelope size={44} weight="light" style={{ color: '#710927' }} /></div>
         <h2 className={styles.stepTitle}>Scrie o urare</h2>
         <p className={styles.stepSubtitle}>Un mesaj care va rămâne pentru totdeauna</p>
       </div>
@@ -590,7 +590,7 @@ export default function GuestUploadPage({ params }) {
           {loading ? (
             <span className={styles.loadingDots}><span /><span /><span /></span>
           ) : (
-            <><Mail size={16} strokeWidth={2} /> Trimite urarea</>
+            <><Envelope size={16} weight="light" /> Trimite urarea</>
           )}
         </button>
       </form>
@@ -603,7 +603,7 @@ export default function GuestUploadPage({ params }) {
       <FloatingPetals />
       <div className={styles.successWrap}>
         <div className={`${styles.successOrb} ${styles.successOrbWish}`}>
-          <Mail size={36} strokeWidth={1.5} style={{ color: '#fff' }} />
+          <Envelope size={36} weight="light" style={{ color: '#fff' }} />
         </div>
         <h2 className={styles.successTitle}>Urarea ta a ajuns!</h2>
         <p className={styles.successMsg}>
@@ -613,7 +613,7 @@ export default function GuestUploadPage({ params }) {
 
         <div className={styles.successActions}>
           <button className={styles.successBtnPrimary} onClick={() => setView('mediaChoice')}>
-            <Camera size={16} strokeWidth={2} /> Trimite și poze
+            <Camera size={16} weight="light" /> Trimite și poze
           </button>
           <button className={styles.successBtnSecondary} onClick={() => { setView('landing'); setWishForm({ firstName: '', lastName: '', email: '', message: '' }); }}>
             Înapoi la început
@@ -639,7 +639,7 @@ function PageShell({ children, isDemo, onBack }) {
         <div className={styles.card}>
           {onBack && (
             <button className={styles.backBtn} onClick={onBack}>
-              <ArrowLeft size={16} strokeWidth={2} /> Înapoi
+              <ArrowLeft size={16} weight="light" /> Înapoi
             </button>
           )}
           {children}

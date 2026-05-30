@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Shield, Download, Smartphone, QrCode, Tv, Headphones } from 'lucide-react';
+import { Shield, DownloadSimple, DeviceMobile, QrCode, Monitor, Headphones } from '@phosphor-icons/react';
 import styles from './Features.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,12 +15,12 @@ const features = [
     desc: 'Pozele și videoclipurile sunt stocate în siguranță deplină pe servere Amazon Web Services, cu redundanță și backup automat.'
   },
   {
-    icon: Download,
+    icon: DownloadSimple,
     title: 'Calitate 100% Originală',
     desc: 'Fără compresie deranjantă ca pe WhatsApp. Oaspeții descarcă amintirile la rezoluția și claritatea lor nativă.'
   },
   {
-    icon: Smartphone,
+    icon: DeviceMobile,
     title: 'Fără Aplicație sau Cont',
     desc: 'Uită de configurări obositoare. Invitații scanează QR code-ul și încarcă pozele instant, direct din browserul telefonului.'
   },
@@ -30,7 +30,7 @@ const features = [
     desc: 'Primești fișiere gata de tipărit cu design-ul codului tău QR, adaptat stilului evenimentului tău (wedding, botez sau corporate).'
   },
   {
-    icon: Tv,
+    icon: Monitor,
     title: 'Live Slideshow / Ecran TV',
     desc: 'Opțiune de a proiecta în timp real pe un videoproiector sau ecran în sală pozele pe care invitații le încarcă pe parcursul serii.'
   },
@@ -104,7 +104,7 @@ export default function Features() {
             return (
               <div key={index} className={styles.card}>
                 <div className={styles.iconWrapper}>
-                  <Icon size={24} strokeWidth={1.5} />
+                  <Icon size={24} weight="light" />
                 </div>
                 <h3 className={styles.cardTitle}>{feat.title}</h3>
                 <p className={styles.cardDesc}>{feat.desc}</p>

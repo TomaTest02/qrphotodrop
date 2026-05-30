@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
-import { Camera, Image as ImageIcon } from 'lucide-react';
+import { Camera, Image as ImageIcon } from '@phosphor-icons/react';
 import styles from './Mockup.module.css';
 
 gsap.registerPlugin(ScrollTrigger);

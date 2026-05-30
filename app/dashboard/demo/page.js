@@ -228,13 +228,13 @@ export default function OrganizerDemoDashboard() {
               onClick={() => setActiveView('eveniment')}
               className={`${styles.navLink} ${activeView === 'eveniment' ? styles.navActive : ''}`}
             >
-              <LayoutDashboard size={16} strokeWidth={1.75} /> Evenimentul meu
+              <SquaresFour size={16} weight="light" /> Evenimentul meu
             </button>
             <button
               onClick={() => setActiveView('cont')}
               className={`${styles.navLink} ${activeView === 'cont' ? styles.navActive : ''}`}
             >
-              <User size={16} strokeWidth={1.75} /> Contul meu
+              <User size={16} weight="light" /> Contul meu
             </button>
           </nav>
 
@@ -249,7 +249,7 @@ export default function OrganizerDemoDashboard() {
           
           {/* TOP DEMO ALERT BANNER */}
           <div className={styles.demoAlert}>
-            <Rocket size={15} strokeWidth={2} style={{ flexShrink: 0 }} /> <strong>Mod Sandbox Demo:</strong> Aceasta este interfața pe care o folosește <strong>Organizatorul evenimentului</strong>. Poți genera arhiva, alege designul cartonașelor cu QR de printat și vizualiza fișierele trimise. Deschide 
+            <Rocket size={15} weight="light" style={{ flexShrink: 0 }} /> <strong>Mod Sandbox Demo:</strong> Aceasta este interfața pe care o folosește <strong>Organizatorul evenimentului</strong>. Poți genera arhiva, alege designul cartonașelor cu QR de printat și vizualiza fișierele trimise. Deschide 
             <a href="/upload/DEMO" target="_blank" style={{ textDecoration: 'underline', fontWeight: 800, color: 'var(--color-burgundy)', marginLeft: '4px' }}>
               Ecranul de Upload Invitat (DEMO)
             </a> ca să încarci propriile poze și să le vezi sosite aici în timp real!
@@ -266,21 +266,21 @@ export default function OrganizerDemoDashboard() {
                 </div>
                 <div className={styles.headerActions}>
                   <button onClick={loadData} className={styles.refreshBtn} title="Reîmprospătează datele">
-                    <RefreshCw size={14} strokeWidth={2} /> Reîmprospătează
+                    <RefreshCw size={14} weight="light" /> Reîmprospătează
                   </button>
                   {archiveState === 'idle' && (
                     <button onClick={handleGenerateArchive} className={styles.archiveBtn}>
-                      <Archive size={15} strokeWidth={2} /> Generează arhiva
+                      <Archive size={15} weight="light" /> Generează arhiva
                     </button>
                   )}
                   {archiveState === 'generating' && (
                     <button disabled className={styles.archiveBtn} style={{ background: '#b58c77', cursor: 'wait' }}>
-                      <Loader2 size={15} strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }} /> Se generează...
+                      <Loader2 size={15} weight="light" style={{ animation: 'spin 1s linear infinite' }} /> Se generează...
                     </button>
                   )}
                   {archiveState === 'ready' && (
                     <button disabled className={styles.archiveBtn} style={{ background: '#10b981' }}>
-                      <Check size={15} strokeWidth={2.5} /> Gata (Vezi email)
+                      <Check size={15} weight="light" /> Gata (Vezi email)
                     </button>
                   )}
                 </div>
@@ -289,12 +289,12 @@ export default function OrganizerDemoDashboard() {
               {/* Archive generating message banner */}
               {archiveState === 'generating' && (
                 <div className={styles.archiveBannerPending}>
-                  <AlertCircle size={15} strokeWidth={2} style={{ flexShrink: 0 }} /> Arhiva este în curs de generare, durează câteva minute. Va fi trimis un email când este gata. Recomandăm descărcarea arhivei printr-o conexiune Wi-Fi!
+                  <AlertCircle size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva este în curs de generare, durează câteva minute. Va fi trimis un email când este gata. Recomandăm descărcarea arhivei printr-o conexiune Wi-Fi!
                 </div>
               )}
               {archiveState === 'ready' && (
                 <div className={styles.archiveBannerSuccess}>
-                  <Check size={15} strokeWidth={2.5} style={{ flexShrink: 0 }} /> Arhiva a fost trimisă cu succes la <strong>demo@qrphotodrop.ro</strong>! Verifică email-ul pentru link-ul de descărcare securizat.
+                  <Check size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva a fost trimisă cu succes la <strong>demo@qrphotodrop.ro</strong>! Verifică email-ul pentru link-ul de descărcare securizat.
                 </div>
               )}
 
@@ -333,7 +333,7 @@ export default function OrganizerDemoDashboard() {
                     <div className={styles.qrLinkWrap}>
                       <span className={styles.qrLink}>{getUploadUrl()}</span>
                       <button onClick={handleCopyLink} className={styles.copyBtn}>
-                         {copied ? <><CheckCheck size={13} strokeWidth={2.5} /> Copiat</> : <><Copy size={13} strokeWidth={2} /> Copiază link</>}
+                         {copied ? <><CheckCheck size={13} weight="light" /> Copiat</> : <><Copy size={13} weight="light" /> Copiază link</>}
                       </button>
                     </div>
                     <p className={styles.eventCodeLabel}>
@@ -369,7 +369,7 @@ export default function OrganizerDemoDashboard() {
                         <div className={styles.designCardInfo}>
                           <span className={styles.designCardName}>{design.name}</span>
                           <span className={styles.designCardStatus}>
-                            {isSelected ? <><Check size={12} strokeWidth={2.5} /> Selectat</> : 'Alege model'}
+                            {isSelected ? <><Check size={12} weight="light" /> Selectat</> : 'Alege model'}
                           </span>
                         </div>
                       </div>
@@ -379,7 +379,7 @@ export default function OrganizerDemoDashboard() {
 
                 <div className={styles.designActions}>
                   <button onClick={handlePrintRequest} className={styles.printBtn}>
-                    <Package size={16} strokeWidth={2} /> Cere administratorului să printeze cartonașele (Taxat extra)
+                    <Package size={16} weight="light" /> Cere administratorului să printeze cartonașele (Taxat extra)
                   </button>
                 </div>
               </div>
@@ -390,19 +390,19 @@ export default function OrganizerDemoDashboard() {
                   className={`${styles.tab} ${activeTab === 'poze' ? styles.tabActive : ''}`}
                   onClick={() => setActiveTab('poze')}
                 >
-                  <Camera size={14} strokeWidth={2} /> Fotografii ({photos.length})
+                  <Camera size={14} weight="light" /> Fotografii ({photos.length})
                 </button>
                 <button
                   className={`${styles.tab} ${activeTab === 'clipuri' ? styles.tabActive : ''}`}
                   onClick={() => setActiveTab('clipuri')}
                 >
-                  <Video size={14} strokeWidth={2} /> Clipuri ({videos.length})
+                  <VideoCamera size={14} weight="light" /> Clipuri ({videos.length})
                 </button>
                 <button
                   className={`${styles.tab} ${activeTab === 'urari' ? styles.tabActive : ''}`}
                   onClick={() => setActiveTab('urari')}
                 >
-                  <MessageSquare size={14} strokeWidth={2} /> Urări ({wishes.length})
+                  <MessageSquare size={14} weight="light" /> Urări ({wishes.length})
                 </button>
               </div>
 
@@ -429,7 +429,7 @@ export default function OrganizerDemoDashboard() {
                           className={styles.photoPlaceholderGraphic}
                           style={{ display: photo.public_url ? 'none' : 'flex' }}
                         >
-                          <ImageOff size={24} strokeWidth={1.5} style={{ opacity: 0.4 }} />
+                          <ImageOff size={24} weight="light" style={{ opacity: 0.4 }} />
                           <span style={{ fontSize: '10px', marginTop: '6px' }}>Imagine indisponibilă</span>
                         </div>
                         <div className={styles.photoFooter}>
@@ -465,7 +465,7 @@ export default function OrganizerDemoDashboard() {
                         ) : (
                           // Placeholder graphic for default mock video
                           <div className={styles.photoPlaceholderGraphic} style={{ background: 'var(--color-violet-pale)' }}>
-                            <Play size={24} strokeWidth={1.5} style={{ opacity: 0.4 }} />
+                            <Play size={24} weight="light" style={{ opacity: 0.4 }} />
                             <span style={{ fontSize: '10px', marginTop: '6px' }}>Clip video</span>
                           </div>
                         )}
@@ -560,7 +560,7 @@ export default function OrganizerDemoDashboard() {
 
                   {supportSuccess ? (
                     <div className={styles.supportSuccessBanner}>
-                      <Check size={15} strokeWidth={2.5} /> Mesajul tău a fost trimis! Echipa noastră va răspunde în cel mai scurt timp.
+                      <Check size={15} weight="light" /> Mesajul tău a fost trimis! Echipa noastră va răspunde în cel mai scurt timp.
                     </div>
                   ) : (
                     <form onSubmit={handleSupportSubmit} className={styles.supportForm}>
@@ -591,10 +591,10 @@ export default function OrganizerDemoDashboard() {
         <div className={styles.modalOverlay} onClick={() => setPrintModalOpen(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
             
-            <button className={styles.modalClose} onClick={() => setPrintModalOpen(false)}><X size={16} strokeWidth={2.5} /></button>
+            <button className={styles.modalClose} onClick={() => setPrintModalOpen(false)}><X size={16} weight="light" /></button>
 
             <div className={styles.modalHeader}>
-              <span className={styles.modalEmoji}><Printer size={36} strokeWidth={1.25} style={{ color: '#710927' }} /></span>
+              <span className={styles.modalEmoji}><Printer size={36} weight="light" style={{ color: '#710927' }} /></span>
               <h2 className={styles.modalTitle}>Personalizează textul de pe cartonaș</h2>
               <p className={styles.modalSubtitle}>
                 Alege un mesaj din variantele noastre sau scrie textul tău personalizat — îl vom imprima exact pe cartonașul <strong>{selectedDesign}</strong>.
@@ -607,13 +607,13 @@ export default function OrganizerDemoDashboard() {
                 className={`${styles.modeBtn} ${cardTextMode === 'preset' ? styles.modeBtnActive : ''}`}
                 onClick={() => { setCardTextMode('preset'); setCardText(PRESET_TEXTS[0]); }}
               >
-                <Sparkles size={14} strokeWidth={2} /> Variante recomandate
+                <Sparkle size={14} weight="light" /> Variante recomandate
               </button>
               <button
                 className={`${styles.modeBtn} ${cardTextMode === 'custom' ? styles.modeBtnActive : ''}`}
                 onClick={() => { setCardTextMode('custom'); setCardText(''); }}
               >
-                <Pencil size={14} strokeWidth={2} /> Text personalizat
+                <Pencil size={14} weight="light" /> Text personalizat
               </button>
             </div>
 
@@ -677,7 +677,7 @@ export default function OrganizerDemoDashboard() {
                 onClick={handlePrintConfirm}
                 disabled={!cardText.trim()}
               >
-                <Package size={15} strokeWidth={2} /> Trimite cererea de printare
+                <Package size={15} weight="light" /> Trimite cererea de printare
               </button>
             </div>
 

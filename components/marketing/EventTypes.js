@@ -3,16 +3,16 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Heart, Baby, Cake, Building2, ArrowRight } from 'lucide-react';
+import { Heart, Baby, Cake, Buildings, ArrowRight } from '@phosphor-icons/react';
 import styles from './EventTypes.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const types = [
-  { type: 'nunta', icon: <Heart size={64} strokeWidth={1.5} />, title: 'Nuntă', desc: 'Colectează amintiri de la invitați în ziua cea mare.' },
-  { type: 'botez', icon: <Baby size={64} strokeWidth={1.5} />, title: 'Botez', desc: 'Păstrează momentele prețioase ale botezului.' },
-  { type: 'aniversare', icon: <Cake size={64} strokeWidth={1.5} />, title: 'Aniversare', desc: 'Surprinde fiecare moment al aniversării tale.' },
-  { type: 'corporate', icon: <Building2 size={64} strokeWidth={1.5} />, title: 'Corporate', desc: 'Teambuilding, conferințe, gale — totul documentat.' },
+  { type: 'nunta', icon: <Heart size={64} weight="light" />, title: 'Nuntă', desc: 'Colectează amintiri de la invitați în ziua cea mare.' },
+  { type: 'botez', icon: <Baby size={64} weight="light" />, title: 'Botez', desc: 'Păstrează momentele prețioase ale botezului.' },
+  { type: 'aniversare', icon: <Cake size={64} weight="light" />, title: 'Aniversare', desc: 'Surprinde fiecare moment al aniversării tale.' },
+  { type: 'corporate', icon: <Buildings size={64} weight="light" />, title: 'Corporate', desc: 'Teambuilding, conferințe, gale — totul documentat.' },
 ];
 
 export default function EventTypes() {

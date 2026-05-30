@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Camera, LayoutDashboard } from 'lucide-react';
+import { Camera, SquaresFour } from '@phosphor-icons/react';
 import styles from './DemoNavBar.module.css';
 
 export default function DemoNavBar() {
@@ -19,14 +19,14 @@ export default function DemoNavBar() {
             href="/upload/DEMO"
             className={`${styles.link} ${pathname?.includes('/upload/DEMO') ? styles.active : ''}`}
           >
-            <Camera size={14} strokeWidth={2} />
+            <Camera size={14} weight="bold" />
             1. Perspectivă Invitat
           </a>
           <a
             href="/dashboard/demo"
             className={`${styles.link} ${pathname?.includes('/dashboard/demo') ? styles.active : ''}`}
           >
-            <LayoutDashboard size={14} strokeWidth={2} />
+            <SquaresFour size={14} weight="bold" />
             2. Perspectivă Organizator
           </a>
         </div>

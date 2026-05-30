@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { 
-  Check, QrCode, Smartphone, Laptop, FileText, Download, User, Mail, Shield, Phone, Lock, Eye, Copy, ArrowRight
-} from 'lucide-react';
+  Check, QrCode, Shield, Phone, Lock, DownloadSimple
+} from '@phosphor-icons/react';
 import styles from './TechFlow.module.css';
 
 if (typeof window !== 'undefined') {
@@ -453,21 +453,21 @@ export default function TechFlow({ type = 'nunta' }) {
                           <span className={styles.mockPhotoEmoji}>🤵👰</span>
                           <div className={styles.mockPhotoFooter}>
                             <span className={styles.mockPhotoSender}>Elena Sandu</span>
-                            <span className={styles.mockPhotoDownloadIcon}><Download size={8} /></span>
+                            <span className={styles.mockPhotoDownloadIcon}><DownloadSimple size={8} weight="bold" /></span>
                           </div>
                         </div>
                         <div className={styles.mockPhotoItem}>
                           <span className={styles.mockPhotoEmoji}>🥂</span>
                           <div className={styles.mockPhotoFooter}>
                             <span className={styles.mockPhotoSender}>Andrei Popescu</span>
-                            <span className={styles.mockPhotoDownloadIcon}><Download size={8} /></span>
+                            <span className={styles.mockPhotoDownloadIcon}><DownloadSimple size={8} weight="bold" /></span>
                           </div>
                         </div>
                         <div className={styles.mockPhotoItem}>
                           <span className={styles.mockPhotoEmoji}>💃</span>
                           <div className={styles.mockPhotoFooter}>
                             <span className={styles.mockPhotoSender}>Marius Radu</span>
-                            <span className={styles.mockPhotoDownloadIcon}><Download size={8} /></span>
+                            <span className={styles.mockPhotoDownloadIcon}><DownloadSimple size={8} weight="bold" /></span>
                           </div>
                         </div>
                       </div>

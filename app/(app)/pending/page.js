@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft, Clock } from '@phosphor-icons/react';
 import styles from './pending.module.css';
 
 export default function PendingPage() {

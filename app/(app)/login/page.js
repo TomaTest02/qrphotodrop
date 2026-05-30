@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@phosphor-icons/react';
 import styles from './login.module.css';
 
 export default function LoginPage() {
