@@ -1,12 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { SquaresFour, Users, PenNib, SignOut } from '@phosphor-icons/react';
+import { SquaresFour, Users, PenNib, SignOut, Printer } from '@phosphor-icons/react';
 import styles from './AdminSidebar.module.css';
 
 const LINKS = [
   { href: '/admin', icon: SquaresFour, label: 'Dashboard' },
   { href: '/admin/conturi', icon: Users, label: 'Conturi' },
+  { href: '/admin/printari', icon: Printer, label: 'Printări' },
   { href: '/admin/blog', icon: PenNib, label: 'Blog CMS' },
 ];
 
