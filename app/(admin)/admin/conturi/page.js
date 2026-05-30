@@ -124,6 +124,7 @@ export default function AdminConturiPage() {
                       <button className={`${styles.actionBtn} ${styles.btnSuccess}`} onClick={() => handleApprove(acc.id)}>Aprobă</button>
                     )}
                     <button className={`${styles.actionBtn} ${styles.btnNeutral}`} onClick={() => handleSendOTP(acc.id)}>OTP</button>
+                    <a href={`/admin/conturi/${acc.id}`} className={`${styles.actionBtn}`} style={{ background: '#3e405b', color: 'white', textDecoration: 'none' }}>Editează</a>
                     <button className={`${styles.actionBtn} ${styles.btnDanger}`} onClick={() => handleDelete(acc.id)}>Șterge</button>
                   </div>
                 </td>
