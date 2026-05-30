@@ -186,29 +186,27 @@ export default function GuestUploadPage({ params }) {
       setUploadProgress(Math.round((i / filesToUpload.length) * 100));
       try {
         const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
-        const presignRes = await fetch('/api/upload/presigned', {
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('eventCode', eventCode);
+        formData.append('fileType', fileType);
+        formData.append('originalName', file.name);
+
+        const uploadRes = await fetch('/api/upload/direct', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
+          body: formData,
         });
-        
-        if (!presignRes.ok) {
-          const errData = await presignRes.json();
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json();
           if (errData.error === 'Storage limit exceeded for this event') {
             alert('Albumul a atins capacitatea maximă! Nu se mai pot adăuga poze.');
             setView('mediaChoice');
             return;
           }
-          throw new Error(errData.error || 'Failed to get presigned URL');
+          throw new Error(errData.error || 'Upload failed');
         }
-        
-        const { uploadUrl, r2Key } = await presignRes.json();
-        await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-        await fetch('/api/upload/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ r2Key, eventCode, fileType, sizeBytes: file.size, originalName: file.name }),
-        });
       } catch (err) { console.error('Upload error:', err); }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
     }
