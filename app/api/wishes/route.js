@@ -9,6 +9,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
+    // Validare lungimi (prevenire spam / abuse)
+    if (firstName.length > 100) return NextResponse.json({ error: 'Prenume prea lung' }, { status: 400 });
+    if (lastName && lastName.length > 100) return NextResponse.json({ error: 'Nume prea lung' }, { status: 400 });
+    if (message.length > 2000) return NextResponse.json({ error: 'Mesajul este prea lung (max 2000 caractere)' }, { status: 400 });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Email invalid' }, { status: 400 });
+    }
+
+    // Sanitizare event code
+    if (!/^[a-zA-Z0-9]{6,12}$/.test(eventCode)) {
+      return NextResponse.json({ error: 'Event code invalid' }, { status: 400 });
+    }
+
     const supabase = createAdminClient();
 
     // Get event

@@ -16,13 +16,34 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
+    // Validare stricta tip fisier (whitelist MIME)
+    const ALLOWED_MIME = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif',
+      'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/mov'
+    ];
+    if (!ALLOWED_MIME.includes(file.type)) {
+      return NextResponse.json({ error: 'Tip de fișier nepermis' }, { status: 400 });
+    }
+
+    // Limita de 100MB per fisier
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Fișierul depășește limita de 100MB' }, { status: 400 });
+    }
+
+    // Sanitizare event code (doar alfanumeric)
+    const sanitizedEventCode = eventCode.replace(/[^a-zA-Z0-9]/g, '');
+    if (sanitizedEventCode !== eventCode || eventCode.length < 6) {
+      return NextResponse.json({ error: 'Event code invalid' }, { status: 400 });
+    }
+
     const supabase = createAdminClient();
 
     // Verificam evenimentul
     const { data: event } = await supabase
       .from('events')
       .select('id, status, max_storage_bytes')
-      .eq('event_code', eventCode)
+      .eq('event_code', sanitizedEventCode)
       .single();
 
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
@@ -58,11 +79,16 @@ export async function POST(request) {
 
     const publicUrl = getPublicUrl(r2Key);
 
+    // Sanitizam numele original (eliminam caractere periculoase)
+    const safeOriginalName = (originalName || file.name || 'upload')
+      .replace(/[^a-zA-Z0-9._\-\s]/g, '')
+      .substring(0, 255);
+
     // Salvam in baza de date
     await supabase.from('uploads').insert({
       event_id: event.id,
-      file_type: fileType || (contentType.startsWith('video/') ? 'video' : 'photo'),
-      original_name: originalName || file.name || r2Key.split('/').pop(),
+      file_type: fileType || (file.type.startsWith('video/') ? 'video' : 'photo'),
+      original_name: safeOriginalName,
       r2_key: r2Key,
       public_url: publicUrl,
       size_bytes: fileSize,

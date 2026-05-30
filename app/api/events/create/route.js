@@ -25,11 +25,46 @@ export async function POST(request) {
       packageTier,
     } = body;
 
+    // Whitelist validare event_type
+    const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
+    if (!ALLOWED_TYPES.includes(eventType)) {
+      return NextResponse.json({ error: 'Tip eveniment invalid' }, { status: 400 });
+    }
+
+    // Validare campuri obligatorii
     if (!eventName || !eventType || !eventDate) {
       return NextResponse.json({ error: 'Câmpuri obligatorii lipsă' }, { status: 400 });
     }
 
-    const eventCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    // Sanitizare lungime stringuri (prevenire abuse)
+    if (eventName.length > 200) return NextResponse.json({ error: 'Nume prea lung' }, { status: 400 });
+    if (coupleNames && coupleNames.length > 200) return NextResponse.json({ error: 'Câmp prea lung' }, { status: 400 });
+    if (location && location.length > 300) return NextResponse.json({ error: 'Locație prea lungă' }, { status: 400 });
+
+    // Validare data (trebuie sa fie o data valida)
+    if (isNaN(Date.parse(eventDate))) {
+      return NextResponse.json({ error: 'Data invalidă' }, { status: 400 });
+    }
+
+    // Limitam max_storage_bytes la maximum 100GB — clientul NU poate seta mai mult
+    const STORAGE_LIMITS = { intim: 5, complet: 15, vis: 30 };
+    const allowedGB = STORAGE_LIMITS[packageTier] || 25;
+    const safMaxStorageBytes = allowedGB * 1024 * 1024 * 1024;
+
+    // Verificam ca userul nu are deja un eveniment activ (un cont = un eveniment)
+    const { data: existingEvent } = await createAdminClient()
+      .from('events')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingEvent) {
+      return NextResponse.json({ error: 'Ai deja un eveniment activ' }, { status: 409 });
+    }
+
+    // Generam event_code sigur cu crypto
+    const { randomBytes } = await import('crypto');
+    const eventCode = randomBytes(4).toString('hex').toUpperCase();
 
     // Folosim admin client (service_role) care ocoleste RLS
     const adminSupabase = createAdminClient();
@@ -37,15 +72,15 @@ export async function POST(request) {
       .from('events')
       .insert({
         user_id: user.id,
-        event_name: eventName,
+        event_name: eventName.trim(),
         event_type: eventType,
         event_date: eventDate,
-        couple_names: coupleNames || null,
-        location: location || null,
+        couple_names: coupleNames?.trim() || null,
+        location: location?.trim() || null,
         event_code: eventCode,
         status: 'active',
-        max_guests: maxGuests || 100,
-        max_storage_bytes: maxStorageBytes || 26843545600,
+        max_guests: Math.min(maxGuests || 100, 1000),
+        max_storage_bytes: safMaxStorageBytes,
         package_type: packageType || eventType,
         package_tier: packageTier || 'complet',
       })

@@ -10,13 +10,21 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Missing text parameter' }, { status: 400 });
   }
 
+  // Previne DoS prin texte foarte lungi
+  if (text.length > 500) {
+    return NextResponse.json({ error: 'Text too long' }, { status: 400 });
+  }
+
+  // Limitam dimensiunea intre 100 si 800px (previne generarea de imagini gigantice)
+  const clampedSize = Math.min(Math.max(parseInt(size) || 300, 100), 800);
+
   try {
     const buffer = await QRCode.toBuffer(text, {
-      width: parseInt(size),
+      width: clampedSize,
       margin: 2,
       color: {
-        dark: '#2d2c4a', // Dark slate navy
-        light: '#ffffff' // White background
+        dark: '#2d2c4a',
+        light: '#ffffff'
       }
     });
 
