@@ -318,26 +318,27 @@ function EventSetupForm({ onCreated }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setError('Nu ești autentificat.'); setSaving(false); return; }
 
-      const eventCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-      const { error: insertError } = await supabase.from('events').insert({
-        user_id: user.id,
-        event_name: eventName,
-        event_type: eventType,
-        event_date: eventDate,
-        couple_names: coupleNames || null,
-        location: location || null,
-        event_code: eventCode,
-        status: 'active',
-        max_guests: selectedPlan?.guests || 100,
-        max_storage_bytes: (selectedPlan?.storageGB || 25) * 1024 * 1024 * 1024,
-        package_type: eventType,
-        package_tier: selectedPlan?.key || 'custom',
+      const res = await fetch('/api/events/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventName,
+          eventType,
+          eventDate,
+          coupleNames: coupleNames || null,
+          location: location || null,
+          maxGuests: selectedPlan?.guests || 100,
+          maxStorageBytes: (selectedPlan?.storageGB || 25) * 1024 * 1024 * 1024,
+          packageType: eventType,
+          packageTier: selectedPlan?.key || 'complet',
+        }),
       });
 
-      if (insertError) {
-        console.error('Event creation error:', insertError);
-        setError('Eroare la crearea evenimentului. Încearcă din nou.');
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error('Event creation error:', result.error);
+        setError(`Eroare: ${result.error}`);
         setSaving(false);
         return;
       }
