@@ -14,6 +14,8 @@ export default function EvenimentulMeuPage() {
   const [activeTab, setActiveTab] = useState('poze');
   const [loading, setLoading] = useState(true);
   const [archiveLoading, setArchiveLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -80,6 +82,61 @@ export default function EvenimentulMeuPage() {
       setEvent({ ...event, is_gallery_public: newVal });
     } else {
       alert('Eroare la actualizarea setării.');
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = (items) => {
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(items.map(i => i.id)));
+    }
+  };
+
+  const deleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Ștergi ${selectedIds.size} fișier(e)? Această acțiune nu poate fi anulată.`)) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch('/api/upload/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadIds: Array.from(selectedIds) }),
+      });
+      if (res.ok) {
+        setUploads(prev => prev.filter(u => !selectedIds.has(u.id)));
+        setSelectedIds(new Set());
+      } else {
+        const err = await res.json();
+        alert('Eroare: ' + err.error);
+      }
+    } catch { alert('Eroare la ștergere.'); }
+    setDeleteLoading(false);
+  };
+
+  const downloadSelected = async (items) => {
+    const toDownload = selectedIds.size > 0
+      ? items.filter(i => selectedIds.has(i.id))
+      : items;
+    for (const item of toDownload) {
+      const url = item.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${item.r2_key}`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.original_name || item.id;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      await new Promise(r => setTimeout(r, 300));
     }
   };
 
@@ -202,42 +259,136 @@ export default function EvenimentulMeuPage() {
 
       {/* Tab content */}
       {activeTab === 'poze' && (
-        <div className={styles.photoGrid}>
-          {photos.length === 0 ? (
-            <p className={styles.emptyTab}>Nicio fotografie încă. Distribuie linkul invitaților!</p>
-          ) : (
-            photos.map((photo) => (
-              <div key={photo.id} className={styles.photoItem}>
-                <img
-                  src={photo.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${photo.r2_key}`}
-                  alt={photo.original_name}
-                  className={styles.photoImg}
-                  loading="lazy"
-                />
-                <p className={styles.photoName}>{photo.original_name}</p>
-              </div>
-            ))
+        <div>
+          {photos.length > 0 && (
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: 'var(--space-md)', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => selectAll(photos)}
+                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-cream)', border: '1px solid var(--color-cream-darker)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+              >
+                {selectedIds.size === photos.length ? '✗ Deselectează tot' : '✓ Selectează tot'}
+              </button>
+              {selectedIds.size > 0 && (
+                <>
+                  <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{selectedIds.size} selectate</span>
+                  <button
+                    onClick={() => downloadSelected(photos)}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  >
+                    ⬇ Descarcă selectate
+                  </button>
+                  <button
+                    onClick={deleteSelected}
+                    disabled={deleteLoading}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  >
+                    {deleteLoading ? '⏳ Se șterge...' : '🗑 Șterge selectate'}
+                  </button>
+                </>
+              )}
+              {selectedIds.size === 0 && (
+                <button
+                  onClick={() => downloadSelected(photos)}
+                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                >
+                  ⬇ Descarcă tot
+                </button>
+              )}
+            </div>
           )}
+          <div className={styles.photoGrid}>
+            {photos.length === 0 ? (
+              <p className={styles.emptyTab}>Nicio fotografie încă. Distribuie linkul invitaților!</p>
+            ) : (
+              photos.map((photo) => (
+                <div
+                  key={photo.id}
+                  className={styles.photoItem}
+                  style={{ position: 'relative', outline: selectedIds.has(photo.id) ? '3px solid var(--color-violet)' : 'none', outlineOffset: '2px' }}
+                  onClick={() => toggleSelect(photo.id)}
+                >
+                  <div style={{
+                    position: 'absolute', top: '8px', left: '8px', zIndex: 2,
+                    width: '22px', height: '22px', borderRadius: '6px',
+                    background: selectedIds.has(photo.id) ? 'var(--color-violet)' : 'rgba(255,255,255,0.9)',
+                    border: selectedIds.has(photo.id) ? '2px solid var(--color-violet)' : '2px solid rgba(0,0,0,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s ease', cursor: 'pointer',
+                  }}>
+                    {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <img
+                    src={photo.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${photo.r2_key}`}
+                    alt={photo.original_name}
+                    className={styles.photoImg}
+                    loading="lazy"
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <p className={styles.photoName}>{photo.original_name}</p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
       {activeTab === 'clipuri' && (
-        <div className={styles.photoGrid}>
-          {videos.length === 0 ? (
-            <p className={styles.emptyTab}>Niciun clip încă.</p>
-          ) : (
-            videos.map((video) => (
-              <div key={video.id} className={styles.photoItem}>
-                <video
-                  src={video.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${video.r2_key}`}
-                  className={styles.photoImg}
-                  controls
-                  preload="metadata"
-                />
-                <p className={styles.photoName}>{video.original_name}</p>
-              </div>
-            ))
+        <div>
+          {videos.length > 0 && (
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: 'var(--space-md)', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => selectAll(videos)}
+                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-cream)', border: '1px solid var(--color-cream-darker)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+              >
+                {selectedIds.size === videos.length ? '✗ Deselectează tot' : '✓ Selectează tot'}
+              </button>
+              {selectedIds.size > 0 && (
+                <>
+                  <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{selectedIds.size} selectate</span>
+                  <button
+                    onClick={deleteSelected}
+                    disabled={deleteLoading}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  >
+                    {deleteLoading ? '⏳ Se șterge...' : '🗑 Șterge selectate'}
+                  </button>
+                </>
+              )}
+            </div>
           )}
+          <div className={styles.photoGrid}>
+            {videos.length === 0 ? (
+              <p className={styles.emptyTab}>Niciun clip încă.</p>
+            ) : (
+              videos.map((video) => (
+                <div
+                  key={video.id}
+                  className={styles.photoItem}
+                  style={{ position: 'relative', outline: selectedIds.has(video.id) ? '3px solid var(--color-violet)' : 'none', outlineOffset: '2px' }}
+                  onClick={() => toggleSelect(video.id)}
+                >
+                  <div style={{
+                    position: 'absolute', top: '8px', left: '8px', zIndex: 2,
+                    width: '22px', height: '22px', borderRadius: '6px',
+                    background: selectedIds.has(video.id) ? 'var(--color-violet)' : 'rgba(255,255,255,0.9)',
+                    border: selectedIds.has(video.id) ? '2px solid var(--color-violet)' : '2px solid rgba(0,0,0,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s ease', cursor: 'pointer',
+                  }}>
+                    {selectedIds.has(video.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <video
+                    src={video.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${video.r2_key}`}
+                    className={styles.photoImg}
+                    controls
+                    preload="metadata"
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <p className={styles.photoName}>{video.original_name}</p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
