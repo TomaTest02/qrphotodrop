@@ -32,12 +32,13 @@ export default async function PrintariPage() {
               <th className={styles.th}>Eveniment / Design</th>
               <th className={styles.th}>Text Cartonaș</th>
               <th className={styles.th}>Status</th>
+              <th className={styles.th}>Acțiuni</th>
             </tr>
           </thead>
           <tbody>
             {(!requests || requests.length === 0) ? (
               <tr>
-                <td colSpan="5" className={styles.empty}>
+                <td colSpan="6" className={styles.empty}>
                   Nu există nicio cerere de printare înregistrată momentan.
                 </td>
               </tr>
@@ -47,6 +48,7 @@ export default async function PrintariPage() {
                 const eventLine = messageLines.find(l => l.startsWith('Eveniment:')) || 'Eveniment: Nespecificat';
                 const designLine = messageLines.find(l => l.startsWith('Design:')) || 'Design: Nespecificat';
                 const textLine = messageLines.find(l => l.startsWith('Text:')) || 'Text: Fără text';
+                const isResolved = req.event_type.includes('Rezolvată');
                 
                 return (
                   <tr key={req.id}>
@@ -66,9 +68,33 @@ export default async function PrintariPage() {
                       </div>
                     </td>
                     <td className={styles.td}>
-                      <span className={styles.statusPending} style={{ background: 'var(--color-violet-pale)', color: 'var(--color-violet)' }}>
-                        Cerere Nouă
+                      <span className={isResolved ? styles.statusActive : styles.statusPending} style={isResolved ? {} : { background: 'var(--color-violet-pale)', color: 'var(--color-violet)' }}>
+                        {isResolved ? 'Rezolvată' : 'Nouă'}
                       </span>
+                    </td>
+                    <td className={styles.td}>
+                      {!isResolved && (
+                        <div className={styles.actionsGroup}>
+                          <form action={async () => {
+                            'use server';
+                            const { createClient } = require('@supabase/supabase-js');
+                            const adminSupabase = createClient(
+                              process.env.NEXT_PUBLIC_SUPABASE_URL,
+                              process.env.SUPABASE_SERVICE_ROLE_KEY
+                            );
+                            await adminSupabase
+                              .from('contact_messages')
+                              .update({ event_type: 'Comandă Printare (Rezolvată)' })
+                              .eq('id', req.id);
+                            const { revalidatePath } = require('next/cache');
+                            revalidatePath('/admin/printari');
+                          }}>
+                            <button type="submit" className={`${styles.actionBtn} ${styles.btnSuccess}`}>
+                              Marchează
+                            </button>
+                          </form>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

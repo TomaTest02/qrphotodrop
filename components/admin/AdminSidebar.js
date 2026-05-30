@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { SquaresFour, Users, PenNib, SignOut, Printer } from '@phosphor-icons/react';
 import styles from './AdminSidebar.module.css';
@@ -13,6 +14,18 @@ const LINKS = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [counts, setCounts] = useState({ pendingAccounts: 0, pendingPrints: 0 });
+
+  useEffect(() => {
+    fetch('/api/admin/notifications')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setCounts({ pendingAccounts: data.pendingAccounts, pendingPrints: data.pendingPrints });
+        }
+      })
+      .catch(console.error);
+  }, [pathname]);
 
   const handleLogout = async () => {
     const { createClient } = await import('@/lib/supabase/client');
@@ -30,16 +43,28 @@ export default function AdminSidebar() {
       <nav className={styles.nav}>
         {LINKS.map((link) => {
           const Icon = link.icon;
+          // Determine count based on link
+          let badgeCount = 0;
+          if (link.href === '/admin/conturi') badgeCount = counts.pendingAccounts || 0;
+          if (link.href === '/admin/printari') badgeCount = counts.pendingPrints || 0;
+
           return (
             <a
               key={link.href}
               href={link.href}
               className={`${styles.link} ${pathname === link.href ? styles.active : ''}`}
+              style={{ position: 'relative' }}
             >
               <span className={styles.icon}>
                 <Icon size={24} weight={pathname === link.href ? "fill" : "regular"} />
               </span>
               {link.label}
+              
+              {badgeCount > 0 && (
+                <span className={styles.notificationBadge}>
+                  {badgeCount}
+                </span>
+              )}
             </a>
           );
         })}
