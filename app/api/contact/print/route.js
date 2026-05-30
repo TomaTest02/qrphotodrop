@@ -28,14 +28,19 @@ Text Personalizat: "${cardText}"
 =========================================
     `;
 
-    await sendContactForm({
-      firstName: 'Cerere',
-      lastName: 'Printare',
-      email: email,
-      phone: phone || '',
-      eventType: 'Comandă Printare',
-      message: message
-    });
+    if (process.env.RESEND_API_KEY) {
+      await sendContactForm({
+        firstName: 'Cerere',
+        lastName: 'Printare',
+        email: email,
+        phone: phone || '',
+        eventType: 'Comandă Printare',
+        message: message
+      });
+    } else {
+      console.log('--- RESEND NOT CONFIGURED. MOCKING EMAIL ---');
+      console.log(message);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

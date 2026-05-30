@@ -10,7 +10,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    await sendContactForm({ firstName, lastName, email, phone, eventType, message });
+    if (process.env.RESEND_API_KEY) {
+      await sendContactForm({ firstName, lastName, email, phone, eventType, message });
+    } else {
+      console.log('--- RESEND NOT CONFIGURED. MOCKING EMAIL ---');
+      console.log(`From: ${firstName} ${lastName} (${email}) - ${phone}`);
+      console.log(`Type: ${eventType}`);
+      console.log(`Message: ${message}`);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
