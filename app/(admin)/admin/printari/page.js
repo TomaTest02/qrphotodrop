@@ -1,7 +1,33 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 import styles from '../conturi/conturi.module.css';
 
 export const dynamic = 'force-dynamic';
+
+async function markAsResolved(id) {
+  'use server';
+
+  // Verificare autentificare și rol admin
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Forbidden');
+
+  // Actualizare status
+  const adminSupabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  await adminSupabase
+    .from('contact_messages')
+    .update({ event_type: 'Comandă Printare (Rezolvată)' })
+    .eq('id', id);
+
+  revalidatePath('/admin/printari');
+}
 
 export default async function PrintariPage() {
   const supabase = createSupabaseClient(
@@ -10,10 +36,10 @@ export default async function PrintariPage() {
   );
 
   // Obținem toate cererile de printare din tabela contact_messages
-  const { data: requests, error } = await supabase
+  const { data: requests } = await supabase
     .from('contact_messages')
     .select('*')
-    .eq('event_type', 'Comandă Printare')
+    .in('event_type', ['Comandă Printare', 'Comandă Printare (Rezolvată)'])
     .order('created_at', { ascending: false });
 
   return (
@@ -49,7 +75,7 @@ export default async function PrintariPage() {
                 const designLine = messageLines.find(l => l.startsWith('Design:')) || 'Design: Nespecificat';
                 const textLine = messageLines.find(l => l.startsWith('Text:')) || 'Text: Fără text';
                 const isResolved = req.event_type.includes('Rezolvată');
-                
+
                 return (
                   <tr key={req.id}>
                     <td className={styles.td}>{new Date(req.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
@@ -64,7 +90,7 @@ export default async function PrintariPage() {
                     </td>
                     <td className={styles.td} style={{ maxWidth: '300px' }}>
                       <div style={{ padding: '10px', background: 'var(--color-cream)', borderRadius: '6px', fontSize: '13px', fontStyle: 'italic', border: '1px solid var(--color-cream-darker)' }}>
-                        "{textLine.replace('Text: ', '')}"
+                        &ldquo;{textLine.replace('Text: ', '')}&rdquo;
                       </div>
                     </td>
                     <td className={styles.td}>
@@ -75,20 +101,7 @@ export default async function PrintariPage() {
                     <td className={styles.td}>
                       {!isResolved && (
                         <div className={styles.actionsGroup}>
-                          <form action={async () => {
-                            'use server';
-                            const { createClient } = require('@supabase/supabase-js');
-                            const adminSupabase = createClient(
-                              process.env.NEXT_PUBLIC_SUPABASE_URL,
-                              process.env.SUPABASE_SERVICE_ROLE_KEY
-                            );
-                            await adminSupabase
-                              .from('contact_messages')
-                              .update({ event_type: 'Comandă Printare (Rezolvată)' })
-                              .eq('id', req.id);
-                            const { revalidatePath } = require('next/cache');
-                            revalidatePath('/admin/printari');
-                          }}>
+                          <form action={markAsResolved.bind(null, req.id)}>
                             <button type="submit" className={`${styles.actionBtn} ${styles.btnSuccess}`}>
                               Marchează
                             </button>

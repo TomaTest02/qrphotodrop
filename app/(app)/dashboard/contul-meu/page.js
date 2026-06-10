@@ -34,9 +34,12 @@ export default function ContulMeuPage() {
   useEffect(() => {
     if (!event?.event_date) return;
     
-    // Expira la 3 luni dupa eveniment
+    // Durata corectă în funcție de abonament
+    const DURATION_MONTHS = { intim: 1, complet: 2, vis: 3 };
+    const months = DURATION_MONTHS[event.package_tier] || 3;
+
     const expiryDate = new Date(event.event_date);
-    expiryDate.setMonth(expiryDate.getMonth() + 3);
+    expiryDate.setMonth(expiryDate.getMonth() + months);
 
     const timer = setInterval(() => {
       const now = new Date();
@@ -128,7 +131,10 @@ export default function ContulMeuPage() {
                 <p style={{ fontSize: '15px', color: 'var(--color-text)', fontWeight: 600 }}>
                   {event.event_date ? (() => {
                     const expiry = new Date(event.event_date);
-                    expiry.setMonth(expiry.getMonth() + 3); // Exact 3 luni
+                    // Durata corectă în funcție de abonament
+                    const DURATION_MONTHS = { intim: 1, complet: 2, vis: 3 };
+                    const months = DURATION_MONTHS[event.package_tier] || 3;
+                    expiry.setMonth(expiry.getMonth() + months);
                     return expiry.toLocaleDateString('ro-RO');
                   })() : '—'}
                 </p>

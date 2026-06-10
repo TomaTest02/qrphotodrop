@@ -103,14 +103,19 @@ export default function EvenimentulMeuPage() {
   const handleArchive = async () => {
     setArchiveLoading(true);
     try {
-      await fetch('/api/archive', {
+      const res = await fetch('/api/archive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventId: event.id }),
       });
-      alert('Arhiva este în curs de generare. Vei fi notificat pe email.');
+      if (res.ok) {
+        alert('Arhiva este în curs de generare. Vei fi notificat pe email când este gata.');
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert('Eroare la generarea arhivei: ' + (errData.error || 'Încearcă din nou.'));
+      }
     } catch {
-      alert('Eroare. Încearcă din nou.');
+      alert('Eroare de conexiune. Încearcă din nou.');
     }
     setArchiveLoading(false);
   };
@@ -173,7 +178,7 @@ export default function EvenimentulMeuPage() {
       ? items.filter(i => selectedIds.has(i.id))
       : items;
     for (const item of toDownload) {
-      const url = item.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${item.r2_key}`;
+      const url = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
       const a = document.createElement('a');
       a.href = url;
       a.download = item.original_name || item.id;
@@ -411,7 +416,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <img
-                    src={photo.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${photo.r2_key}`}
+                    src={photo.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photo.r2_key}`}
                     alt={photo.original_name}
                     className={styles.photoImg}
                     loading="lazy"
@@ -471,7 +476,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(video.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <video
-                    src={video.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${video.r2_key}`}
+                    src={video.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${video.r2_key}`}
                     className={styles.photoImg}
                     controls
                     preload="metadata"

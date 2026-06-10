@@ -46,8 +46,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Data invalidă' }, { status: 400 });
     }
 
-    // Limitam max_storage_bytes la maximum 100GB — clientul NU poate seta mai mult
-    const STORAGE_LIMITS = { intim: 5, complet: 15, vis: 30 };
+    // Limitele corespund exact cu pachetele definite în lib/stripe.js
+    const STORAGE_LIMITS = { intim: 25, complet: 60, vis: 100 };
     const allowedGB = STORAGE_LIMITS[packageTier] || 25;
     const safMaxStorageBytes = allowedGB * 1024 * 1024 * 1024;
 
