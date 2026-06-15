@@ -17,18 +17,47 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "QRPhotoDrop — Album Digital pentru Evenimente",
+  metadataBase: new URL('https://qrphotodrop.ro'),
+  title: {
+    default: 'QRPhotoDrop — Album Digital pentru Evenimente',
+    template: '%s — QRPhotoDrop',
+  },
   description:
-    "Colectează poze, clipuri și urări de la invitații tăi prin scanarea unui cod QR. Fără aplicație, fără cont. Simplu și elegant.",
-  keywords: "album digital, QR, nuntă, botez, aniversare, corporate, poze invitați",
+    'Colectează poze, clipuri și urări de la invitații tăi prin scanarea unui cod QR. Fără aplicație, fără cont. Simplu și elegant.',
+  keywords: ['album digital', 'QR code nuntă', 'poze invitați', 'botez', 'aniversare', 'corporate', 'fotografii eveniment', 'cod QR'],
+  authors: [{ name: 'QRPhotoDrop', url: 'https://qrphotodrop.ro' }],
+  creator: 'QRPhotoDrop',
+  publisher: 'QRPhotoDrop',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
   openGraph: {
-    title: "QRPhotoDrop — Album Digital pentru Evenimente",
+    title: 'QRPhotoDrop — Album Digital pentru Evenimente',
     description:
-      "Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.",
-    url: "https://qrphotodrop.ro",
-    siteName: "QRPhotoDrop",
-    locale: "ro_RO",
-    type: "website",
+      'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.',
+    url: 'https://qrphotodrop.ro',
+    siteName: 'QRPhotoDrop',
+    locale: 'ro_RO',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'QRPhotoDrop — Album Digital pentru Evenimente',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'QRPhotoDrop — Album Digital pentru Evenimente',
+    description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.',
+    images: ['/og-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://qrphotodrop.ro',
   },
 };
 

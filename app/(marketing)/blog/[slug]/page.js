@@ -1,82 +1,114 @@
-const POSTS = {
-  '5-idei-creative-poze-invitati': {
-    title: '5 idei creative pentru a colecta pozele de la invitați',
-    category: 'Nuntă',
-    date: '15 Mai 2026',
-    content: `
-## 1. Codul QR pe cartonașe elegante
+import styles from './post.module.css';
+import { PortableText } from '@portabletext/react';
+import { client } from '../../../../sanity/lib/client';
+import { urlForImage } from '../../../../sanity/lib/image';
 
-Printează codul QR pe cartonașe elegante și pune-le pe fiecare masă. Invitații le scanează direct cu camera telefonului și încarcă poze în câteva secunde.
+export const revalidate = 60; // ISR - forced rebuild
 
-## 2. Panou decorativ cu QR
+const POST_QUERY = `*[_type == "post" && slug.current == $slug][0] {
+  title,
+  "slug": slug.current,
+  category,
+  publishedAt,
+  excerpt,
+  mainImage,
+  content,
+  author,
+  readTime,
+  seoTitle,
+  seoDescription,
+  canonicalUrl,
+  tags
+}`;
 
-Un panou mare la intrare, coordonat cu tema evenimentului, care invită oaspeții să scaneze și să contribuie la albumul digital.
-
-## 3. Link pe WhatsApp
-
-Trimite linkul direct pe grupul de WhatsApp al evenimentului. Simplu, rapid, fără aplicații suplimentare.
-
-## 4. Ecran digital interactiv
-
-Afișează codul QR pe un ecran la photobooth sau lângă candy bar. Invitații pot scana și încărca instant.
-
-## 5. Meniuri personalizate
-
-Integrează codul QR în meniul evenimentului — invitații îl văd natural în timp ce răsfoiesc opțiunile culinare.
-    `,
-  },
-  'cum-sa-organizezi-botez-memorabil': {
-    title: 'Cum să organizezi un botez memorabil',
-    category: 'Botez',
-    date: '8 Mai 2026',
-    content: `
-## Planificarea perfectă
-
-Un botez memorabil începe cu o planificare atentă. Stabilește tema, locația și lista de invitați cu cel puțin 3 luni înainte.
-
-## Detalii care contează
-
-Atenția la detalii face diferența: de la candy bar tematic până la cartonașe cu QR code pentru colectarea pozelor.
-
-## Amintiri digitale
-
-Cu QRPhotoDrop, nașii și bunicii pot trimite poze și urări direct din browser. Totul se adună automat într-un album digital frumos.
-    `,
-  },
-  'cod-qr-viitorul-evenimentelor': {
-    title: 'De ce codul QR este viitorul evenimentelor',
-    category: 'Sfaturi',
-    date: '28 Aprilie 2026',
-    content: `
-## Simplu și universal
-
-Fiecare smartphone modern poate scana un cod QR fără aplicații suplimentare. Zero fricțiune pentru invitați.
-
-## Calitate superioară
-
-Spre deosebire de WhatsApp care comprimă pozele, QRPhotoDrop păstrează calitatea originală a fiecărei fotografii.
-
-## Totul centralizat
-
-Nu mai cauți prin 10 grupuri de WhatsApp. Toate pozele, clipurile și urările sunt într-un singur loc, accesibil instant.
-    `,
-  },
-};
+export async function generateStaticParams() {
+  const slugs = await client.fetch(`*[_type == "post" && defined(slug.current)][].slug.current`);
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const post = POSTS[slug];
+  const post = await client.fetch(POST_QUERY, { slug });
+  
+  if (!post) return { title: 'Articol negăsit' };
+
+  const metaTitle = post.seoTitle || post.title;
+  const metaDesc = post.seoDescription || post.excerpt;
+  const canonical = post.canonicalUrl || `https://qrphotodrop.ro/blog/${slug}`;
+  const ogImage = post.mainImage?.asset ? urlForImage(post.mainImage).width(1200).height(630).url() : undefined;
+
   return {
-    title: post ? `${post.title} — QRPhotoDrop Blog` : 'Articol negăsit',
-    description: post ? post.content.slice(0, 160) : '',
+    title: metaTitle,
+    description: metaDesc,
+    alternates: {
+      canonical: canonical,
+    },
+    openGraph: {
+      title: `${metaTitle} — QRPhotoDrop Blog`,
+      description: metaDesc,
+      url: `https://qrphotodrop.ro/blog/${slug}`,
+      type: 'article',
+      publishedTime: post.publishedAt,
+      authors: [post.author || 'QRPhotoDrop Team'],
+      tags: post.tags || [post.category, 'evenimente'],
+      images: ogImage ? [{ url: ogImage }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: metaTitle,
+      description: metaDesc,
+      images: ogImage ? [ogImage] : [],
+    },
   };
 }
 
-import styles from './post.module.css';
+const portableTextComponents = {
+  types: {
+    image: ({ value }) => {
+      if (!value?.asset?._ref) return null;
+      return (
+        <div style={{ margin: '2rem 0', borderRadius: '12px', overflow: 'hidden' }}>
+          <img
+            src={urlForImage(value).width(800).url()}
+            alt={value.alt || 'Imagine articol blog'}
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+            loading="lazy"
+          />
+        </div>
+      );
+    },
+  },
+  block: {
+    // Dacă utilizatorul adaugă un H1 în conținut, îl transformăm într-un subtitlu elegant pentru a evita duplicarea vizuală cu titlul paginii
+    h1: ({ children }) => (
+      <h2 style={{ 
+        fontSize: '24px', 
+        fontWeight: '400', 
+        color: '#6B7280', 
+        marginTop: 0, 
+        marginBottom: '32px',
+        lineHeight: '1.4',
+        fontFamily: 'var(--font-sans, sans-serif)'
+      }}>
+        {children}
+      </h2>
+    ),
+  },
+  marks: {
+    link: ({ children, value }) => {
+      const rel = !value.href.startsWith('/') ? 'noreferrer noopener' : undefined;
+      return (
+        <a href={value.href} rel={rel} target={!value.href.startsWith('/') ? '_blank' : undefined} style={{ color: 'var(--brand)', textDecoration: 'underline' }}>
+          {children}
+        </a>
+      );
+    },
+  },
+};
 
 export default async function BlogPostPage({ params }) {
   const { slug } = await params;
-  const post = POSTS[slug];
+  const post = await client.fetch(POST_QUERY, { slug });
 
   if (!post) {
     return (
@@ -86,25 +118,125 @@ export default async function BlogPostPage({ params }) {
     );
   }
 
+  const dateStr = new Date(post.publishedAt || Date.now()).toLocaleDateString('ro-RO', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  const metaDesc = post.seoDescription || post.excerpt;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.seoTitle || post.title,
+    description: metaDesc,
+    datePublished: post.publishedAt,
+    dateModified: post.publishedAt,
+    author: {
+      '@type': 'Organization',
+      name: post.author || 'QRPhotoDrop Team',
+      url: 'https://qrphotodrop.ro',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'QRPhotoDrop',
+      url: 'https://qrphotodrop.ro',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://qrphotodrop.ro/blog/${slug}`,
+    },
+    articleSection: post.category,
+    inLanguage: 'ro-RO',
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Acasă',
+        item: 'https://qrphotodrop.ro/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: 'https://qrphotodrop.ro/blog',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.category || 'General',
+        item: 'https://qrphotodrop.ro/blog',
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: post.title,
+        item: `https://qrphotodrop.ro/blog/${slug}`,
+      },
+    ],
+  };
+
   return (
     <article className={styles.article}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
+      <nav aria-label="breadcrumb" style={{ marginBottom: '32px', fontSize: '14px', fontWeight: '500', color: '#6B7280' }}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          <li style={{ display: 'inline-flex', alignItems: 'center' }}><a href="/" style={{ color: '#4B5563', textDecoration: 'none' }}>Acasă</a></li>
+          <li style={{ color: '#D1D5DB', fontSize: '12px' }}>/</li>
+          <li style={{ display: 'inline-flex', alignItems: 'center' }}><a href="/blog" style={{ color: '#4B5563', textDecoration: 'none' }}>Blog</a></li>
+          {post.category && (
+            <>
+              <li style={{ color: '#D1D5DB', fontSize: '12px' }}>/</li>
+              <li style={{ display: 'inline-flex', alignItems: 'center' }}>{post.category}</li>
+            </>
+          )}
+          <li style={{ color: '#D1D5DB', fontSize: '12px' }}>/</li>
+          <li aria-current="page" style={{ color: '#111827', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>{post.title}</li>
+        </ul>
+      </nav>
+      
+      {post.mainImage?.asset && (
+        <div style={{ marginBottom: '2rem', borderRadius: '16px', overflow: 'hidden', maxHeight: '500px' }}>
+          <img 
+            src={urlForImage(post.mainImage).width(1200).url()} 
+            alt={post.mainImage.alt || post.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+      )}
+
       <div className={styles.meta}>
         <span className={styles.category}>
-          {post.category}
+          {post.category || 'General'}
         </span>
-        <span className={styles.date}>{post.date}</span>
+        <time dateTime={post.publishedAt} className={styles.date}>{dateStr}</time>
+        {post.readTime && <span className={styles.date} style={{marginLeft: '1rem'}}>· {post.readTime}</span>}
       </div>
+      
       <h1 className={styles.title}>
         {post.title}
       </h1>
-      <div
-        className={styles.content}
-        dangerouslySetInnerHTML={{
-          __html: post.content
-            .replace(/## (.*)/g, '<h2>$1</h2>')
-            .replace(/\n\n/g, '</p><p>')
-        }}
-      />
+      
+      <div className={styles.content}>
+        {post.content ? (
+          <PortableText value={post.content} components={portableTextComponents} />
+        ) : (
+          <p>Acest articol nu are conținut încă.</p>
+        )}
+      </div>
+      
       <div className={styles.footer}>
         <a href="/blog" className={styles.backLink}>← Înapoi la blog</a>
       </div>

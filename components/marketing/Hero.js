@@ -114,6 +114,7 @@ export default function Hero() {
               fill
               sizes="(max-width: 992px) 160px, 220px"
               priority
+              fetchPriority="high"
               className={styles.heroImage}
             />
           </div>
@@ -143,7 +144,7 @@ export default function Hero() {
               alt="Cocktails" 
               fill
               sizes="(max-width: 992px) 160px, 220px"
-              priority
+              loading="lazy"
               className={styles.heroImage}
             />
           </div>
@@ -158,7 +159,7 @@ export default function Hero() {
               alt="Eveniment Corporate" 
               fill
               sizes="(max-width: 992px) 160px, 220px"
-              priority
+              loading="lazy"
               className={styles.heroImage}
             />
           </div>
@@ -173,7 +174,7 @@ export default function Hero() {
               alt="Aniversare" 
               fill
               sizes="(max-width: 992px) 160px, 220px"
-              priority
+              loading="lazy"
               className={styles.heroImage}
             />
           </div>
@@ -188,7 +189,7 @@ export default function Hero() {
               alt="Botez Decor" 
               fill
               sizes="(max-width: 992px) 160px, 220px"
-              priority
+              loading="lazy"
               className={styles.heroImage}
             />
           </div>

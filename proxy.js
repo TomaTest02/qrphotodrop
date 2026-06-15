@@ -27,6 +27,7 @@ export async function proxy(request) {
     '/api/stripe/webhook', // Stripe webhook (are propria semnătură)
     '/eveniment/',     // pagini publice eveniment
     '/dashboard/demo', // pagina demo publică
+    '/studio/',        // Sanity Studio
     '/_next/',         // assets Next.js
     '/favicon',
     '/images/',
