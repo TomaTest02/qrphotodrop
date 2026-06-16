@@ -11,7 +11,7 @@ export default function sitemap() {
   const now = new Date().toISOString();
 
   return [
-    // Pagini principale
+    // Pagini principalee
     { url: BASE_URL,                     lastModified: now, changeFrequency: 'weekly',  priority: 1.0 },
     { url: `${BASE_URL}/preturi`,        lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${BASE_URL}/blog`,           lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
