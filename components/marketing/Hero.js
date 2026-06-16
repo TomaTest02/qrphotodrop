@@ -25,7 +25,7 @@ export default function Hero() {
 
       // Initial state — use force3D for GPU layer
       gsap.set(`.${styles.eyebrow}`, { opacity: 0, y: 20, force3D: true });
-      gsap.set(`.${styles.titleInner}`, { yPercent: 100, force3D: true });
+      gsap.set(`.${styles.titleInner}`, { y: '100%', force3D: true });
       gsap.set(`.${styles.subtitle}`, { opacity: 0, y: 30, force3D: true });
       gsap.set(`.${styles.actions}`, { opacity: 0, y: 20, force3D: true });
       gsap.set(photosRef.current, { 
@@ -46,7 +46,7 @@ export default function Hero() {
         force3D: true
       })
       .to(`.${styles.titleInner}`, {
-        yPercent: 0,
+        y: '0%',
         duration: 1,
         stagger: 0.12,
         ease: 'power4.out',
