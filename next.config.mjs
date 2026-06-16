@@ -26,7 +26,19 @@ const nextConfig = {
 
   // Cache headers pentru assets statice și API-uri publice
   async headers() {
+    const securityHeaders = [
+      { key: 'X-DNS-Prefetch-Control', value: 'on' },
+      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }, // Blocks iframe clickjacking, but allows SAMEORIGIN for Sanity Studio
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+    ];
+
     return [
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
       {
         // Imagini statice — cache 1 an pe browser și CDN
         source: '/:path*.:ext(jpg|jpeg|png|webp|avif|svg|ico)',

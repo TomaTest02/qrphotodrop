@@ -1,8 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+// --- Rate Limiter Map (In-Memory for Edge) ---
+const rateLimitMap = new Map();
+const RATE_LIMIT_MAX_REQUESTS = 15;
+const RATE_LIMIT_WINDOW_MS = 10000;
+
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
+
+  // ─── Rate Limiting for critical API routes ─────────────────────────────
+  if (pathname.startsWith('/api/events/create') ||
+      pathname.startsWith('/api/upload/presigned') ||
+      pathname.startsWith('/api/upload/direct') ||
+      pathname.startsWith('/api/admin/otp')) {
+    
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    
+    if (ip !== 'unknown') {
+      const now = Date.now();
+      const windowStart = now - RATE_LIMIT_WINDOW_MS;
+      const requestTimestamps = (rateLimitMap.get(ip) || []).filter(timestamp => timestamp > windowStart);
+
+      if (requestTimestamps.length >= RATE_LIMIT_MAX_REQUESTS) {
+        console.warn(`[RATE LIMIT] IP ${ip} blocked on ${pathname}`);
+        return new NextResponse(
+          JSON.stringify({ error: 'Too Many Requests', message: 'Prea multe cereri. Te rugăm să aștepți câteva secunde.' }),
+          { status: 429, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      requestTimestamps.push(now);
+      rateLimitMap.set(ip, requestTimestamps);
+    }
+  }
 
   // ─── Rute publice care nu necesită autentificare ──────────────────────────
   // upload guest, API-uri publice pentru invitați

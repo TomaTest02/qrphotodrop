@@ -11,6 +11,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
+    // Security: Whitelist MIME Types to prevent malicious uploads (XSS/Executables)
+    if (!contentType.startsWith('image/') && !contentType.startsWith('video/')) {
+      return NextResponse.json({ error: 'Invalid file type. Only images and videos are allowed.' }, { status: 415 });
+    }
+
     // Verify event exists and is active
     const supabase = createAdminClient();
     const { data: event } = await supabase

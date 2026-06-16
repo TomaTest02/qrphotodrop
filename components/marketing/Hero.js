@@ -1,12 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
 import styles from './Hero.module.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Hero() {
   const heroRef = useRef(null);
@@ -14,56 +10,72 @@ export default function Hero() {
   const photosRef = useRef([]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    let ctx;
+    
+    Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ]).then(([gsapModule, scrollModule]) => {
+      const gsap = gsapModule.default;
+      const { ScrollTrigger } = scrollModule;
+      gsap.registerPlugin(ScrollTrigger);
+
+      ctx = gsap.context(() => {
       const tl = gsap.timeline();
 
-      // Initial state
-      gsap.set(`.${styles.eyebrow}`, { opacity: 0, y: 20 });
-      gsap.set(`.${styles.titleInner}`, { yPercent: 100 });
-      gsap.set(`.${styles.subtitle}`, { opacity: 0, y: 30 });
-      gsap.set(`.${styles.actions}`, { opacity: 0, y: 20 });
+      // Initial state — use force3D for GPU layer
+      gsap.set(`.${styles.eyebrow}`, { opacity: 0, y: 20, force3D: true });
+      gsap.set(`.${styles.titleInner}`, { yPercent: 100, force3D: true });
+      gsap.set(`.${styles.subtitle}`, { opacity: 0, y: 30, force3D: true });
+      gsap.set(`.${styles.actions}`, { opacity: 0, y: 20, force3D: true });
       gsap.set(photosRef.current, { 
         opacity: 0, 
         scale: 0.8, 
         y: 60, 
-        rotation: (i) => [-25, -20, 25, 18, -18, 18][i] || 0
+        rotation: (i) => [-25, -20, 25, 18, -18, 18][i] || 0,
+        force3D: true
       });
 
       // Intro sequence
       tl.to(`.${styles.eyebrow}`, {
         opacity: 1,
         y: 0,
-        duration: 1,
+        duration: 0.8,
         ease: 'power3.out',
-        delay: 0.2
+        delay: 0.2,
+        force3D: true
       })
       .to(`.${styles.titleInner}`, {
         yPercent: 0,
-        duration: 1.2,
-        stagger: 0.15,
+        duration: 1,
+        stagger: 0.12,
         ease: 'power4.out',
-      }, '-=0.6')
+        force3D: true
+      }, '-=0.5')
       .to(`.${styles.subtitle}`, {
         opacity: 1,
         y: 0,
-        duration: 1,
+        duration: 0.8,
         ease: 'power3.out',
-      }, '-=0.8')
+        force3D: true
+      }, '-=0.6')
       .to(`.${styles.actions}`, {
         opacity: 1,
         y: 0,
-        duration: 1,
+        duration: 0.8,
         ease: 'power3.out',
-      }, '-=0.8')
+        force3D: true
+      }, '-=0.6')
       .to(photosRef.current, {
         opacity: 1,
         scale: 1,
         y: 0,
         rotation: (i) => [-12, -10, 12, 8, -8, 8][i] || 0,
-        duration: 1.5,
-        stagger: 0.1,
+        duration: 1.2,
+        stagger: 0.08,
         ease: 'back.out(1.2)',
-      }, '-=1.2');
+        force3D: true
+      }, '-=1');
 
       // Parallax effect on scroll
       gsap.to(containerRef.current, {
@@ -75,26 +87,28 @@ export default function Hero() {
         },
         yPercent: 30,
         opacity: 0,
-        ease: 'none'
+        ease: 'none',
+        force3D: true
       });
 
-      // Subtle float animation for photos
+      // Subtle float — only Y axis, lighter and GPU-friendly
       photosRef.current.forEach((photo, i) => {
         if (!photo) return;
         gsap.to(photo, {
-          y: '+=8',
-          rotation: '+=1.5',
-          duration: 3 + i,
+          y: '+=6',
+          duration: 3.5 + i * 0.5,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
-          delay: i * 0.5
+          delay: i * 0.4,
+          force3D: true
         });
       });
 
     }, heroRef);
+    }); // end Promise.then
 
-    return () => ctx.revert();
+    return () => ctx?.revert();
   }, []);
 
   return (
@@ -112,7 +126,7 @@ export default function Hero() {
               src="/images/hero/wedding.jpg" 
               alt="Nuntă" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
               priority
               fetchPriority="high"
               className={styles.heroImage}
@@ -128,7 +142,7 @@ export default function Hero() {
               src="/images/hero/botez.jpg" 
               alt="Botez" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
               priority
               className={styles.heroImage}
             />
@@ -143,7 +157,7 @@ export default function Hero() {
               src="/images/hero/toast.jpg" 
               alt="Cocktails" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
               loading="lazy"
               className={styles.heroImage}
             />
@@ -158,7 +172,7 @@ export default function Hero() {
               src="/images/hero/corporate.jpg" 
               alt="Eveniment Corporate" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
               loading="lazy"
               className={styles.heroImage}
             />
@@ -173,7 +187,7 @@ export default function Hero() {
               src="/images/hero/aniversare.jpg" 
               alt="Aniversare" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
               loading="lazy"
               className={styles.heroImage}
             />
