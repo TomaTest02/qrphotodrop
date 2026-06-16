@@ -5,7 +5,7 @@
   right: 0;
   z-index: 100;
   padding: 20px 40px;
-  transition: all var(--transition-mid);
+  transition: padding var(--transition-mid), background-color var(--transition-mid), backdrop-filter var(--transition-mid);
   background: transparent;
 }
 
@@ -41,7 +41,7 @@
 
 .link {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
   text-decoration: none;
   transition: color var(--transition-fast);
@@ -58,7 +58,7 @@
 
 .dropdownToggle {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
   cursor: pointer;
   display: flex;
@@ -96,7 +96,7 @@
   min-width: 180px;
   opacity: 0;
   visibility: hidden;
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
 }
 
 .dropdownOpen .dropdownMenu {
@@ -130,7 +130,7 @@
   background: var(--color-burgundy);
   border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all var(--transition-mid);
+  transition: transform var(--transition-mid), background-color var(--transition-mid);
 }
 
 .cta:hover {
@@ -153,7 +153,7 @@
   width: 24px;
   height: 2px;
   background: var(--color-text);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast);
   border-radius: 1px;
 }
 

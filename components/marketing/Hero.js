@@ -127,6 +127,7 @@ export default function Hero() {
               alt="Nuntă" 
               fill
               sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               priority
               fetchPriority="high"
               className={styles.heroImage}
@@ -143,6 +144,7 @@ export default function Hero() {
               alt="Botez" 
               fill
               sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               priority
               className={styles.heroImage}
             />
@@ -158,6 +160,7 @@ export default function Hero() {
               alt="Cocktails" 
               fill
               sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               loading="lazy"
               className={styles.heroImage}
             />
@@ -173,6 +176,7 @@ export default function Hero() {
               alt="Eveniment Corporate" 
               fill
               sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               loading="lazy"
               className={styles.heroImage}
             />
@@ -188,6 +192,7 @@ export default function Hero() {
               alt="Aniversare" 
               fill
               sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               loading="lazy"
               className={styles.heroImage}
             />
@@ -202,7 +207,8 @@ export default function Hero() {
               src="/images/hero/botez2.jpg" 
               alt="Botez Decor" 
               fill
-              sizes="(max-width: 992px) 160px, 220px"
+              sizes="(max-width: 480px) 65px, (max-width: 768px) 80px, (max-width: 992px) 140px, 190px"
+              quality={60}
               loading="lazy"
               className={styles.heroImage}
             />
