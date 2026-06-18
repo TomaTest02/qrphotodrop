@@ -6,6 +6,7 @@ import styles from './DashboardSidebar.module.css';
 
 const LINKS = [
   { href: '/dashboard/evenimentul-meu', icon: '📋', label: 'Evenimentul meu' },
+  { href: '/dashboard/invitatie', icon: '💌', label: 'Invitație online' },
   { href: '/dashboard/contul-meu', icon: '👤', label: 'Contul meu' },
 ];
 
