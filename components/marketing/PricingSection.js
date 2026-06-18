@@ -14,7 +14,7 @@ const PACKAGES = {
   nunta: [
     { 
       key: 'intim', 
-      name: 'NUNTĂ INTIMĂ', 
+      name: 'EVENIMENT PRIVAT', 
       price: 27900, 
       subLabel: 'ideal pentru evenimente până în 100 invitați',
       features: [
@@ -27,7 +27,7 @@ const PACKAGES = {
     },
     { 
       key: 'complet', 
-      name: 'NUNTĂ COMPLETĂ', 
+      name: 'EVENIMENT MEDIU', 
       price: 36900, 
       subLabel: 'ideal pentru evenimente până în 250 invitați',
       popular: true,
@@ -41,7 +41,7 @@ const PACKAGES = {
     },
     { 
       key: 'vis', 
-      name: 'NUNTĂ DE VIS', 
+      name: 'EVENIMENT VIP', 
       price: 55900, 
       subLabel: 'ideal pentru evenimente până în 500 invitați',
       features: [
@@ -56,7 +56,7 @@ const PACKAGES = {
   botez: [
     { 
       key: 'intim', 
-      name: 'BOTEZ INTIM', 
+      name: 'EVENIMENT PRIVAT', 
       price: 24900, 
       subLabel: 'ideal pentru evenimente până în 50 invitați',
       features: [
@@ -69,7 +69,7 @@ const PACKAGES = {
     },
     { 
       key: 'complet', 
-      name: 'BOTEZ COMPLET', 
+      name: 'EVENIMENT MEDIU', 
       price: 32900, 
       subLabel: 'ideal pentru evenimente până în 150 invitați',
       popular: true,
@@ -83,7 +83,7 @@ const PACKAGES = {
     },
     { 
       key: 'vis', 
-      name: 'BOTEZ DE VIS', 
+      name: 'EVENIMENT VIP', 
       price: 48900, 
       subLabel: 'ideal pentru evenimente până în 300 invitați',
       features: [
@@ -98,7 +98,7 @@ const PACKAGES = {
   aniversare: [
     { 
       key: 'intim', 
-      name: 'ANIVERSARE INTIMĂ', 
+      name: 'EVENIMENT PRIVAT', 
       price: 24900, 
       subLabel: 'ideal pentru evenimente până în 50 invitați',
       features: [
@@ -111,7 +111,7 @@ const PACKAGES = {
     },
     { 
       key: 'complet', 
-      name: 'ANIVERSARE COMPLETĂ', 
+      name: 'EVENIMENT MEDIU', 
       price: 32900, 
       subLabel: 'ideal pentru evenimente până în 150 invitați',
       popular: true,
@@ -125,7 +125,7 @@ const PACKAGES = {
     },
     { 
       key: 'vis', 
-      name: 'ANIVERSARE DE VIS', 
+      name: 'EVENIMENT VIP', 
       price: 48900, 
       subLabel: 'ideal pentru evenimente până în 300 invitați',
       features: [
@@ -140,7 +140,7 @@ const PACKAGES = {
   corporate: [
     { 
       key: 'intim', 
-      name: 'CORPORATE BASIC', 
+      name: 'EVENIMENT PRIVAT', 
       price: 32900, 
       subLabel: 'ideal pentru evenimente până în 100 invitați',
       features: [
@@ -153,7 +153,7 @@ const PACKAGES = {
     },
     { 
       key: 'complet', 
-      name: 'CORPORATE STANDARD', 
+      name: 'EVENIMENT MEDIU', 
       price: 45900, 
       subLabel: 'ideal pentru evenimente până în 300 invitați',
       popular: true,
@@ -167,7 +167,7 @@ const PACKAGES = {
     },
     { 
       key: 'vis', 
-      name: 'CORPORATE PREMIUM', 
+      name: 'EVENIMENT VIP', 
       price: 69900, 
       subLabel: 'ideal pentru evenimente până în 600 invitați',
       features: [

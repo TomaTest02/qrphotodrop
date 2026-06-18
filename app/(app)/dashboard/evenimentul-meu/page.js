@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { createClient } from '@/lib/supabase/client';
 import { Check, Package, X, Printer, Sparkle, Pencil } from '@phosphor-icons/react';
 import styles from './dashboard.module.css';
@@ -17,6 +19,8 @@ export default function EvenimentulMeuPage() {
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [userProfile, setUserProfile] = useState(null);
   const [selectedDesign, setSelectedDesign] = useState('Classic Burgundy');
   const [printModalOpen, setPrintModalOpen] = useState(false);
@@ -177,16 +181,43 @@ export default function EvenimentulMeuPage() {
     const toDownload = selectedIds.size > 0
       ? items.filter(i => selectedIds.has(i.id))
       : items;
-    for (const item of toDownload) {
-      const url = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = item.original_name || item.id;
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      await new Promise(r => setTimeout(r, 300));
+
+    if (toDownload.length === 0) return;
+
+    setDownloadLoading(true);
+    setDownloadProgress(0);
+
+    try {
+      const zip = new JSZip();
+      
+      for (let i = 0; i < toDownload.length; i++) {
+        const item = toDownload[i];
+        const originalUrl = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
+        
+        // Pass through our proxy to bypass CORS
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(originalUrl)}`;
+        
+        try {
+          const response = await fetch(proxyUrl);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const blob = await response.blob();
+          const filename = item.original_name || `photo_${item.id}.jpg`;
+          zip.file(filename, blob);
+        } catch (e) {
+          console.error(`Eroare la descărcarea fișierului ${item.id}:`, e);
+        }
+        
+        setDownloadProgress(Math.round(((i + 1) / toDownload.length) * 100));
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `Poze_Eveniment_${event?.code || 'QRPhotoDrop'}.zip`);
+    } catch (error) {
+      console.error('Eroare la generarea arhivei:', error);
+      alert('Eroare la descărcarea arhivei. Vă rugăm să încercați din nou.');
+    } finally {
+      setDownloadLoading(false);
+      setDownloadProgress(0);
     }
   };
 
@@ -371,9 +402,10 @@ export default function EvenimentulMeuPage() {
                   <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{selectedIds.size} selectate</span>
                   <button
                     onClick={() => downloadSelected(photos)}
-                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    disabled={downloadLoading}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: downloadLoading ? 0.7 : 1 }}
                   >
-                    ⬇ Descarcă selectate
+                    {downloadLoading ? `⏳ Se descarcă (${downloadProgress}%)` : '⬇ Descarcă selectate'}
                   </button>
                   <button
                     onClick={deleteSelected}
@@ -387,9 +419,10 @@ export default function EvenimentulMeuPage() {
               {selectedIds.size === 0 && (
                 <button
                   onClick={() => downloadSelected(photos)}
-                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  disabled={downloadLoading}
+                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: downloadLoading ? 0.7 : 1 }}
                 >
-                  ⬇ Descarcă tot
+                  {downloadLoading ? `⏳ Se descarcă (${downloadProgress}%)` : '⬇ Descarcă tot'}
                 </button>
               )}
             </div>
@@ -652,24 +685,24 @@ function EventSetupForm({ onCreated }) {
 
   const PACKAGES = {
     nunta: [
-      { key: 'intim', name: 'NUNTĂ INTIMĂ', price: 27900, guests: 100, storageGB: 5, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'NUNTĂ COMPLETĂ', price: 36900, guests: 250, storageGB: 15, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'NUNTĂ DE VIS', price: 55900, guests: 500, storageGB: 30, subLabel: 'ideal pentru evenimente până în 500 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'EVENIMENT PRIVAT', price: 27900, guests: 100, storageGB: 5, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'EVENIMENT MEDIU', price: 36900, guests: 250, storageGB: 15, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'EVENIMENT VIP', price: 55900, guests: 500, storageGB: 30, subLabel: 'ideal pentru evenimente până în 500 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     botez: [
-      { key: 'intim', name: 'BOTEZ INTIM', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'BOTEZ COMPLET', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'BOTEZ DE VIS', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'EVENIMENT PRIVAT', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'EVENIMENT MEDIU', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'EVENIMENT VIP', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     aniversare: [
-      { key: 'intim', name: 'ANIVERSARE INTIMĂ', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'ANIVERSARE COMPLETĂ', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'ANIVERSARE DE VIS', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'EVENIMENT PRIVAT', price: 24900, guests: 50, storageGB: 3, subLabel: 'ideal pentru evenimente până în 50 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'EVENIMENT MEDIU', price: 32900, guests: 150, storageGB: 10, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'EVENIMENT VIP', price: 48900, guests: 300, storageGB: 20, subLabel: 'ideal pentru evenimente până în 300 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
     corporate: [
-      { key: 'intim', name: 'CORPORATE BASIC', price: 32900, guests: 100, storageGB: 10, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
-      { key: 'complet', name: 'CORPORATE STANDARD', price: 45900, guests: 300, storageGB: 25, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
-      { key: 'vis', name: 'CORPORATE PREMIUM', price: 69900, guests: 600, storageGB: 50, subLabel: 'ideal pentru evenimente până în 600 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'intim', name: 'EVENIMENT PRIVAT', price: 32900, guests: 100, storageGB: 10, subLabel: 'ideal pentru evenimente până în 100 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice'] },
+      { key: 'complet', name: 'EVENIMENT MEDIU', price: 45900, guests: 300, storageGB: 25, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
+      { key: 'vis', name: 'EVENIMENT VIP', price: 69900, guests: 600, storageGB: 50, subLabel: 'ideal pentru evenimente până în 600 invitați', features: ['Album Digital & QR unic', 'Catalog & Design Printabil pentru QR', '3 luni stocare de la data evenimentului', 'Încărcări nelimitate', 'Cartonașe fizice opțional'] },
     ],
   };
 
