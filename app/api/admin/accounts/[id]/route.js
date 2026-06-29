@@ -19,12 +19,24 @@ export async function GET(request, { params }) {
 
     const { data: eventData } = await admin.from('events').select('*').eq('user_id', id).single();
 
-    // Get auth email
+    // Get auth email + last sign in
     const { data: authData } = await admin.auth.admin.getUserById(id);
 
+    // Statistici agregate (poze/clipuri/urări/RSVP/stocare) din view
+    const { data: stats } = await admin
+      .from('admin_account_overview')
+      .select('photo_count, video_count, storage_used, wish_count, rsvp_count, guests_attending')
+      .eq('id', id)
+      .maybeSingle();
+
     return NextResponse.json({
-      user: { ...userData, email: authData?.user?.email },
-      event: eventData || null
+      user: {
+        ...userData,
+        email: authData?.user?.email,
+        last_sign_in_at: authData?.user?.last_sign_in_at || null,
+      },
+      event: eventData || null,
+      stats: stats || null,
     });
   } catch (err) {
     console.error('Error fetching account details:', err);
@@ -45,11 +57,20 @@ export async function PUT(request, { params }) {
     const admin = createAdminClient();
     const body = await request.json();
 
-    const { phone, newPassword, eventData } = body;
+    const { phone, newPassword, eventData, status, payment } = body;
 
     // 1. Update phone in public.users
     if (phone !== undefined) {
       await admin.from('users').update({ phone }).eq('id', id);
+    }
+
+    // 1b. Update status (active / suspended / pending)
+    if (status !== undefined) {
+      const ALLOWED_STATUS = ['pending', 'active', 'suspended'];
+      if (!ALLOWED_STATUS.includes(status)) {
+        return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
+      }
+      await admin.from('users').update({ status }).eq('id', id);
     }
 
     // 2. Update password if provided
@@ -58,10 +79,31 @@ export async function PUT(request, { params }) {
       if (passError) throw passError;
     }
 
+    // 2b. Update payment info on the user's event
+    if (payment) {
+      const ALLOWED_PAYMENT = ['unpaid', 'partial', 'paid'];
+      const payPayload = {};
+      if (payment.amount_paid !== undefined) {
+        const amt = Number.parseInt(payment.amount_paid, 10);
+        if (Number.isNaN(amt) || amt < 0) return NextResponse.json({ error: 'Sumă invalidă' }, { status: 400 });
+        payPayload.amount_paid = amt;
+      }
+      if (payment.payment_status !== undefined) {
+        if (!ALLOWED_PAYMENT.includes(payment.payment_status)) {
+          return NextResponse.json({ error: 'Stare plată invalidă' }, { status: 400 });
+        }
+        payPayload.payment_status = payment.payment_status;
+        payPayload.paid_at = payment.payment_status === 'paid' ? new Date().toISOString() : null;
+      }
+      if (Object.keys(payPayload).length > 0) {
+        await admin.from('events').update(payPayload).eq('user_id', id);
+      }
+    }
+
     // 3. Update event if provided
     if (eventData) {
-      const { event_name, event_type, event_date, couple_names, location, package_tier, package_type } = eventData;
-      
+      const { event_name, event_type, event_date, couple_names, location, package_tier, package_type, expires_at } = eventData;
+
       const updatePayload = {};
       if (event_name !== undefined) updatePayload.event_name = event_name;
       if (event_type !== undefined) updatePayload.event_type = event_type;
@@ -70,6 +112,7 @@ export async function PUT(request, { params }) {
       if (location !== undefined) updatePayload.location = location;
       if (package_tier !== undefined) updatePayload.package_tier = package_tier;
       if (package_type !== undefined) updatePayload.package_type = package_type;
+      if (expires_at !== undefined) updatePayload.expires_at = expires_at || null;
 
       if (Object.keys(updatePayload).length > 0) {
         // Check if event exists

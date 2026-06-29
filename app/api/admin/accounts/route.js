@@ -12,12 +12,35 @@ export async function GET() {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const admin = createAdminClient();
-  const { data: accounts } = await admin
-    .from('users')
-    .select('*, events(event_name, event_type, event_date)')
+
+  // View-ul agregă tot: profil + eveniment + stocare folosită + nr poze/clipuri/urări/RSVP
+  const { data: accounts, error } = await admin
+    .from('admin_account_overview')
+    .select('*')
     .order('created_at', { ascending: false });
 
-  return NextResponse.json({ accounts: accounts || [] });
+  if (error) {
+    console.error('admin_account_overview error:', error);
+    return NextResponse.json({ error: 'Database error' }, { status: 500 });
+  }
+
+  // Atașăm ultima autentificare din Supabase Auth (nu există în tabelul public.users)
+  let lastSignInMap = {};
+  try {
+    const { data: authData } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    for (const au of authData?.users || []) {
+      lastSignInMap[au.id] = au.last_sign_in_at || null;
+    }
+  } catch (e) {
+    console.warn('listUsers failed (last_sign_in indisponibil):', e.message);
+  }
+
+  const enriched = (accounts || []).map((a) => ({
+    ...a,
+    last_sign_in_at: lastSignInMap[a.id] || null,
+  }));
+
+  return NextResponse.json({ accounts: enriched });
 }
 
 export async function DELETE(request) {

@@ -3,34 +3,30 @@ import styles from './admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
+const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
+const GB = 1024 * 1024 * 1024;
+const TYPE_LABEL = { nunta: 'Nuntă', botez: 'Botez', aniversare: 'Aniversare', corporate: 'Corporate' };
+
+function expiryOf(r) {
+  if (!r.event_id) return null;
+  if (r.expires_at) return new Date(r.expires_at);
+  if (!r.event_date) return null;
+  const d = new Date(r.event_date);
+  d.setMonth(d.getMonth() + (TIER_MONTHS[r.package_tier] || 3));
+  return d;
+}
+
 export default async function AdminDashboard() {
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // Get counts
-  const { count: totalUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
-  const { count: pendingUsers } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-  const { count: activeEvents } = await supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'active');
-  const { count: totalUploads } = await supabase.from('uploads').select('*', { count: 'exact', head: true });
+  // Toate conturile cu agregate (un singur query la view)
+  const { data: rows = [] } = await supabase.from('admin_account_overview').select('*');
+  const accounts = rows || [];
 
-  // Recent orders
-  const { data: recentOrders } = await supabase
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(5);
-
-  // Pending requests
-  const { data: pendingRequests } = await supabase
-    .from('users')
-    .select('*')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-    .limit(5);
-
-  // Print requests
+  // Cereri de printare nerezolvate
   const { data: printRequests } = await supabase
     .from('contact_messages')
     .select('*')
@@ -38,21 +34,61 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // ── Metrici ───────────────────────────────────────────────────
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const totalUsers = accounts.length;
+  const pending = accounts.filter((a) => a.status === 'pending').length;
+  const active = accounts.filter((a) => a.status === 'active').length;
+  const suspended = accounts.filter((a) => a.status === 'suspended').length;
+
+  const revenue = accounts.reduce((s, a) => s + (a.amount_paid || 0), 0);
+  const revenueMonth = accounts
+    .filter((a) => a.paid_at && new Date(a.paid_at) >= monthStart)
+    .reduce((s, a) => s + (a.amount_paid || 0), 0);
+  const unpaidActive = accounts.filter((a) => a.event_id && a.payment_status !== 'paid').length;
+
+  const storageTotal = accounts.reduce((s, a) => s + Number(a.storage_used || 0), 0);
+  const totalPhotos = accounts.reduce((s, a) => s + Number(a.photo_count || 0), 0);
+  const totalVideos = accounts.reduce((s, a) => s + Number(a.video_count || 0), 0);
+  const activeEvents = accounts.filter((a) => a.event_id && a.event_status === 'active').length;
+
+  const expiringSoon = accounts.filter((a) => {
+    const e = expiryOf(a);
+    if (!e) return false;
+    const dl = Math.ceil((e.getTime() - now.getTime()) / 86400000);
+    return dl >= 0 && dl <= 30;
+  });
+
+  const byType = ['nunta', 'botez', 'aniversare', 'corporate'].map((t) => ({
+    type: t,
+    count: accounts.filter((a) => a.event_type === t).length,
+  }));
+
+  const recentSignups = [...accounts]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
+
+  const stats = [
+    { label: 'Venituri totale', value: `${revenue.toLocaleString('ro-RO')} RON`, icon: '💰' },
+    { label: 'Venituri luna asta', value: `${revenueMonth.toLocaleString('ro-RO')} RON`, icon: '📈' },
+    { label: 'Conturi active', value: active, icon: '✅' },
+    { label: 'Cereri noi (pending)', value: pending, icon: '🔔' },
+    { label: 'Neplătite', value: unpaidActive, icon: '⚠️' },
+    { label: 'Expiră ≤30 zile', value: expiringSoon.length, icon: '⏳' },
+    { label: 'Stocare folosită', value: `${(storageTotal / GB).toFixed(1)} GB`, icon: '☁️' },
+    { label: 'Total fișiere', value: totalPhotos + totalVideos, icon: '📸' },
+  ];
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-        Dashboard Admin
-      </h1>
+      <h1 className={styles.title}>Dashboard Admin</h1>
 
       {/* Stats */}
       <div className={styles.statsGrid}>
-        {[
-          { label: 'Total Conturi', value: totalUsers || 0, icon: '👥' },
-          { label: 'Cereri Noi', value: pendingUsers || 0, icon: '🔔' },
-          { label: 'Evenimente Active', value: activeEvents || 0, icon: '📋' },
-          { label: 'Total Încărcări', value: totalUploads || 0, icon: '📸' },
-        ].map((stat, i) => (
-          <div key={i} className={`${styles.card} ${styles.statCard}`}>
+        {stats.map((stat) => (
+          <div key={stat.label} className={`${styles.card} ${styles.statCard}`}>
             <p className={styles.statIcon}>{stat.icon}</p>
             <p className={styles.statValue}>{stat.value}</p>
             <p className={styles.statLabel}>{stat.label}</p>
@@ -61,80 +97,27 @@ export default async function AdminDashboard() {
       </div>
 
       <div className={styles.contentGrid}>
-        {/* Pending Requests */}
+        {/* Conturi care expiră curând */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h3 className={styles.cardTitle}>Cereri Noi</h3>
+            <h3 className={styles.cardTitle}>Expiră în ≤30 zile</h3>
             <a href="/admin/conturi" className={styles.cardLink}>Vezi toate →</a>
           </div>
-          {(!pendingRequests || pendingRequests.length === 0) ? (
-            <p className={styles.emptyText}>Nicio cerere nouă</p>
+          {expiringSoon.length === 0 ? (
+            <p className={styles.emptyText}>Niciun cont nu expiră curând</p>
           ) : (
             <div className={styles.list}>
-              {pendingRequests.map((req) => (
-                <div key={req.id} className={styles.listItem}>
-                  <div>
-                    <p className={styles.itemMain}>{req.email}</p>
-                    <p className={styles.itemSub}>
-                      {new Date(req.created_at).toLocaleDateString('ro-RO')}
-                    </p>
-                  </div>
-                  <span className={styles.statusBadge}>
-                    Pending
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Recent Orders */}
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h3 className={styles.cardTitle}>Comenzi Recente</h3>
-          </div>
-          {(!recentOrders || recentOrders.length === 0) ? (
-            <p className={styles.emptyText}>Nicio comandă încă</p>
-          ) : (
-            <div className={styles.list}>
-              {recentOrders.map((order) => (
-                <div key={order.id} className={styles.listItem}>
-                  <div>
-                    <p className={styles.itemMain}>{order.package_label || order.package_type}</p>
-                    <p className={styles.itemSub}>{order.organizer_email}</p>
-                  </div>
-                  <span className={styles.price}>
-                    {order.amount_total ? (order.amount_total / 100).toFixed(0) : '—'} RON
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {/* Print Requests */}
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h3 className={styles.cardTitle}>Cereri Printare Cartonașe</h3>
-          </div>
-          {(!printRequests || printRequests.length === 0) ? (
-            <p className={styles.emptyText}>Nicio cerere de printare</p>
-          ) : (
-            <div className={styles.list}>
-              {printRequests.map((req) => {
-                const messageLines = req.message.split('\n');
-                const eventLine = messageLines.find(l => l.startsWith('Eveniment:')) || '';
-                const designLine = messageLines.find(l => l.startsWith('Design:')) || '';
+              {expiringSoon.slice(0, 6).map((a) => {
+                const e = expiryOf(a);
+                const dl = Math.ceil((e.getTime() - now.getTime()) / 86400000);
                 return (
-                  <div key={req.id} className={styles.listItem} style={{ alignItems: 'flex-start' }}>
+                  <div key={a.id} className={styles.listItem}>
                     <div>
-                      <p className={styles.itemMain}>{req.email}</p>
-                      <p className={styles.itemSub} style={{ marginTop: '4px' }}>
-                        {eventLine}<br/>
-                        {designLine}
-                      </p>
+                      <p className={styles.itemMain}>{a.event_name || a.email}</p>
+                      <p className={styles.itemSub}>{a.email}</p>
                     </div>
-                    <span className={styles.statusBadge} style={{ background: 'var(--color-violet-pale)', color: 'var(--color-violet)' }}>
-                      Nouă
+                    <span className={styles.statusBadge} style={{ background: dl <= 7 ? '#fee2e2' : '#fef3c7', color: dl <= 7 ? '#991b1b' : '#92400e' }}>
+                      {dl} zile
                     </span>
                   </div>
                 );
@@ -142,6 +125,87 @@ export default async function AdminDashboard() {
             </div>
           )}
         </div>
+
+        {/* Înregistrări recente */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Conturi recente</h3>
+            <a href="/admin/conturi" className={styles.cardLink}>Vezi toate →</a>
+          </div>
+          {recentSignups.length === 0 ? (
+            <p className={styles.emptyText}>Niciun cont încă</p>
+          ) : (
+            <div className={styles.list}>
+              {recentSignups.map((a) => (
+                <div key={a.id} className={styles.listItem}>
+                  <div>
+                    <p className={styles.itemMain}>{a.email}</p>
+                    <p className={styles.itemSub}>{new Date(a.created_at).toLocaleDateString('ro-RO')}</p>
+                  </div>
+                  <span className={styles.statusBadge} style={a.status === 'active' ? { background: '#dcfce7', color: '#166534' } : a.status === 'suspended' ? { background: '#fee2e2', color: '#991b1b' } : {}}>
+                    {a.status || 'pending'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Defalcare pe tip eveniment */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Evenimente pe tip</h3>
+          </div>
+          <div className={styles.list}>
+            {byType.map((t) => (
+              <div key={t.type} className={styles.listItem}>
+                <p className={styles.itemMain}>{TYPE_LABEL[t.type]}</p>
+                <span className={styles.price}>{t.count}</span>
+              </div>
+            ))}
+            <div className={styles.listItem} style={{ borderTop: '1px solid #eee', paddingTop: '10px' }}>
+              <p className={styles.itemMain} style={{ fontWeight: 700 }}>Total evenimente active</p>
+              <span className={styles.price}>{activeEvents}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Cereri printare */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Cereri printare cartonașe</h3>
+            <a href="/admin/printari" className={styles.cardLink}>Vezi toate →</a>
+          </div>
+          {(!printRequests || printRequests.length === 0) ? (
+            <p className={styles.emptyText}>Nicio cerere de printare</p>
+          ) : (
+            <div className={styles.list}>
+              {printRequests.map((req) => {
+                const lines = req.message.split('\n');
+                const eventLine = lines.find((l) => l.startsWith('Eveniment:')) || '';
+                const designLine = lines.find((l) => l.startsWith('Design:')) || '';
+                return (
+                  <div key={req.id} className={styles.listItem} style={{ alignItems: 'flex-start' }}>
+                    <div>
+                      <p className={styles.itemMain}>{req.email}</p>
+                      <p className={styles.itemSub} style={{ marginTop: '4px' }}>{eventLine}<br />{designLine}</p>
+                    </div>
+                    <span className={styles.statusBadge} style={{ background: 'var(--color-violet-pale)', color: 'var(--color-violet)' }}>Nouă</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sumar conturi pe status */}
+      <div style={{ display: 'flex', gap: '24px', marginTop: '24px', flexWrap: 'wrap', color: 'var(--color-text-muted)', fontSize: '14px' }}>
+        <span>Total conturi: <strong>{totalUsers}</strong></span>
+        <span>Active: <strong>{active}</strong></span>
+        <span>Pending: <strong>{pending}</strong></span>
+        <span>Suspendate: <strong>{suspended}</strong></span>
+        <span>Foto: <strong>{totalPhotos}</strong> · Video: <strong>{totalVideos}</strong></span>
       </div>
     </div>
   );
