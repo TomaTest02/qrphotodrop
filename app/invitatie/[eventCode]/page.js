@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import AnimatedInvitation from '@/components/marketing/AnimatedInvitation';
 
 export default function InvitationPage({ params }) {
@@ -11,15 +10,17 @@ export default function InvitationPage({ params }) {
 
   useEffect(() => {
     async function loadEvent() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('events')
-        .select('*')
-        .eq('event_code', eventCode)
-        .single();
-      
-      setEvent(data);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/events?code=${encodeURIComponent(eventCode)}`);
+        if (res.ok) {
+          const { event } = await res.json();
+          setEvent(event);
+        }
+      } catch {
+        // event rămâne null → afișăm "Invitația nu a fost găsită"
+      } finally {
+        setLoading(false);
+      }
     }
     loadEvent();
   }, [eventCode]);

@@ -28,7 +28,7 @@ const jsonLd = {
       item: {
         '@type': 'Offer',
         name: 'Pachet Basic',
-        description: 'Până la 100 invitați, 25 GB stocare, 1 lună disponibilitate',
+        description: 'Până la 100 invitați, 60 GB stocare, 1 lună disponibilitate',
         price: '249',
         priceCurrency: 'RON',
         url: 'https://qrphotodrop.ro/preturi',
@@ -40,7 +40,7 @@ const jsonLd = {
       item: {
         '@type': 'Offer',
         name: 'Pachet Standard',
-        description: 'Până la 250 invitați, 60 GB stocare, 2 luni disponibilitate',
+        description: 'Până la 250 invitați, 100 GB stocare, 2 luni disponibilitate',
         price: '369',
         priceCurrency: 'RON',
         url: 'https://qrphotodrop.ro/preturi',
@@ -52,7 +52,7 @@ const jsonLd = {
       item: {
         '@type': 'Offer',
         name: 'Pachet Premium',
-        description: 'Până la 500 invitați, 100 GB stocare, 3 luni disponibilitate',
+        description: 'Până la 500 invitați, 150 GB stocare, 3 luni disponibilitate',
         price: '559',
         priceCurrency: 'RON',
         url: 'https://qrphotodrop.ro/preturi',

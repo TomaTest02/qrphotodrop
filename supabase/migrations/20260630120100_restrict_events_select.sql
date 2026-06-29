@@ -1,0 +1,12 @@
+-- ═══════════════════════════════════════════════════════════════
+-- #3 Privacy: eliminăm politica permisivă care expunea TOATE evenimentele
+-- Politica veche "Anyone can lookup event by code" folosea USING (true),
+-- deci oricine cu cheia anon putea citi toate evenimentele tuturor clienților
+-- (nume cupluri, locații, detalii invitație) direct din browser.
+--
+-- Paginile publice (upload + invitație) citesc acum prin /api/events, care
+-- folosește service_role (ocolește RLS), deci nu mai au nevoie de acces anon.
+-- Organizatorii autentificați rămân acoperiți de politica
+-- "Organizers can view own events" (auth.uid() = user_id).
+-- ═══════════════════════════════════════════════════════════════
+DROP POLICY IF EXISTS "Anyone can lookup event by code" ON public.events;

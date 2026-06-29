@@ -12,7 +12,7 @@ export async function GET(request) {
   const supabase = createAdminClient();
   const { data: event, error } = await supabase
     .from('events')
-    .select('id, event_name, event_date, event_type, event_code, status, is_gallery_public, couple_names, location')
+    .select('id, event_name, event_date, event_type, event_code, status, is_gallery_public, couple_names, location, invitation_details')
     .eq('event_code', code)
     .single();
 

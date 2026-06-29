@@ -10,174 +10,38 @@ import styles from './PricingSection.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Stocare și disponibilitate per nivel (identice pentru toate tipurile de eveniment)
+const TIER_STORAGE = { intim: 60, complet: 100, vis: 150 };
+const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
+
+const tierFeatures = (tier) => [
+  'Album Digital & QR unic',
+  'Catalog & Design QR',
+  'Poze, urări și clipuri video (max. 2 min)',
+  `${TIER_STORAGE[tier]} GB stocare`,
+  `Disponibil ${TIER_DURATION[tier]} după eveniment`,
+];
+
 const PACKAGES = {
   nunta: [
-    { 
-      key: 'intim', 
-      name: 'EVENIMENT PRIVAT', 
-      price: 27900, 
-      subLabel: 'ideal pentru evenimente până în 100 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice'
-      ]
-    },
-    { 
-      key: 'complet', 
-      name: 'EVENIMENT MEDIU', 
-      price: 36900, 
-      subLabel: 'ideal pentru evenimente până în 250 invitați',
-      popular: true,
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
-    { 
-      key: 'vis', 
-      name: 'EVENIMENT VIP', 
-      price: 55900, 
-      subLabel: 'ideal pentru evenimente până în 500 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
+    { key: 'intim',   name: 'Basic',    price: 27900, subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 36900, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 55900, subLabel: 'ideal pentru evenimente până în 500 invitați', features: tierFeatures('vis') },
   ],
   botez: [
-    { 
-      key: 'intim', 
-      name: 'EVENIMENT PRIVAT', 
-      price: 24900, 
-      subLabel: 'ideal pentru evenimente până în 50 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice'
-      ]
-    },
-    { 
-      key: 'complet', 
-      name: 'EVENIMENT MEDIU', 
-      price: 32900, 
-      subLabel: 'ideal pentru evenimente până în 150 invitați',
-      popular: true,
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
-    { 
-      key: 'vis', 
-      name: 'EVENIMENT VIP', 
-      price: 48900, 
-      subLabel: 'ideal pentru evenimente până în 300 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
+    { key: 'intim',   name: 'Basic',    price: 24900, subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 32900, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 48900, subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
   ],
   aniversare: [
-    { 
-      key: 'intim', 
-      name: 'EVENIMENT PRIVAT', 
-      price: 24900, 
-      subLabel: 'ideal pentru evenimente până în 50 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice'
-      ]
-    },
-    { 
-      key: 'complet', 
-      name: 'EVENIMENT MEDIU', 
-      price: 32900, 
-      subLabel: 'ideal pentru evenimente până în 150 invitați',
-      popular: true,
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
-    { 
-      key: 'vis', 
-      name: 'EVENIMENT VIP', 
-      price: 48900, 
-      subLabel: 'ideal pentru evenimente până în 300 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
+    { key: 'intim',   name: 'Basic',    price: 24900, subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 32900, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 48900, subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
   ],
   corporate: [
-    { 
-      key: 'intim', 
-      name: 'EVENIMENT PRIVAT', 
-      price: 32900, 
-      subLabel: 'ideal pentru evenimente până în 100 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice'
-      ]
-    },
-    { 
-      key: 'complet', 
-      name: 'EVENIMENT MEDIU', 
-      price: 45900, 
-      subLabel: 'ideal pentru evenimente până în 300 invitați',
-      popular: true,
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
-    { 
-      key: 'vis', 
-      name: 'EVENIMENT VIP', 
-      price: 69900, 
-      subLabel: 'ideal pentru evenimente până în 600 invitați',
-      features: [
-        'Album Digital & QR unic',
-        'Catalog & Design Printabil pentru QR',
-        '3 luni stocare de la data evenimentului',
-        'Încărcări nelimitate',
-        'Cartonașe fizice opțional'
-      ]
-    },
+    { key: 'intim',   name: 'Basic',    price: 32900, subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 45900, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 69900, subLabel: 'ideal pentru evenimente până în 600 invitați', features: tierFeatures('vis') },
   ],
 };
 

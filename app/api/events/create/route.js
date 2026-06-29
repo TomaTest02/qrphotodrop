@@ -46,9 +46,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Data invalidă' }, { status: 400 });
     }
 
-    // Limitele corespund exact cu pachetele definite în lib/stripe.js
-    const STORAGE_LIMITS = { intim: 25, complet: 60, vis: 100 };
-    const allowedGB = STORAGE_LIMITS[packageTier] || 25;
+    // Limitele de stocare per nivel: Basic / Standard / Premium (GB)
+    const STORAGE_LIMITS = { intim: 60, complet: 100, vis: 150 };
+    const allowedGB = STORAGE_LIMITS[packageTier] || 60;
     const safMaxStorageBytes = allowedGB * 1024 * 1024 * 1024;
 
     // Verificam ca userul nu are deja un eveniment activ (un cont = un eveniment)

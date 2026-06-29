@@ -59,8 +59,10 @@ export default function RegisterPage() {
       return;
     }
 
-    // Redirect to dashboard (sau pending daca implementezi validarea admin)
-    window.location.href = '/dashboard';
+    // Conturile noi necesită aprobare manuală (status 'pending' setat de trigger-ul DB).
+    // Deconectăm sesiunea creată automat și trimitem userul la pagina de așteptare.
+    await supabase.auth.signOut();
+    window.location.href = '/pending';
   };
 
   return (
