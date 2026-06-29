@@ -1,4 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QR Photo Drop
+
+Aplicație web pentru colectarea pozelor de la evenimente printr-un cod QR — invitații scanează codul și încarcă pozele într-un singur loc.
+
+Construită cu [Next.js](https://nextjs.org).
 
 ## Getting Started
 
