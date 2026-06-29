@@ -49,8 +49,29 @@ export default function AdminConturiPage() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('recent');
   const [busyId, setBusyId] = useState(null);
+  const [menu, setMenu] = useState(null); // { acc, top, left }
 
   useEffect(() => { loadAccounts(); }, []);
+
+  // Închide meniul de acțiuni la scroll / resize / Escape
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
+
+  const openMenu = (e, acc) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setMenu({ acc, top: r.bottom + 6, left: Math.max(8, r.right - 210) });
+  };
 
   async function loadAccounts() {
     try {
@@ -209,7 +230,7 @@ export default function AdminConturiPage() {
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ maxWidth: '1500px' }}>
       {/* KPI-uri */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
         {kpiCards.map((k) => (
@@ -360,26 +381,9 @@ export default function AdminConturiPage() {
                   </td>
                   {/* Acțiuni */}
                   <td className={styles.td}>
-                    <div className={styles.actionsGroup} style={{ flexWrap: 'wrap', gap: '4px' }}>
-                      {acc.status === 'pending' && (
-                        <button className={`${styles.actionBtn} ${styles.btnSuccess}`} disabled={busy} onClick={() => handleApprove(acc.id)}>Aprobă</button>
-                      )}
-                      {acc.status === 'active' && (
-                        <button className={styles.actionBtn} disabled={busy} onClick={() => handleSetStatus(acc.id, 'suspended')} style={{ background: '#fef3c7', color: '#92400e' }}>Suspendă</button>
-                      )}
-                      {acc.status === 'suspended' && (
-                        <button className={`${styles.actionBtn} ${styles.btnSuccess}`} disabled={busy} onClick={() => handleSetStatus(acc.id, 'active')}>Reactivează</button>
-                      )}
-                      {acc.event_id && acc.payment_status !== 'paid' && (
-                        <button className={styles.actionBtn} disabled={busy} onClick={() => handleMarkPaid(acc)} style={{ background: '#dcfce7', color: '#166534' }}>Plătit ✓</button>
-                      )}
-                      {acc.event_code && (
-                        <a href={`/upload/${acc.event_code}`} target="_blank" rel="noreferrer" className={styles.actionBtn} style={{ background: 'var(--color-cream)', textDecoration: 'none', color: 'var(--color-text)' }}>Vezi</a>
-                      )}
-                      <button className={`${styles.actionBtn} ${styles.btnNeutral}`} disabled={busy} onClick={() => handleSendOTP(acc.id)}>OTP</button>
-                      <a href={`/admin/conturi/${acc.id}`} className={styles.actionBtn} style={{ background: '#3e405b', color: 'white', textDecoration: 'none' }}>Editează</a>
-                      <button className={`${styles.actionBtn} ${styles.btnDanger}`} disabled={busy} onClick={() => handleDelete(acc.id)}>Șterge</button>
-                    </div>
+                    <button className={styles.actionsTrigger} disabled={busy} onClick={(e) => openMenu(e, acc)}>
+                      Acțiuni ▾
+                    </button>
                   </td>
                 </tr>
               );
@@ -388,6 +392,37 @@ export default function AdminConturiPage() {
         </table>
         {filtered.length === 0 && <p className={styles.empty}>Niciun cont găsit</p>}
       </div>
+
+      {/* Meniu acțiuni (dropdown poziționat fix) */}
+      {menu && (
+        <>
+          <div className={styles.menuOverlay} onClick={() => setMenu(null)} />
+          <div className={styles.menu} style={{ top: menu.top, left: menu.left }}>
+            {menu.acc.status === 'pending' && (
+              <button className={styles.menuItem} style={{ color: '#166534' }} onClick={() => { setMenu(null); handleApprove(menu.acc.id); }}>✓ Aprobă cont</button>
+            )}
+            {menu.acc.status === 'active' && (
+              <button className={styles.menuItem} style={{ color: '#92400e' }} onClick={() => { setMenu(null); handleSetStatus(menu.acc.id, 'suspended'); }}>⏸ Suspendă</button>
+            )}
+            {menu.acc.status === 'suspended' && (
+              <button className={styles.menuItem} style={{ color: '#166534' }} onClick={() => { setMenu(null); handleSetStatus(menu.acc.id, 'active'); }}>▶ Reactivează</button>
+            )}
+            {menu.acc.event_id && menu.acc.payment_status !== 'paid' && (
+              <button className={styles.menuItem} style={{ color: '#166534' }} onClick={() => { setMenu(null); handleMarkPaid(menu.acc); }}>💰 Marchează plătit</button>
+            )}
+            {menu.acc.event_code && (
+              <a className={styles.menuItem} href={`/upload/${menu.acc.event_code}`} target="_blank" rel="noreferrer" onClick={() => setMenu(null)}>🖼 Pagina invitaților</a>
+            )}
+            {menu.acc.event_code && (
+              <a className={styles.menuItem} href={`/invitatie/${menu.acc.event_code}`} target="_blank" rel="noreferrer" onClick={() => setMenu(null)}>💌 Vezi invitația</a>
+            )}
+            <button className={styles.menuItem} onClick={() => { setMenu(null); handleSendOTP(menu.acc.id); }}>🔑 Resetează parola (OTP)</button>
+            <a className={styles.menuItem} href={`/admin/conturi/${menu.acc.id}`}>✎ Editează cont</a>
+            <div className={styles.menuDivider} />
+            <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => { setMenu(null); handleDelete(menu.acc.id); }}>🗑 Șterge cont</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
