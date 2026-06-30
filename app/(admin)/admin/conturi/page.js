@@ -322,6 +322,14 @@ export default function AdminConturiPage() {
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Cod: <strong>{acc.event_code}</strong></div>
                       </>
+                    ) : acc.requested_event_date || acc.requested_event_name ? (
+                      <>
+                        <div style={{ fontWeight: 600 }}>{acc.requested_event_name || '—'}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', textTransform: 'capitalize' }}>
+                          {acc.requested_event_type} · {fmtDate(acc.requested_event_date)}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 600 }}>cerere (neaprobat)</div>
+                      </>
                     ) : <span style={{ color: 'var(--color-text-muted)' }}>— neconfigurat</span>}
                   </td>
                   {/* Pachet */}
@@ -330,6 +338,13 @@ export default function AdminConturiPage() {
                       <>
                         <div style={{ fontWeight: 600 }}>{TIER_LABEL[acc.package_tier] || acc.package_tier}</div>
                         <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{packagePrice(acc)} RON</div>
+                      </>
+                    ) : acc.requested_package_tier ? (
+                      <>
+                        <div style={{ fontWeight: 600 }}>{TIER_LABEL[acc.requested_package_tier] || acc.requested_package_tier}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                          {(PACKAGE_PRICES[acc.requested_event_type]?.[acc.requested_package_tier]) || '—'} RON · cerut
+                        </div>
                       </>
                     ) : '—'}
                   </td>
