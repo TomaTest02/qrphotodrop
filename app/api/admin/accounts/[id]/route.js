@@ -25,7 +25,7 @@ export async function GET(request, { params }) {
     // Statistici agregate (poze/clipuri/urări/RSVP/stocare) din view
     const { data: stats } = await admin
       .from('admin_account_overview')
-      .select('photo_count, video_count, storage_used, wish_count, rsvp_count, guests_attending')
+      .select('photo_count, video_count, storage_used, wish_count')
       .eq('id', id)
       .maybeSingle();
 
