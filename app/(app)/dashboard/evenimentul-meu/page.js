@@ -4,11 +4,16 @@ import { useState, useEffect } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { createClient } from '@/lib/supabase/client';
-import { Check, Package, X, Printer, Sparkle, Pencil } from '@phosphor-icons/react';
+import { Check, Package, X, Printer, Sparkle, Pencil, DownloadSimple, CaretLeft, CaretRight, MapPin, Calendar, PencilSimple, ArrowUp, Copy, Clock, CloudArrowUp } from '@phosphor-icons/react';
 import styles from './dashboard.module.css';
 import pricingStyles from '@/components/marketing/PricingSection.module.css';
 import cardStyles from '@/components/marketing/PricingCard.module.css';
 import PricingCard from '@/components/marketing/PricingCard';
+
+const GB = 1024 * 1024 * 1024;
+const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
+const TIER_LABEL = { intim: 'Basic', complet: 'Standard', vis: 'Premium' };
+const fmtSize = (b) => (b >= GB ? `${(b / GB).toFixed(1)} GB` : `${(b / (1024 * 1024)).toFixed(0)} MB`);
 
 export default function EvenimentulMeuPage() {
   const [event, setEvent] = useState(null);
@@ -27,6 +32,13 @@ export default function EvenimentulMeuPage() {
   const [cardText, setCardText] = useState('');
   const [cardTextMode, setCardTextMode] = useState('preset');
   const [printLoading, setPrintLoading] = useState(false);
+  const [lightbox, setLightbox] = useState(null);      // index în lista de poze
+  const [copied, setCopied] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ event_name: '', couple_names: '', location: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   const PRESET_TEXTS = [
     'Vrem să ne vedem povestea prin ochii tăi! Scanează codul QR pentru a ne trimite instant pozele de la eveniment.',
@@ -66,6 +78,19 @@ export default function EvenimentulMeuPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Navigare lightbox cu tastatura
+  useEffect(() => {
+    if (lightbox === null) return undefined;
+    const count = uploads.filter((u) => u.file_type === 'photo').length;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setLightbox(null);
+      else if (e.key === 'ArrowLeft') setLightbox((i) => (i > 0 ? i - 1 : i));
+      else if (e.key === 'ArrowRight') setLightbox((i) => (i !== null && i < count - 1 ? i + 1 : i));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox, uploads]);
 
   async function loadData() {
     const supabase = createClient();
@@ -137,6 +162,105 @@ export default function EvenimentulMeuPage() {
     } else {
       alert('Eroare la actualizarea setării.');
     }
+  };
+
+  const copyLink = (url) => {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const downloadQR = async (url) => {
+    try {
+      const res = await fetch(`/api/qrcode?text=${encodeURIComponent(url)}&size=800`);
+      const blob = await res.blob();
+      saveAs(blob, `QR_${event.event_code}.png`);
+    } catch {
+      alert('Nu am putut descărca codul QR. Încearcă din nou.');
+    }
+  };
+
+  const printQR = (url) => {
+    const qrSrc = `${window.location.origin}/api/qrcode?text=${encodeURIComponent(url)}&size=600`;
+    const w = window.open('', '_blank', 'width=700,height=900');
+    if (!w) return;
+    w.document.write(`
+      <html><head><title>Cartonaș QR — ${event.event_name}</title>
+      <style>
+        @page { margin: 0; }
+        body { margin:0; font-family: Georgia, serif; display:flex; align-items:center; justify-content:center; min-height:100vh; background:#faf7f2; }
+        .card { width:380px; padding:48px 40px; text-align:center; background:#fff; border:2px solid #bc965c; border-radius:18px; }
+        .eyebrow { letter-spacing:3px; text-transform:uppercase; font-size:11px; color:#bc965c; margin-bottom:14px; }
+        h1 { font-size:30px; color:#710927; margin:0 0 6px; }
+        .date { font-size:14px; color:#777; margin-bottom:26px; }
+        img { width:240px; height:240px; }
+        .msg { font-size:14px; color:#333; line-height:1.5; margin:22px 8px 6px; }
+        .code { margin-top:14px; font-size:13px; color:#999; letter-spacing:1px; }
+      </style></head>
+      <body><div class="card">
+        <div class="eyebrow">Scanează & împărtășește</div>
+        <h1>${event.event_name}</h1>
+        <div class="date">${new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        <img src="${qrSrc}" alt="QR" />
+        <p class="msg">Scanează codul și trimite-ne pozele tale de la eveniment — fără aplicație, fără cont.</p>
+        <div class="code">Cod: ${event.event_code}</div>
+      </div>
+      <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 400); }<\/script>
+      </body></html>`);
+    w.document.close();
+  };
+
+  const openEdit = () => {
+    setEditForm({
+      event_name: event.event_name || '',
+      couple_names: event.couple_names || '',
+      location: event.location || '',
+    });
+    setEditOpen(true);
+  };
+
+  const saveEventDetails = async (e) => {
+    e.preventDefault();
+    setEditSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('events')
+      .update({
+        event_name: editForm.event_name.trim() || event.event_name,
+        couple_names: editForm.couple_names.trim() || null,
+        location: editForm.location.trim() || null,
+      })
+      .eq('id', event.id);
+    if (!error) {
+      setEvent({ ...event, ...editForm, event_name: editForm.event_name.trim() || event.event_name });
+      setEditOpen(false);
+    } else {
+      alert('Nu am putut salva. Încearcă din nou.');
+    }
+    setEditSaving(false);
+  };
+
+  const requestUpgrade = async () => {
+    setUpgradeLoading(true);
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: userProfile?.email || 'Client',
+          lastName: '',
+          email: userProfile?.email || '',
+          phone: userProfile?.phone || '',
+          eventType: event.event_type,
+          message: `CERERE UPGRADE / EXTINDERE pentru evenimentul "${event.event_name}" (cod ${event.event_code}). Pachet curent: ${TIER_LABEL[event.package_tier] || event.package_tier}.`,
+        }),
+      });
+      setUpgradeOpen(false);
+      alert('Cererea ta a fost trimisă. Te contactăm în curând!');
+    } catch {
+      alert('Eroare la trimitere. Încearcă din nou.');
+    }
+    setUpgradeLoading(false);
   };
 
   const toggleSelect = (id) => {
@@ -240,6 +364,18 @@ export default function EvenimentulMeuPage() {
   const photos = uploads.filter(u => u.file_type === 'photo');
   const videos = uploads.filter(u => u.file_type === 'video');
 
+  // Stocare + retenție
+  const storageUsed = uploads.reduce((s, u) => s + (u.size_bytes || 0), 0);
+  const storageLimit = event.max_storage_bytes || 0;
+  const storagePct = storageLimit ? Math.min(100, Math.round((storageUsed / storageLimit) * 100)) : 0;
+  let storageColor = 'var(--color-violet)';
+  if (storagePct > 90) storageColor = '#dc2626';
+  else if (storagePct > 70) storageColor = '#d97706';
+  const expiry = event.expires_at
+    ? new Date(event.expires_at)
+    : (() => { const d = new Date(event.event_date); d.setMonth(d.getMonth() + (TIER_MONTHS[event.package_tier] || 3)); return d; })();
+  const daysLeft = Math.ceil((expiry.getTime() - Date.now()) / 86400000);
+
   return (
     <div className={styles.page}>
       {/* Header */}
@@ -247,16 +383,53 @@ export default function EvenimentulMeuPage() {
         <div>
           <h1 className={styles.title}>{event.event_name}</h1>
           <p className={styles.meta}>
-            {event.event_type} · {new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}
+            <span style={{ textTransform: 'capitalize' }}>{event.event_type}</span> · {new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {event.location ? ` · ${event.location}` : ''}
           </p>
         </div>
-        <button
-          className={styles.archiveBtn}
-          onClick={handleArchive}
-          disabled={archiveLoading}
-        >
-          {archiveLoading ? '⏳ Se generează...' : '📦 Generează arhiva'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button className={styles.editBtn} onClick={openEdit}>
+            <PencilSimple size={16} weight="bold" /> Editează detalii
+          </button>
+          <button className={styles.archiveBtn} onClick={handleArchive} disabled={archiveLoading}>
+            {archiveLoading ? '⏳ Se generează...' : '📦 Arhivă pe email'}
+          </button>
+        </div>
+      </div>
+
+      {/* Stocare + retenție */}
+      <div className={styles.heroGrid}>
+        <div className={styles.heroCard}>
+          <div className={styles.heroCardHead}>
+            <span className={styles.heroLabel}><CloudArrowUp size={18} weight="light" /> Stocare folosită</span>
+            <span className={styles.heroBadge}>{TIER_LABEL[event.package_tier] || event.package_tier}</span>
+          </div>
+          <div className={styles.heroValue}>{fmtSize(storageUsed)} <span>/ {Math.round(storageLimit / GB)} GB</span></div>
+          <div className={styles.storageTrack}><div className={styles.storageFill} style={{ width: `${storagePct}%`, background: storageColor }} /></div>
+          <div className={styles.heroFoot}>
+            <span>{storagePct}% folosit</span>
+            {storagePct > 80 && (
+              <button className={styles.upgradeLink} onClick={() => setUpgradeOpen(true)}><ArrowUp size={13} weight="bold" /> Extinde spațiul</button>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.heroCard}>
+          <div className={styles.heroCardHead}>
+            <span className={styles.heroLabel}><Clock size={18} weight="light" /> Disponibilitate</span>
+          </div>
+          <div className={styles.heroValue} style={{ color: daysLeft <= 7 ? '#dc2626' : daysLeft <= 30 ? '#b45309' : undefined }}>
+            {daysLeft > 0 ? `${daysLeft} zile` : 'Expirat'}
+          </div>
+          <p className={styles.retentionText}>
+            {daysLeft > 0
+              ? <>Pozele rămân salvate până pe <strong>{expiry.toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>, apoi se șterg definitiv.</>
+              : <>Perioada de stocare a expirat. Contactează-ne pentru a o prelungi.</>}
+          </p>
+          <div className={styles.heroFoot}>
+            <button className={styles.upgradeLink} onClick={() => setUpgradeOpen(true)}><ArrowUp size={13} weight="bold" /> Prelungește perioada</button>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
@@ -326,40 +499,38 @@ export default function EvenimentulMeuPage() {
       {/* QR Section */}
       <div className={styles.qrSection}>
         <div className={styles.qrCard}>
-          <div style={{ textAlign: 'center' }}>
-            <img 
-              src={`/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=200`} 
+          <div className={styles.qrImgWrap}>
+            <img
+              src={`/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=300`}
               alt={`Cod QR pentru ${event.event_name}`}
-              style={{ width: '200px', height: '200px', borderRadius: 'var(--radius-md)' }}
+              className={styles.qrImg}
             />
           </div>
           <div className={styles.qrInfo}>
-            <p className={styles.qrLabel}>Link invitați:</p>
-            <div className={styles.qrLinkWrap}>
-              <code className={styles.qrLink}>{uploadUrl}</code>
-              <button
-                className={styles.copyBtn}
-                onClick={() => { navigator.clipboard.writeText(uploadUrl); }}
-              >
-                Copiază
+            <p className={styles.qrLabel}>Codul tău QR pentru invitați</p>
+            <p className={styles.qrHint}>Scanat de invitați, îi duce direct la pagina de încărcat poze. Printează-l și pune-l pe mese.</p>
+
+            <div className={styles.qrActions}>
+              <button className={styles.qrPrimaryBtn} onClick={() => downloadQR(uploadUrl)}>
+                <DownloadSimple size={16} weight="bold" /> Descarcă QR
+              </button>
+              <button className={styles.qrSecondaryBtn} onClick={() => printQR(uploadUrl)}>
+                <Printer size={16} weight="bold" /> Printează cartonaș
               </button>
             </div>
-            <p className={styles.qrCode}>
-              Cod eveniment: <strong>{event.event_code}</strong>
-            </p>
-            
-            <div style={{ marginTop: 'var(--space-md)', padding: 'var(--space-md)', background: 'var(--color-cream-darker)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <input 
-                type="checkbox" 
-                id="galleryToggle" 
-                checked={!!event.is_gallery_public} 
-                onChange={togglePublicGallery}
-                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-violet)' }}
-              />
-              <label htmlFor="galleryToggle" style={{ fontSize: '14px', cursor: 'pointer', fontWeight: 500, color: 'var(--color-text)' }}>
-                Permite invitaților să vadă Galeria Foto publică
-              </label>
+
+            <div className={styles.qrLinkWrap}>
+              <code className={styles.qrLink}>{uploadUrl}</code>
+              <button className={styles.copyBtn} onClick={() => copyLink(uploadUrl)}>
+                {copied ? <><Check size={14} weight="bold" /> Copiat</> : <><Copy size={14} weight="bold" /> Copiază</>}
+              </button>
             </div>
+            <p className={styles.qrCode}>Cod eveniment: <strong>{event.event_code}</strong></p>
+
+            <label className={styles.galleryToggle}>
+              <input type="checkbox" checked={!!event.is_gallery_public} onChange={togglePublicGallery} />
+              <span>Permite invitaților să vadă galeria foto publică</span>
+            </label>
           </div>
         </div>
       </div>
@@ -427,39 +598,43 @@ export default function EvenimentulMeuPage() {
               )}
             </div>
           )}
-          <div className={styles.photoGrid}>
-            {photos.length === 0 ? (
-              <p className={styles.emptyTab}>Nicio fotografie încă. Distribuie linkul invitaților!</p>
-            ) : (
-              photos.map((photo) => (
+          {photos.length === 0 ? (
+            <EmptyGallery uploadUrl={uploadUrl} onCopy={() => copyLink(uploadUrl)} copied={copied} />
+          ) : (
+            <div className={styles.photoGrid}>
+              {photos.map((photo, idx) => (
                 <div
                   key={photo.id}
                   className={styles.photoItem}
                   style={{ position: 'relative', outline: selectedIds.has(photo.id) ? '3px solid var(--color-violet)' : 'none', outlineOffset: '2px' }}
-                  onClick={() => toggleSelect(photo.id)}
                 >
-                  <div style={{
-                    position: 'absolute', top: '8px', left: '8px', zIndex: 2,
-                    width: '22px', height: '22px', borderRadius: '6px',
-                    background: selectedIds.has(photo.id) ? 'var(--color-violet)' : 'rgba(255,255,255,0.9)',
-                    border: selectedIds.has(photo.id) ? '2px solid var(--color-violet)' : '2px solid rgba(0,0,0,0.25)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.15s ease', cursor: 'pointer',
-                  }}>
-                    {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
-                  </div>
+                  <button
+                    type="button"
+                    aria-label={selectedIds.has(photo.id) ? 'Deselectează' : 'Selectează'}
+                    onClick={(e) => { e.stopPropagation(); toggleSelect(photo.id); }}
+                    style={{
+                      position: 'absolute', top: '8px', left: '8px', zIndex: 2,
+                      width: '24px', height: '24px', borderRadius: '7px', padding: 0,
+                      background: selectedIds.has(photo.id) ? 'var(--color-violet)' : 'rgba(255,255,255,0.92)',
+                      border: selectedIds.has(photo.id) ? '2px solid var(--color-violet)' : '2px solid rgba(0,0,0,0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.15s ease', cursor: 'pointer',
+                    }}
+                  >
+                    {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '14px', fontWeight: 700 }}>✓</span>}
+                  </button>
                   <img
                     src={photo.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photo.r2_key}`}
                     alt={photo.original_name}
                     className={styles.photoImg}
                     loading="lazy"
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'zoom-in' }}
+                    onClick={() => setLightbox(idx)}
                   />
-                  <p className={styles.photoName}>{photo.original_name}</p>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -643,6 +818,100 @@ export default function EvenimentulMeuPage() {
         </div>
       )}
 
+      {/* ===== LIGHTBOX ===== */}
+      {lightbox !== null && photos[lightbox] && (
+        <div className={styles.lightbox} onClick={() => setLightbox(null)}>
+          <button className={styles.lbClose} onClick={() => setLightbox(null)} aria-label="Închide"><X size={22} weight="bold" /></button>
+          {lightbox > 0 && (
+            <button className={styles.lbNav} style={{ left: '16px' }} onClick={(e) => { e.stopPropagation(); setLightbox(lightbox - 1); }} aria-label="Anterioara"><CaretLeft size={26} weight="bold" /></button>
+          )}
+          {lightbox < photos.length - 1 && (
+            <button className={styles.lbNav} style={{ right: '16px' }} onClick={(e) => { e.stopPropagation(); setLightbox(lightbox + 1); }} aria-label="Următoarea"><CaretRight size={26} weight="bold" /></button>
+          )}
+          <img
+            className={styles.lbImg}
+            src={photos[lightbox].public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photos[lightbox].r2_key}`}
+            alt={photos[lightbox].original_name}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className={styles.lbBar} onClick={(e) => e.stopPropagation()}>
+            <span>{lightbox + 1} / {photos.length}</span>
+            <a className={styles.lbDownload} href={`/api/proxy?url=${encodeURIComponent(photos[lightbox].public_url || '')}`} download={photos[lightbox].original_name || 'poza.jpg'}>
+              <DownloadSimple size={16} weight="bold" /> Descarcă
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* ===== EDIT DETALII ===== */}
+      {editOpen && (
+        <div className={styles.modalOverlay} onClick={() => setEditOpen(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setEditOpen(false)}><X size={16} weight="light" /></button>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalEmoji}><PencilSimple size={32} weight="light" style={{ color: '#710927' }} /></span>
+              <h2 className={styles.modalTitle}>Editează detaliile evenimentului</h2>
+              <p className={styles.modalSubtitle}>Pachetul și data sunt fixate. Pentru a le schimba, contactează echipa.</p>
+            </div>
+            <form onSubmit={saveEventDetails} className={styles.editForm}>
+              <label className={styles.editLabel}>Numele evenimentului
+                <input className={styles.editInput} value={editForm.event_name} onChange={(e) => setEditForm({ ...editForm, event_name: e.target.value })} required />
+              </label>
+              <label className={styles.editLabel}>Numele mirilor / sărbătoriților
+                <input className={styles.editInput} value={editForm.couple_names} onChange={(e) => setEditForm({ ...editForm, couple_names: e.target.value })} placeholder="Ex: Ana & Mihai" />
+              </label>
+              <label className={styles.editLabel}>Locația
+                <input className={styles.editInput} value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} placeholder="Ex: Restaurant Noblesse, București" />
+              </label>
+              <div className={styles.editLocked}>
+                <span>Pachet: <strong>{TIER_LABEL[event.package_tier] || event.package_tier}</strong></span>
+                <span>Data: <strong>{new Date(event.event_date).toLocaleDateString('ro-RO')}</strong></span>
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" className={styles.modalCancelBtn} onClick={() => setEditOpen(false)}>Anulează</button>
+                <button type="submit" className={styles.modalConfirmBtn} disabled={editSaving}>{editSaving ? 'Se salvează...' : 'Salvează'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===== UPGRADE ===== */}
+      {upgradeOpen && (
+        <div className={styles.modalOverlay} onClick={() => setUpgradeOpen(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setUpgradeOpen(false)}><X size={16} weight="light" /></button>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalEmoji}><ArrowUp size={32} weight="light" style={{ color: '#710927' }} /></span>
+              <h2 className={styles.modalTitle}>Extinde spațiul sau perioada</h2>
+              <p className={styles.modalSubtitle}>Ai nevoie de mai mult spațiu sau de mai mult timp pentru poze? Trimitem cererea echipei și te contactăm cu opțiunile.</p>
+            </div>
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.modalCancelBtn} onClick={() => setUpgradeOpen(false)}>Anulează</button>
+              <button type="button" className={styles.modalConfirmBtn} onClick={requestUpgrade} disabled={upgradeLoading}>
+                {upgradeLoading ? 'Se trimite...' : 'Trimite cererea'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function EmptyGallery({ uploadUrl, onCopy, copied }) {
+  return (
+    <div className={styles.galleryEmpty}>
+      <div className={styles.galleryEmptyIcon}><CloudArrowUp size={40} weight="light" /></div>
+      <h3 className={styles.galleryEmptyTitle}>Galeria așteaptă primele amintiri</h3>
+      <p className={styles.galleryEmptyText}>Distribuie linkul sau codul QR invitaților. Pozele lor apar aici automat, în timp real.</p>
+      <div className={styles.emptyLinkRow}>
+        <code className={styles.qrLink}>{uploadUrl}</code>
+        <button className={styles.copyBtn} onClick={onCopy}>
+          {copied ? <><Check size={14} weight="bold" /> Copiat</> : <><Copy size={14} weight="bold" /> Copiază</>}
+        </button>
+      </div>
     </div>
   );
 }
