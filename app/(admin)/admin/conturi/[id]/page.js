@@ -140,7 +140,6 @@ export default function AdminContPage({ params }) {
     { l: 'Fotografii', v: stats?.photo_count ?? 0 },
     { l: 'Clipuri', v: stats?.video_count ?? 0 },
     { l: 'Urări', v: stats?.wish_count ?? 0 },
-    { l: 'RSVP (prezenți/total)', v: `${stats?.guests_attending ?? 0} / ${stats?.rsvp_count ?? 0}` },
     { l: 'Cont creat', v: user?.created_at ? new Date(user.created_at).toLocaleDateString('ro-RO') : '—' },
     { l: 'Ultima logare', v: fmtDateTime(user?.last_sign_in_at) },
     { l: 'Expiră stocare', v: expiry ? expiry.toLocaleDateString('ro-RO') : '—' },
@@ -171,7 +170,6 @@ export default function AdminContPage({ params }) {
         {user?.status === 'suspended' && <button onClick={() => setStatus('active')} disabled={saving} className={`${styles.actionBtn} ${styles.btnSuccess}`}>Reactivează</button>}
         <button onClick={sendOTP} disabled={saving} className={`${styles.actionBtn} ${styles.btnNeutral}`}>Resetează parola (OTP)</button>
         {event?.event_code && <a href={`/upload/${event.event_code}`} target="_blank" rel="noreferrer" className={styles.actionBtn} style={{ background: 'var(--color-cream)', textDecoration: 'none', color: 'var(--color-text)' }}>Vezi pagina invitaților</a>}
-        {event?.event_code && <a href={`/invitatie/${event.event_code}`} target="_blank" rel="noreferrer" className={styles.actionBtn} style={{ background: 'var(--color-cream)', textDecoration: 'none', color: 'var(--color-text)' }}>Vezi invitația</a>}
       </div>
 
       {/* Statistici */}

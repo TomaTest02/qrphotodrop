@@ -150,12 +150,12 @@ export default function AdminConturiPage() {
   };
 
   const exportCSV = () => {
-    const headers = ['Email', 'Telefon', 'Eveniment', 'Tip', 'Data eveniment', 'Cod', 'Pachet', 'Status', 'Plata (RON)', 'Stare plata', 'Stocare folosita (GB)', 'Limita (GB)', 'Poze', 'Clipuri', 'Urari', 'RSVP', 'Expira', 'Creat'];
+    const headers = ['Email', 'Telefon', 'Eveniment', 'Tip', 'Data eveniment', 'Cod', 'Pachet', 'Status', 'Plata (RON)', 'Stare plata', 'Stocare folosita (GB)', 'Limita (GB)', 'Poze', 'Clipuri', 'Urari', 'Expira', 'Creat'];
     const rows = filtered.map((a) => [
       a.email, a.phone || '', a.event_name || '', a.event_type || '', fmtDate(a.event_date), a.event_code || '',
       TIER_LABEL[a.package_tier] || '', a.status || '', a.amount_paid || 0, a.payment_status || 'unpaid',
       fmtGB(a.storage_used), a.max_storage_bytes ? Math.round(a.max_storage_bytes / GB) : '',
-      a.photo_count, a.video_count, a.wish_count, a.rsvp_count, fmtDate(getExpiry(a)), fmtDate(a.created_at),
+      a.photo_count, a.video_count, a.wish_count, fmtDate(getExpiry(a)), fmtDate(a.created_at),
     ]);
     const csv = [headers, ...rows]
       .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
@@ -355,7 +355,7 @@ export default function AdminConturiPage() {
                   <td className={styles.td}>
                     <div style={{ fontSize: '12px', lineHeight: 1.6 }}>
                       📸 {acc.photo_count} · 🎬 {acc.video_count}<br />
-                      💌 {acc.wish_count} · ✓ {acc.guests_attending}/{acc.rsvp_count} RSVP
+                      💌 {acc.wish_count} urări
                     </div>
                   </td>
                   {/* Status */}
@@ -414,9 +414,6 @@ export default function AdminConturiPage() {
             )}
             {menu.acc.event_code && (
               <a className={styles.menuItem} href={`/upload/${menu.acc.event_code}`} target="_blank" rel="noreferrer" onClick={() => setMenu(null)}>🖼 Pagina invitaților</a>
-            )}
-            {menu.acc.event_code && (
-              <a className={styles.menuItem} href={`/invitatie/${menu.acc.event_code}`} target="_blank" rel="noreferrer" onClick={() => setMenu(null)}>💌 Vezi invitația</a>
             )}
             <button className={styles.menuItem} onClick={() => { setMenu(null); handleSendOTP(menu.acc.id); }}>🔑 Resetează parola (OTP)</button>
             <a className={styles.menuItem} href={`/admin/conturi/${menu.acc.id}`}>✎ Editează cont</a>
