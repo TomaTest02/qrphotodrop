@@ -306,7 +306,9 @@ export default function AdminConturiPage() {
                 <tr key={acc.id} style={{ opacity: busy ? 0.5 : 1 }}>
                   {/* Contact */}
                   <td className={styles.td}>
-                    <div style={{ fontWeight: 600 }}>{acc.email}</div>
+                    <a href={`/admin/conturi/${acc.id}`} style={{ fontWeight: 600, color: 'var(--color-violet)', textDecoration: 'none' }} title="Vezi detalii cont">
+                      {acc.email}
+                    </a>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{acc.phone || 'fără telefon'}</div>
                     {acc.role === 'admin' && <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-violet)' }}>ADMIN</span>}
                   </td>
