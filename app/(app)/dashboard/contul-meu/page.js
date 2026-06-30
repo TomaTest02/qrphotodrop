@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { Clock } from '@phosphor-icons/react';
+import styles from './contul-meu.module.css';
+
+const TIER_LABEL = { intim: 'Basic', complet: 'Standard', vis: 'Premium' };
+const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
+const TYPE_LABEL = { nunta: 'Nuntă', botez: 'Botez', aniversare: 'Aniversare', corporate: 'Corporate' };
 
 export default function ContulMeuPage() {
   const [user, setUser] = useState(null);
@@ -12,9 +18,7 @@ export default function ContulMeuPage() {
   const [message, setMessage] = useState('');
   const [timeLeft, setTimeLeft] = useState(null);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useEffect(() => { loadProfile(); }, []);
 
   async function loadProfile() {
     const supabase = createClient();
@@ -23,204 +27,137 @@ export default function ContulMeuPage() {
       setUser(u);
       const { data } = await supabase.from('users').select('*').eq('id', u.id).single();
       setProfile(data);
-      
       const { data: userEvent } = await supabase.from('events').select('*').eq('user_id', u.id).single();
-      if (userEvent) {
-        setEvent(userEvent);
-      }
+      if (userEvent) setEvent(userEvent);
     }
   }
 
+  const expiryDate = event?.event_date
+    ? (() => {
+        const d = new Date(event.expires_at || event.event_date);
+        if (!event.expires_at) d.setMonth(d.getMonth() + (TIER_MONTHS[event.package_tier] || 3));
+        return d;
+      })()
+    : null;
+
   useEffect(() => {
-    if (!event?.event_date) return;
-    
-    // Durata corectă în funcție de abonament
-    const DURATION_MONTHS = { intim: 1, complet: 2, vis: 3 };
-    const months = DURATION_MONTHS[event.package_tier] || 3;
-
-    const expiryDate = new Date(event.event_date);
-    expiryDate.setMonth(expiryDate.getMonth() + months);
-
-    const timer = setInterval(() => {
-      const now = new Date();
-      const diff = expiryDate - now;
-
-      if (diff <= 0) {
-        setTimeLeft('Expirat');
-        clearInterval(timer);
-      } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const mins = Math.floor((diff / 1000 / 60) % 60);
-        setTimeLeft(`${days} zile, ${hours} ore, ${mins} min`);
-      }
-    }, 1000);
-
+    if (!expiryDate) return undefined;
+    const tick = () => {
+      const diff = expiryDate.getTime() - Date.now();
+      if (diff <= 0) { setTimeLeft('Expirat'); return; }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff / 3600000) % 24);
+      const mins = Math.floor((diff / 60000) % 60);
+      setTimeLeft(`${days} zile, ${hours} ore, ${mins} min`);
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
   }, [event]);
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    if (newPassword.length < 8) {
-      setMessage('Parola trebuie să aibă minim 8 caractere.');
-      return;
-    }
+    if (newPassword.length < 8) { setMessage('Parola trebuie să aibă minim 8 caractere.'); return; }
     setLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) {
-      setMessage('Eroare la actualizare.');
-    } else {
-      setMessage('Parola a fost actualizată cu succes!');
-      setNewPassword('');
-    }
+    setMessage(error ? 'Eroare la actualizare.' : 'Parola a fost actualizată cu succes!');
+    if (!error) setNewPassword('');
     setLoading(false);
   };
 
-  const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '6px' };
-  const inputStyle = { width: '100%', padding: '14px 16px', border: '1px solid var(--color-cream-darker)', borderRadius: 'var(--radius-md)', fontSize: '15px', fontFamily: 'var(--font-sans)', outline: 'none' };
-  const cardStyle = { background: 'var(--color-white)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-xl)', border: '1px solid var(--color-cream-darker)', marginBottom: 'var(--space-xl)', position: 'relative' };
+  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '100px' }}>
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, letterSpacing: '-1px', marginBottom: 'var(--space-xl)' }}>
-        Contul meu
-      </h1>
+    <div className={styles.page}>
+      <h1 className={styles.title}>Contul meu</h1>
 
-      {/* Info card */}
-      <div style={cardStyle}>
-        <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: 'var(--space-lg)' }}>Informații cont</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
-          <div>
-            <label style={labelStyle}>Email</label>
-            <p style={{ fontSize: '15px', color: 'var(--color-text)' }}>{user?.email || '—'}</p>
-          </div>
-          <div>
-            <label style={labelStyle}>Rol</label>
-            <p style={{ fontSize: '15px', color: 'var(--color-text)', textTransform: 'capitalize' }}>{profile?.role || '—'}</p>
-          </div>
-          <div>
-            <label style={labelStyle}>Telefon</label>
-            <p style={{ fontSize: '15px', color: 'var(--color-text)' }}>{profile?.phone || '—'}</p>
-          </div>
-          <div>
-            <label style={labelStyle}>Cont creat</label>
-            <p style={{ fontSize: '15px', color: 'var(--color-text)' }}>
-              {user?.created_at ? new Date(user.created_at).toLocaleDateString('ro-RO') : '—'}
-            </p>
-          </div>
+      <div className={styles.grid}>
+        {/* Informații cont */}
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Informații cont</h2>
+          <div className={styles.fieldGrid}>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Email</span>
+              <span className={styles.fieldValue}>{user?.email || '—'}</span>
+            </div>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Telefon</span>
+              <span className={styles.fieldValue}>{profile?.phone || '—'}</span>
+            </div>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Rol</span>
+              <span className={styles.fieldValue} style={{ textTransform: 'capitalize' }}>{profile?.role || '—'}</span>
+            </div>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Cont creat</span>
+              <span className={styles.fieldValue}>{fmtDate(user?.created_at)}</span>
+            </div>
 
-          {/* Event details if available */}
-          {event && (
-            <>
-              <hr style={{ border: 'none', borderTop: '1px solid var(--color-cream-darker)', margin: 'var(--space-sm) 0' }} />
-              <div>
-                <label style={labelStyle}>Data evenimentului</label>
-                <p style={{ fontSize: '15px', color: 'var(--color-text)' }}>
-                  {event.event_date ? new Date(event.event_date).toLocaleDateString('ro-RO') : '—'}
-                </p>
-              </div>
-              <div>
-                <label style={labelStyle}>Abonament ales</label>
-                <p style={{ fontSize: '15px', color: 'var(--color-text)', textTransform: 'uppercase' }}>
-                  {event.package_type && event.package_tier ? `${event.package_type} ${event.package_tier}` : '—'}
-                </p>
-              </div>
-              <div>
-                <label style={labelStyle}>Expirare stocare</label>
-                <p style={{ fontSize: '15px', color: 'var(--color-text)', fontWeight: 600 }}>
-                  {event.event_date ? (() => {
-                    const expiry = new Date(event.event_date);
-                    // Durata corectă în funcție de abonament
-                    const DURATION_MONTHS = { intim: 1, complet: 2, vis: 3 };
-                    const months = DURATION_MONTHS[event.package_tier] || 3;
-                    expiry.setMonth(expiry.getMonth() + months);
-                    return expiry.toLocaleDateString('ro-RO');
-                  })() : '—'}
-                </p>
-              </div>
-            </>
-          )}
+            {event && (
+              <>
+                <div className={styles.sectionLabel}>Evenimentul tău</div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Data evenimentului</span>
+                  <span className={styles.fieldValue}>{fmtDate(event.event_date)}</span>
+                </div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Abonament</span>
+                  <span className={styles.fieldValue}>
+                    {TYPE_LABEL[event.package_type] || event.package_type || event.event_type} · <strong>{TIER_LABEL[event.package_tier] || event.package_tier || '—'}</strong>
+                  </span>
+                </div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Expirare stocare</span>
+                  <span className={styles.fieldValue}><strong>{fmtDate(expiryDate)}</strong></span>
+                </div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Cod eveniment</span>
+                  <span className={styles.fieldValue}><strong>{event.event_code}</strong></span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Password change */}
-      <div style={cardStyle}>
-        <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: 'var(--space-lg)' }}>Schimbă parola</h3>
-
-        {message && (
-          <div style={{
-            padding: 'var(--space-md)',
-            background: message.includes('succes') ? '#f0fdf4' : '#fef2f2',
-            border: `1px solid ${message.includes('succes') ? '#bbf7d0' : '#fecaca'}`,
-            borderRadius: 'var(--radius-md)',
-            color: message.includes('succes') ? 'var(--color-success)' : 'var(--color-error)',
-            fontSize: '14px',
-            marginBottom: 'var(--space-lg)',
-          }}>
-            {message}
+        {/* Countdown */}
+        {timeLeft && (
+          <div className={styles.countdown}>
+            <div className={styles.countdownHead}><Clock size={16} weight="bold" /> Timp rămas stocare</div>
+            <div className={styles.countdownValue}>{timeLeft}</div>
+            <p className={styles.countdownNote}>
+              La finalul acestei perioade, galeria și toate fișierele vor fi șterse definitiv.
+            </p>
+            {expiryDate && (
+              <div className={styles.countdownExpiry}>Se șterge pe <strong>{fmtDate(expiryDate)}</strong></div>
+            )}
           </div>
         )}
+      </div>
 
-        <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
+      {/* Schimbă parola */}
+      <div className={`${styles.card} ${styles.pwCard}`}>
+        <h2 className={styles.cardTitle}>Schimbă parola</h2>
+        {message && (
+          <div className={`${styles.alert} ${message.includes('succes') ? styles.alertOk : styles.alertErr}`}>{message}</div>
+        )}
+        <form onSubmit={handlePasswordUpdate} className={styles.pwForm}>
           <div>
-            <label style={labelStyle}>Parolă nouă</label>
+            <label className={styles.label}>Parolă nouă</label>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              style={inputStyle}
+              className={styles.input}
               placeholder="Minim 8 caractere"
               required
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: '14px 24px',
-              background: 'var(--color-violet)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
+          <button type="submit" disabled={loading} className={styles.submitBtn}>
             {loading ? 'Se actualizează...' : 'Actualizează parola'}
           </button>
         </form>
       </div>
-
-      {/* Expiry Countdown Widget */}
-      {timeLeft && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          background: '#bc965c', // Culoarea aurie/camel din imagine
-          color: '#3e405b',      // Culoarea textului (albastru închis)
-          padding: '24px',
-          borderRadius: '16px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-          zIndex: 100,
-          maxWidth: '320px',
-          fontFamily: 'var(--font-sans)'
-        }}>
-          <p style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', fontWeight: 600, color: 'rgba(62,64,91,0.8)' }}>
-            Timp rămas stocare
-          </p>
-          <p style={{ fontSize: '28px', fontWeight: 700, fontFamily: 'var(--font-serif)', marginBottom: '12px', color: '#3e405b', letterSpacing: '-0.5px' }}>
-            {timeLeft}
-          </p>
-          <p style={{ fontSize: '14px', opacity: 0.85, lineHeight: 1.5, color: '#3e405b' }}>
-            La finalul acestei perioade, galeria și toate fișierele vor fi șterse definitiv.
-          </p>
-        </div>
-      )}
     </div>
   );
 }
