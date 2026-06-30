@@ -110,7 +110,12 @@ export async function PUT(request, { params }) {
       if (event_date !== undefined) updatePayload.event_date = event_date;
       if (couple_names !== undefined) updatePayload.couple_names = couple_names;
       if (location !== undefined) updatePayload.location = location;
-      if (package_tier !== undefined) updatePayload.package_tier = package_tier;
+      if (package_tier !== undefined) {
+        updatePayload.package_tier = package_tier;
+        // Recalculăm stocarea conform nivelului ales (Basic/Standard/Premium = 60/100/150 GB)
+        const STORAGE_BY_TIER = { intim: 60, complet: 100, vis: 150 };
+        updatePayload.max_storage_bytes = (STORAGE_BY_TIER[package_tier] || 60) * 1024 * 1024 * 1024;
+      }
       if (package_type !== undefined) updatePayload.package_type = package_type;
       if (expires_at !== undefined) updatePayload.expires_at = expires_at || null;
 
