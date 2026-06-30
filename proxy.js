@@ -55,6 +55,7 @@ export async function proxy(request) {
     '/api/contact',    // formular contact public
     '/api/auth/',      // callback OAuth
     '/api/stripe/webhook', // Stripe webhook (are propria semnătură)
+    '/api/cron/',      // joburi programate (protejate cu CRON_SECRET)
     '/eveniment/',     // pagini publice eveniment
     '/dashboard/demo', // pagina demo publică
     '/studio/',        // Sanity Studio

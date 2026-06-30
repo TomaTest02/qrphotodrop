@@ -115,16 +115,29 @@ export async function PUT(request, { params }) {
       if (expires_at !== undefined) updatePayload.expires_at = expires_at || null;
 
       if (Object.keys(updatePayload).length > 0) {
-        // Check if event exists
         const { data: existingEvent } = await admin.from('events').select('id').eq('user_id', id).single();
         if (existingEvent) {
           await admin.from('events').update(updatePayload).eq('user_id', id);
         } else {
-          // You could optionally create an event here, but usually it's created by the user
-          // For now, let's just create it if it doesn't exist
+          // Creăm evenimentul cu toate câmpurile obligatorii (event_code, event_type, status, stocare)
+          const { randomBytes } = await import('crypto');
+          const STORAGE_LIMITS = { intim: 60, complet: 100, vis: 150 };
+          const tier = updatePayload.package_tier || 'complet';
+          const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
+          const evType = ALLOWED_TYPES.includes(updatePayload.event_type) ? updatePayload.event_type : 'nunta';
           await admin.from('events').insert({
             user_id: id,
-            ...updatePayload
+            event_code: randomBytes(4).toString('hex').toUpperCase(),
+            event_name: updatePayload.event_name || 'Eveniment',
+            event_type: evType,
+            event_date: updatePayload.event_date || new Date().toISOString(),
+            couple_names: updatePayload.couple_names || null,
+            location: updatePayload.location || null,
+            status: 'active',
+            max_storage_bytes: (STORAGE_LIMITS[tier] || 60) * 1024 * 1024 * 1024,
+            package_type: updatePayload.package_type || evType,
+            package_tier: tier,
+            expires_at: updatePayload.expires_at || null,
           });
         }
       }
