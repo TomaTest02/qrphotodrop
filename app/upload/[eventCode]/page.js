@@ -316,21 +316,29 @@ export default function GuestUploadPage({ params }) {
           {event?.is_gallery_public ? 'Album public activ' : 'Pozele tale sunt private și accesibile doar mirilor'}
         </p>
 
-        {event?.is_gallery_public && publicPhotos.length > 0 && (
+        {event?.is_gallery_public && (
           <div style={{ marginTop: 'var(--space-2xl)', padding: '0 var(--space-md)' }}>
-            <h3 style={{ fontSize: '18px', textAlign: 'center', marginBottom: 'var(--space-lg)', fontFamily: 'var(--font-serif)' }}>Galeria Evenimentului</h3>
-            <div style={{ columnCount: 2, columnGap: '12px' }}>
-              {publicPhotos.map((photo) => (
-                <div key={photo.id} style={{ breakInside: 'avoid', marginBottom: '12px' }}>
-                  <img
-                    src={photo.public_url || `${process.env.NEXT_PUBLIC_R2_URL}/${photo.r2_key}`}
-                    alt={photo.original_name}
-                    style={{ width: '100%', borderRadius: 'var(--radius-md)', display: 'block' }}
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
+            <h3 style={{ fontSize: '18px', textAlign: 'center', marginBottom: 'var(--space-lg)', fontFamily: 'var(--font-serif)' }}>
+              Galeria Evenimentului{publicPhotos.length > 0 ? ` (${publicPhotos.length})` : ''}
+            </h3>
+            {publicPhotos.length > 0 ? (
+              <div style={{ columnCount: 2, columnGap: '12px' }}>
+                {publicPhotos.map((photo) => (
+                  <div key={photo.id} style={{ breakInside: 'avoid', marginBottom: '12px' }}>
+                    <img
+                      src={photo.public_url}
+                      alt={photo.original_name}
+                      style={{ width: '100%', borderRadius: 'var(--radius-md)', display: 'block' }}
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '14px', padding: '24px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 'var(--radius-md)' }}>
+                Încă nu sunt poze în galerie. Fii primul care încarcă o amintire! 📸
+              </p>
+            )}
           </div>
         )}
       </div>
