@@ -581,6 +581,12 @@
   border-radius: var(--radius-md); font-weight: 600; font-size: 14px; font-family: var(--font-sans); transition: all var(--transition-fast);
 }
 .qrSecondaryBtn:hover { border-color: var(--color-gold, #bc965c); color: var(--color-gold, #bc965c); }
+.qrWhatsappBtn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border: none; cursor: pointer;
+  background: #25D366; color: #fff; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; font-family: var(--font-sans);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.qrWhatsappBtn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35); }
 .galleryToggle {
   display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 14px 16px;
   background: var(--color-cream); border: 1px solid var(--color-cream-darker); border-radius: var(--radius-md);

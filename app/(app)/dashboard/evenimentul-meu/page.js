@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { createClient } from '@/lib/supabase/client';
-import { Check, Package, X, Printer, Sparkle, Pencil, DownloadSimple, CaretLeft, CaretRight, MapPin, Calendar, PencilSimple, ArrowUp, Copy, Clock, CloudArrowUp } from '@phosphor-icons/react';
+import { Check, Package, X, Printer, Sparkle, Pencil, DownloadSimple, CaretLeft, CaretRight, MapPin, Calendar, PencilSimple, ArrowUp, Copy, Clock, CloudArrowUp, WhatsappLogo } from '@phosphor-icons/react';
 import styles from './dashboard.module.css';
 import pricingStyles from '@/components/marketing/PricingSection.module.css';
 import cardStyles from '@/components/marketing/PricingCard.module.css';
@@ -168,6 +168,11 @@ export default function EvenimentulMeuPage() {
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareWhatsApp = (url) => {
+    const text = `Salutare! 📸 Ajută-ne să adunăm toate amintirile de la ${event.event_name}. Scanează sau deschide linkul și încarcă pozele tale: ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const downloadQR = async (url) => {
@@ -465,6 +470,9 @@ export default function EvenimentulMeuPage() {
             <p className={styles.qrHint}>Scanat de invitați, îi duce direct la pagina de încărcat poze. Printează-l și pune-l pe mese.</p>
 
             <div className={styles.qrActions}>
+              <button className={styles.qrWhatsappBtn} onClick={() => shareWhatsApp(uploadUrl)}>
+                <WhatsappLogo size={16} weight="fill" /> Trimite pe WhatsApp
+              </button>
               <button className={styles.qrPrimaryBtn} onClick={() => downloadQR(uploadUrl)}>
                 <DownloadSimple size={16} weight="bold" /> Descarcă QR
               </button>

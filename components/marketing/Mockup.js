@@ -3,8 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Image from 'next/image';
-import { Camera, Image as ImageIcon } from '@phosphor-icons/react';
+import { Camera, Heart, Envelope, Lock, CaretRight } from '@phosphor-icons/react';
 import styles from './Mockup.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -78,48 +77,52 @@ export default function Mockup() {
         <div className={styles.mockupWrapper}>
           <div className={styles.phoneFrame} ref={phoneRef}>
             <div className={styles.phoneSpeaker} />
-            <div className={styles.phoneContent}>
-              <div className={styles.phoneHeader}>
-                <div className={styles.phoneBrand}>QRPhotoDrop</div>
-                <div className={styles.phoneSubtitle}>Albumul Evenimentului</div>
+            <div className={styles.phoneContent} style={{ background: '#faf7f2', padding: '26px 20px', justifyContent: 'flex-start' }}>
+              {/* Badge brand */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 14px', background: '#fbeef0', borderRadius: '999px', fontSize: '11px', fontWeight: 700, color: '#710927', marginBottom: '16px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#710927' }} /> QRPhotoDrop
               </div>
 
-              <div className={styles.phoneBody}>
-                <div className={styles.uploadCircle}>
-                  <Camera size={28} className={styles.uploadIcon} />
-                  <span className={styles.uploadText}>Adaugă Poze</span>
+              {/* Inima */}
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'radial-gradient(circle, #fcdfe6 0%, #f6c3d1 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                <Heart size={24} weight="fill" color="#d4607f" />
+              </div>
+
+              {/* Nume + dată + locație */}
+              <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '23px', color: '#2d2c4a', marginBottom: '6px' }}>Nunta Noastră</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11.5px', color: '#9a8f86', marginBottom: '14px' }}>
+                <span>14 septembrie 2026</span>
+                <span>Casa Nobililor, Iași</span>
+              </div>
+
+              <p style={{ fontSize: '12px', color: '#7a7068', lineHeight: 1.5, marginBottom: '18px', maxWidth: '230px' }}>
+                Ajută-ne să ne vedem povestea prin ochii tăi. Trimite-ne pozele tale sau lasă-ne un mesaj special.
+              </p>
+
+              {/* Buton principal */}
+              <div style={{ width: '100%', background: '#710927', color: '#fff', borderRadius: '14px', padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '11px', marginBottom: '9px', textAlign: 'left' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(255,255,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Camera size={17} color="#fff" /></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700 }}>Trimite poze & videoclipuri</div>
+                  <div style={{ fontSize: '10px', opacity: 0.82 }}>Din galerie sau direct cu camera</div>
                 </div>
+                <CaretRight size={14} weight="bold" />
+              </div>
 
-                <div style={{ width: '100%' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#ffffff', marginBottom: '8px', textAlign: 'left', width: '100%', paddingLeft: '4px' }}>
-                    Încărcate recent
-                  </div>
-                  <div className={styles.previewGrid}>
-                    <div className={styles.previewCard}>
-                      <Image src="/images/hero/wedding.jpg" alt="Wedding" fill className={styles.previewImage} sizes="80px" />
-                    </div>
-                    <div className={styles.previewCard}>
-                      <Image src="/images/hero/botez.jpg" alt="Botez" fill className={styles.previewImage} sizes="80px" />
-                    </div>
-                    <div className={styles.previewCard}>
-                      <Image src="/images/hero/toast.jpg" alt="Toast" fill className={styles.previewImage} sizes="80px" />
-                    </div>
-                    <div className={styles.previewCard}>
-                      <Image src="/images/hero/corporate.jpg" alt="Corporate" fill className={styles.previewImage} sizes="80px" />
-                    </div>
-                    <div className={styles.previewCard}>
-                      <Image src="/images/hero/aniversare.jpg" alt="Aniversare" fill className={styles.previewImage} sizes="80px" />
-                    </div>
-                    <div className={styles.previewCard + ' ' + styles.previewEmpty}>
-                      <ImageIcon size={18} />
-                    </div>
-                  </div>
+              {/* Buton secundar */}
+              <div style={{ width: '100%', background: '#fff', border: '1px solid #ecddd0', borderRadius: '14px', padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '11px', textAlign: 'left' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: '#f5efe6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Envelope size={17} color="#2d2c4a" /></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#2d2c4a' }}>Scrie o urare</div>
+                  <div style={{ fontSize: '10px', color: '#a59a90' }}>Un mesaj din inimă pentru miri</div>
                 </div>
+                <CaretRight size={14} weight="bold" color="#b3a99f" />
               </div>
 
-              <div className={styles.phoneFooter}>
-                Securizat prin AWS S3 Cloud
-              </div>
+              {/* Footer privat */}
+              <p style={{ marginTop: '18px', fontSize: '10px', color: '#b0a79e', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <Lock size={11} weight="light" /> Pozele tale sunt private și accesibile doar mirilor
+              </p>
             </div>
           </div>
         </div>
