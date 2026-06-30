@@ -450,6 +450,45 @@ export default function EvenimentulMeuPage() {
 
       
       
+      {/* QR Section */}
+      <div className={styles.qrSection}>
+        <div className={styles.qrCard}>
+          <div className={styles.qrImgWrap}>
+            <img
+              src={`/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=300`}
+              alt={`Cod QR pentru ${event.event_name}`}
+              className={styles.qrImg}
+            />
+          </div>
+          <div className={styles.qrInfo}>
+            <p className={styles.qrLabel}>Codul tău QR pentru invitați</p>
+            <p className={styles.qrHint}>Scanat de invitați, îi duce direct la pagina de încărcat poze. Printează-l și pune-l pe mese.</p>
+
+            <div className={styles.qrActions}>
+              <button className={styles.qrPrimaryBtn} onClick={() => downloadQR(uploadUrl)}>
+                <DownloadSimple size={16} weight="bold" /> Descarcă QR
+              </button>
+              <button className={styles.qrSecondaryBtn} onClick={() => printQR(uploadUrl)}>
+                <Printer size={16} weight="bold" /> Printează cartonaș
+              </button>
+            </div>
+
+            <div className={styles.qrLinkWrap}>
+              <code className={styles.qrLink}>{uploadUrl}</code>
+              <button className={styles.copyBtn} onClick={() => copyLink(uploadUrl)}>
+                {copied ? <><Check size={14} weight="bold" /> Copiat</> : <><Copy size={14} weight="bold" /> Copiază</>}
+              </button>
+            </div>
+            <p className={styles.qrCode}>Cod eveniment: <strong>{event.event_code}</strong></p>
+
+            <label className={styles.galleryToggle}>
+              <input type="checkbox" checked={!!event.is_gallery_public} onChange={togglePublicGallery} />
+              <span>Permite invitaților să vadă galeria foto publică</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Design Catalog */}
       <div className={styles.designSection}>
         <h2 className={styles.sectionTitle}>
@@ -493,45 +532,6 @@ export default function EvenimentulMeuPage() {
           >
             <Package size={16} weight="light" /> Cere administratorului să printeze cartonașele (Taxat extra)
           </button>
-        </div>
-      </div>
-
-      {/* QR Section */}
-      <div className={styles.qrSection}>
-        <div className={styles.qrCard}>
-          <div className={styles.qrImgWrap}>
-            <img
-              src={`/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=300`}
-              alt={`Cod QR pentru ${event.event_name}`}
-              className={styles.qrImg}
-            />
-          </div>
-          <div className={styles.qrInfo}>
-            <p className={styles.qrLabel}>Codul tău QR pentru invitați</p>
-            <p className={styles.qrHint}>Scanat de invitați, îi duce direct la pagina de încărcat poze. Printează-l și pune-l pe mese.</p>
-
-            <div className={styles.qrActions}>
-              <button className={styles.qrPrimaryBtn} onClick={() => downloadQR(uploadUrl)}>
-                <DownloadSimple size={16} weight="bold" /> Descarcă QR
-              </button>
-              <button className={styles.qrSecondaryBtn} onClick={() => printQR(uploadUrl)}>
-                <Printer size={16} weight="bold" /> Printează cartonaș
-              </button>
-            </div>
-
-            <div className={styles.qrLinkWrap}>
-              <code className={styles.qrLink}>{uploadUrl}</code>
-              <button className={styles.copyBtn} onClick={() => copyLink(uploadUrl)}>
-                {copied ? <><Check size={14} weight="bold" /> Copiat</> : <><Copy size={14} weight="bold" /> Copiază</>}
-              </button>
-            </div>
-            <p className={styles.qrCode}>Cod eveniment: <strong>{event.event_code}</strong></p>
-
-            <label className={styles.galleryToggle}>
-              <input type="checkbox" checked={!!event.is_gallery_public} onChange={togglePublicGallery} />
-              <span>Permite invitaților să vadă galeria foto publică</span>
-            </label>
-          </div>
         </div>
       </div>
 

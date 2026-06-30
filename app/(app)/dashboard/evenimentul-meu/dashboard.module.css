@@ -2,17 +2,33 @@
 
 /* Header */
 .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-xl); flex-wrap: wrap; gap: var(--space-md); }
-.title { font-family: var(--font-serif); font-size: 32px; font-weight: 700; color: var(--color-text); letter-spacing: -1px; }
-.meta { font-size: 14px; color: var(--color-text-muted); margin-top: 4px; text-transform: capitalize; }
+.title { font-family: var(--font-serif); font-size: 34px; font-weight: 700; color: var(--color-text); letter-spacing: -1px; }
+.meta { font-size: 14px; color: var(--color-text-muted); margin-top: 6px; text-transform: capitalize; }
+
+/* Titlu de secțiune (override la h2 global care e uriaș) */
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
 .archiveBtn { padding: 12px 24px; background: var(--color-violet); color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-mid); font-family: var(--font-sans); }
 .archiveBtn:hover:not(:disabled) { background: var(--color-violet-mid); transform: translateY(-1px); }
 .archiveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Stats */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-xl); }
-.statCard { background: var(--color-white); border-radius: var(--radius-lg); padding: var(--space-lg); text-align: center; border: 1px solid var(--color-cream-darker); }
-.statValue { font-family: var(--font-serif); font-size: 36px; font-weight: 700; color: var(--color-violet); }
-.statLabel { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: var(--space-xl); }
+.statCard {
+  background: var(--color-white); border-radius: var(--radius-lg); padding: 20px 18px;
+  text-align: center; border: 1px solid var(--color-cream-darker);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.statCard:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.05); }
+.statValue { font-family: var(--font-serif); font-size: 30px; font-weight: 700; color: var(--color-gold, #bc965c); line-height: 1; }
+.statLabel { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); margin-top: 8px; }
 
 /* QR */
 .qrSection { margin-bottom: var(--space-xl); }
