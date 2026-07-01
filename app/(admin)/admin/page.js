@@ -70,6 +70,22 @@ export default async function AdminDashboard() {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5);
 
+  // ── Serii pe ultimele 6 luni (venituri + conturi noi) ─────────
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: d.toLocaleDateString('ro-RO', { month: 'short' }), y: d.getFullYear(), m: d.getMonth() });
+  }
+  const revenueByMonth = months.map((mm) => accounts
+    .filter((a) => a.paid_at && new Date(a.paid_at).getFullYear() === mm.y && new Date(a.paid_at).getMonth() === mm.m)
+    .reduce((s, a) => s + (a.amount_paid || 0), 0));
+  const signupsByMonth = months.map((mm) => accounts
+    .filter((a) => { const c = new Date(a.created_at); return c.getFullYear() === mm.y && c.getMonth() === mm.m; }).length);
+  const maxRev = Math.max(1, ...revenueByMonth);
+  const maxSignups = Math.max(1, ...signupsByMonth);
+  const revLastM = revenueByMonth[4] || 0;
+  const revTrend = revLastM > 0 ? Math.round(((revenueByMonth[5] - revLastM) / revLastM) * 100) : (revenueByMonth[5] > 0 ? 100 : 0);
+
   const stats = [
     { label: 'Venituri totale', value: `${revenue.toLocaleString('ro-RO')} RON`, icon: '💰' },
     { label: 'Venituri luna asta', value: `${revenueMonth.toLocaleString('ro-RO')} RON`, icon: '📈' },
@@ -94,6 +110,42 @@ export default async function AdminDashboard() {
             <p className={styles.statLabel}>{stat.label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Grafice pe 6 luni */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', margin: '24px 0' }}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Venituri · ultimele 6 luni</h3>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: revTrend >= 0 ? '#166534' : '#991b1b' }}>
+              {revTrend >= 0 ? '↑' : '↓'} {Math.abs(revTrend)}% vs luna trecută
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', height: '150px', paddingTop: '12px' }}>
+            {revenueByMonth.map((v, i) => (
+              <div key={months[i].label + i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)' }}>{v > 0 ? v.toLocaleString('ro-RO') : ''}</span>
+                <div style={{ width: '100%', maxWidth: '38px', height: `${Math.max(4, (v / maxRev) * 110)}px`, background: 'linear-gradient(180deg, #bc965c, #a8854c)', borderRadius: '6px 6px 0 0', transition: 'height 0.4s ease' }} />
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'capitalize' }}>{months[i].label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>Conturi noi · ultimele 6 luni</h3>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', height: '150px', paddingTop: '12px' }}>
+            {signupsByMonth.map((v, i) => (
+              <div key={months[i].label + i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)' }}>{v > 0 ? v : ''}</span>
+                <div style={{ width: '100%', maxWidth: '38px', height: `${Math.max(4, (v / maxSignups) * 110)}px`, background: 'linear-gradient(180deg, var(--color-violet), #4a2b6b)', borderRadius: '6px 6px 0 0', transition: 'height 0.4s ease' }} />
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', textTransform: 'capitalize' }}>{months[i].label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className={styles.contentGrid}>

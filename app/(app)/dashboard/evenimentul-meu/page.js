@@ -407,16 +407,19 @@ export default function EvenimentulMeuPage() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{event.event_name}</h1>
-          <p className={styles.meta}>
-            <span style={{ textTransform: 'capitalize' }}>{event.event_type}</span> · {new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}
-            {event.location ? ` · ${event.location}` : ''}
+      {/* Cover header */}
+      <div className={styles.cover}>
+        <div className={styles.coverInfo}>
+          <span className={styles.coverEyebrow}>Albumul evenimentului</span>
+          <h1 className={styles.coverTitle}>{event.couple_names || event.event_name}</h1>
+          <p className={styles.coverMeta}>
+            <span style={{ textTransform: 'capitalize' }}>{event.event_type}</span>
+            <span className={styles.coverDot}>·</span>
+            {new Date(event.event_date).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {event.location ? <><span className={styles.coverDot}>·</span>{event.location}</> : null}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className={styles.coverActions}>
           <button className={styles.editBtn} onClick={openEdit}>
             <PencilSimple size={16} weight="bold" /> Editează detalii
           </button>
@@ -639,12 +642,12 @@ export default function EvenimentulMeuPage() {
           {photos.length === 0 ? (
             <EmptyGallery uploadUrl={uploadUrl} onCopy={() => copyLink(uploadUrl)} copied={copied} />
           ) : (
-            <div className={styles.photoGrid}>
+            <div className={styles.masonry}>
               {photos.map((photo, idx) => (
                 <div
                   key={photo.id}
-                  className={styles.photoItem}
-                  style={{ position: 'relative', outline: selectedIds.has(photo.id) ? '3px solid var(--color-violet)' : 'none', outlineOffset: '2px' }}
+                  className={styles.masonryItem}
+                  style={{ outline: selectedIds.has(photo.id) ? '3px solid var(--color-violet)' : 'none', outlineOffset: '2px' }}
                 >
                   <button
                     type="button"
@@ -664,9 +667,8 @@ export default function EvenimentulMeuPage() {
                   <img
                     src={photo.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photo.r2_key}`}
                     alt={photo.original_name}
-                    className={styles.photoImg}
+                    className={styles.masonryImg}
                     loading="lazy"
-                    style={{ cursor: 'zoom-in' }}
                     onClick={() => setLightbox(idx)}
                   />
                 </div>
