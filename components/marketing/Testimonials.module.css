@@ -51,23 +51,37 @@
 }
 
 .card {
-  background: #ffffff;
+  background: #fffdf9;
   border: 1px solid rgba(181, 140, 79, 0.3);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl);
-  transition: all var(--transition-mid);
+  border-radius: 6px;
+  padding: 34px var(--space-xl) var(--space-xl);
+  transition: box-shadow var(--transition-mid), border-color var(--transition-mid);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(181, 140, 79, 0.08);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(181, 140, 79, 0.1);
+}
+
+/* Bandă adezivă (polaroid pinned) */
+.card::after {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 96px;
+  height: 24px;
+  transform: translateX(-50%) rotate(-2.5deg);
+  background: rgba(188, 150, 92, 0.22);
+  border: 1px solid rgba(188, 150, 92, 0.32);
+  border-radius: 2px;
+  backdrop-filter: blur(1px);
 }
 
 .card:hover {
-  transform: translateY(-5px);
   border-color: var(--color-violet-light);
-  box-shadow: 0 15px 40px rgba(181, 140, 79, 0.18);
+  box-shadow: 0 18px 46px rgba(181, 140, 79, 0.2);
 }
 
 .quoteIcon {
@@ -119,9 +133,10 @@
 
 .name {
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-style: italic;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-burgundy, #710927);
 }
 
 .role {
