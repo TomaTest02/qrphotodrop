@@ -39,6 +39,9 @@ export default function EvenimentulMeuPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [waOpen, setWaOpen] = useState(false);
+  const [waMessage, setWaMessage] = useState('');
+  const [waSaving, setWaSaving] = useState(false);
 
   const PRESET_TEXTS = [
     'Vrem să ne vedem povestea prin ochii tăi! Scanează codul QR pentru a ne trimite instant pozele de la eveniment.',
@@ -170,9 +173,30 @@ export default function EvenimentulMeuPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const defaultWaMessage = () => `Salutare! 📸 Ajută-ne să adunăm toate amintirile de la ${event.event_name}. Scanează sau deschide linkul și încarcă pozele tale:`;
+
   const shareWhatsApp = (url) => {
-    const text = `Salutare! 📸 Ajută-ne să adunăm toate amintirile de la ${event.event_name}. Scanează sau deschide linkul și încarcă pozele tale: ${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const body = (event.whatsapp_message && event.whatsapp_message.trim()) || defaultWaMessage();
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${body}\n${url}`)}`, '_blank');
+  };
+
+  const openWaEdit = () => {
+    setWaMessage(event.whatsapp_message || defaultWaMessage());
+    setWaOpen(true);
+  };
+
+  const saveWaMessage = async (e) => {
+    e.preventDefault();
+    setWaSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase.from('events').update({ whatsapp_message: waMessage.trim() || null }).eq('id', event.id);
+    if (!error) {
+      setEvent({ ...event, whatsapp_message: waMessage.trim() || null });
+      setWaOpen(false);
+    } else {
+      alert('Nu am putut salva mesajul. Încearcă din nou.');
+    }
+    setWaSaving(false);
   };
 
   const downloadQR = async (url) => {
@@ -472,6 +496,9 @@ export default function EvenimentulMeuPage() {
             <div className={styles.qrActions}>
               <button className={styles.qrWhatsappBtn} onClick={() => shareWhatsApp(uploadUrl)}>
                 <WhatsappLogo size={16} weight="fill" /> Trimite pe WhatsApp
+              </button>
+              <button className={styles.qrSecondaryBtn} onClick={openWaEdit} title="Personalizează mesajul de WhatsApp">
+                <PencilSimple size={16} weight="bold" /> Editează mesajul
               </button>
               <button className={styles.qrPrimaryBtn} onClick={() => downloadQR(uploadUrl)}>
                 <DownloadSimple size={16} weight="bold" /> Descarcă QR
@@ -878,6 +905,37 @@ export default function EvenimentulMeuPage() {
               <div className={styles.modalActions}>
                 <button type="button" className={styles.modalCancelBtn} onClick={() => setEditOpen(false)}>Anulează</button>
                 <button type="submit" className={styles.modalConfirmBtn} disabled={editSaving}>{editSaving ? 'Se salvează...' : 'Salvează'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===== EDITARE MESAJ WHATSAPP ===== */}
+      {waOpen && (
+        <div className={styles.modalOverlay} onClick={() => setWaOpen(false)}>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setWaOpen(false)}><X size={16} weight="light" /></button>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalEmoji}><WhatsappLogo size={34} weight="fill" style={{ color: '#25D366' }} /></span>
+              <h2 className={styles.modalTitle}>Personalizează mesajul de WhatsApp</h2>
+              <p className={styles.modalSubtitle}>Scrie mesajul cu care le trimiți invitaților linkul. Adăugăm automat linkul la final.</p>
+            </div>
+            <form onSubmit={saveWaMessage} className={styles.editForm}>
+              <textarea
+                className={styles.editInput}
+                rows={4}
+                value={waMessage}
+                onChange={(e) => setWaMessage(e.target.value)}
+                placeholder="Ex: Salutare! Ajută-ne să adunăm pozele de la nunta noastră..."
+                style={{ resize: 'vertical', fontFamily: 'var(--font-sans)' }}
+              />
+              <div className={styles.editLocked} style={{ fontStyle: 'italic' }}>
+                Previzualizare: „{(waMessage || '').trim() || 'mesajul tău'}\n{uploadUrl}"
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" className={styles.modalCancelBtn} onClick={() => { setWaMessage(defaultWaMessage()); }}>Revino la textul implicit</button>
+                <button type="submit" className={styles.modalConfirmBtn} disabled={waSaving}>{waSaving ? 'Se salvează...' : 'Salvează mesajul'}</button>
               </div>
             </form>
           </div>
