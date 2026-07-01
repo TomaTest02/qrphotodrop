@@ -58,6 +58,8 @@ export async function proxy(request) {
     '/api/auth/',      // callback OAuth
     '/api/stripe/webhook', // Stripe webhook (are propria semnătură)
     '/api/cron/',      // joburi programate (protejate cu CRON_SECRET)
+    '/api/slideshow',  // date pentru slideshow-ul live
+    '/slideshow/',     // pagina de slideshow (proiecție TV)
     '/eveniment/',     // pagini publice eveniment
     '/dashboard/demo', // pagina demo publică
     '/studio/',        // Sanity Studio

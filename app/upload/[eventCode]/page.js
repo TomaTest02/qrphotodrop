@@ -83,13 +83,19 @@ export default function GuestUploadPage({ params }) {
       });
       return;
     }
-    fetch(`/api/events?code=${eventCode}`)
-      .then(r => r.json())
-      .then(data => { 
-        if (data.event) setEvent(data.event); 
-        if (data.photos) setPublicPhotos(data.photos);
-      })
-      .catch(() => {});
+    const loadEvent = () => {
+      fetch(`/api/events?code=${eventCode}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.event) setEvent(data.event);
+          if (data.photos) setPublicPhotos(data.photos);
+        })
+        .catch(() => {});
+    };
+    loadEvent();
+    // Reîmprospătăm galeria publică la fiecare 15s ca să apară pozele noi fără refresh manual
+    const id = setInterval(loadEvent, 15000);
+    return () => clearInterval(id);
   }, [eventCode, isDemo]);
 
   const handleFileSelect = (e) => {

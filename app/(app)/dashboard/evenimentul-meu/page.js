@@ -420,6 +420,9 @@ export default function EvenimentulMeuPage() {
           <button className={styles.editBtn} onClick={openEdit}>
             <PencilSimple size={16} weight="bold" /> Editează detalii
           </button>
+          <a className={styles.editBtn} href={`/slideshow/${event.event_code}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+            📺 Slideshow TV
+          </a>
           <button className={styles.archiveBtn} onClick={handleArchive} disabled={archiveLoading}>
             {archiveLoading ? '⏳ Se generează...' : '📦 Arhivă pe email'}
           </button>
