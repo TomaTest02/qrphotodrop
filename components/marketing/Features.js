@@ -11,8 +11,8 @@ gsap.registerPlugin(ScrollTrigger);
 const features = [
   {
     icon: Shield,
-    title: 'Găzduire Securizată AWS',
-    desc: 'Pozele și videoclipurile sunt stocate în siguranță deplină pe servere Amazon Web Services, cu redundanță și backup automat.'
+    title: 'Găzduire Securizată în Cloud',
+    desc: 'Pozele și videoclipurile sunt stocate în siguranță deplină pe infrastructură cloud securizată, cu redundanță și backup automat.'
   },
   {
     icon: DownloadSimple,
