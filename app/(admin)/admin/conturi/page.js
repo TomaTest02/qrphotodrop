@@ -50,8 +50,37 @@ export default function AdminConturiPage() {
   const [sortBy, setSortBy] = useState('recent');
   const [busyId, setBusyId] = useState(null);
   const [menu, setMenu] = useState(null); // { acc, top, left }
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createSaving, setCreateSaving] = useState(false);
+  const [createErr, setCreateErr] = useState('');
+  const [createForm, setCreateForm] = useState({
+    email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '',
+  });
 
   useEffect(() => { loadAccounts(); }, []);
+
+  const submitCreate = async (e) => {
+    e.preventDefault();
+    setCreateSaving(true);
+    setCreateErr('');
+    try {
+      const res = await fetch('/api/admin/create-account', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(createForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCreateOpen(false);
+        setCreateForm({ email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '' });
+        await loadAccounts();
+      } else {
+        setCreateErr(data.error || 'Eroare la creare.');
+      }
+    } catch {
+      setCreateErr('Eroare de conexiune.');
+    }
+    setCreateSaving(false);
+  };
 
   // Închide meniul de acțiuni la scroll / resize / Escape
   useEffect(() => {
@@ -261,6 +290,9 @@ export default function AdminConturiPage() {
           <button onClick={exportCSV} className={styles.actionBtn} style={{ background: '#3e405b', color: '#fff', border: 'none', cursor: 'pointer', padding: '9px 16px', borderRadius: '8px', fontWeight: 600 }}>
             ⬇ Export CSV
           </button>
+          <button onClick={() => { setCreateErr(''); setCreateOpen(true); }} className={styles.actionBtn} style={{ background: 'var(--color-violet)', color: '#fff', border: 'none', cursor: 'pointer', padding: '9px 16px', borderRadius: '8px', fontWeight: 600 }}>
+            + Creează cont
+          </button>
         </div>
       </div>
 
@@ -436,6 +468,57 @@ export default function AdminConturiPage() {
             <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => { setMenu(null); handleDelete(menu.acc.id); }}>🗑 Șterge cont</button>
           </div>
         </>
+      )}
+
+      {/* Modal creare cont manual */}
+      {createOpen && (
+        <div onClick={() => setCreateOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(20,16,24,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: '#fff', borderRadius: '16px', padding: '28px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', marginBottom: '4px', color: 'var(--color-text)' }}>Creează cont nou</h2>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '20px' }}>Contul e activ imediat, cu evenimentul și codul QR create automat.</p>
+            {createErr && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '11px 14px', borderRadius: '8px', fontSize: '14px', marginBottom: '16px' }}>{createErr}</div>}
+            <form onSubmit={submitCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              {[
+                { k: 'email', l: 'Email', type: 'email', full: true },
+                { k: 'password', l: 'Parolă (min 6)', type: 'text' },
+                { k: 'phone', l: 'Telefon', type: 'tel' },
+                { k: 'eventName', l: 'Nume eveniment', type: 'text', full: true },
+                { k: 'eventDate', l: 'Data evenimentului', type: 'date' },
+              ].map((f) => (
+                <label key={f.k} style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', gridColumn: f.full ? '1 / -1' : 'auto' }}>
+                  {f.l}
+                  <input
+                    type={f.type} required={f.k !== 'phone'}
+                    value={createForm[f.k]}
+                    onChange={(e) => setCreateForm({ ...createForm, [f.k]: e.target.value })}
+                    style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', fontFamily: 'var(--font-sans)' }}
+                  />
+                </label>
+              ))}
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                Tip eveniment
+                <select value={createForm.eventType} onChange={(e) => setCreateForm({ ...createForm, eventType: e.target.value })} style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', background: '#fff' }}>
+                  <option value="nunta">Nuntă</option>
+                  <option value="botez">Botez</option>
+                  <option value="aniversare">Aniversare</option>
+                  <option value="corporate">Corporate</option>
+                </select>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                Pachet
+                <select value={createForm.packageTier} onChange={(e) => setCreateForm({ ...createForm, packageTier: e.target.value })} style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', background: '#fff' }}>
+                  <option value="intim">Basic (60 GB)</option>
+                  <option value="complet">Standard (100 GB)</option>
+                  <option value="vis">Premium (150 GB)</option>
+                </select>
+              </label>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                <button type="button" onClick={() => setCreateOpen(false)} className={styles.actionBtn} style={{ background: 'var(--color-cream)', border: '1px solid var(--color-cream-darker)', cursor: 'pointer', padding: '11px 20px', borderRadius: '8px', fontWeight: 600 }}>Anulează</button>
+                <button type="submit" disabled={createSaving} className={styles.actionBtn} style={{ background: 'var(--color-violet)', color: '#fff', border: 'none', cursor: 'pointer', padding: '11px 20px', borderRadius: '8px', fontWeight: 600 }}>{createSaving ? 'Se creează...' : 'Creează cont'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

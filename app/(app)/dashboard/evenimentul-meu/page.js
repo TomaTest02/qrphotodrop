@@ -280,7 +280,7 @@ export default function EvenimentulMeuPage() {
           lastName: '',
           email: userProfile?.email || '',
           phone: userProfile?.phone || '',
-          eventType: event.event_type,
+          eventType: 'Cerere Upgrade',
           message: `CERERE UPGRADE / EXTINDERE pentru evenimentul "${event.event_name}" (cod ${event.event_code}). Pachet curent: ${TIER_LABEL[event.package_tier] || event.package_tier}.`,
         }),
       });

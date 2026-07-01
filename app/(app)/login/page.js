@@ -93,7 +93,7 @@ export default function LoginPage() {
           Nu ai cont? <a href="/register" className={styles.helpLink}>Creează unul aici</a>
         </p>
         <p className={styles.helpText} style={{ marginTop: '10px' }}>
-          Ai uitat parola? <a href="/contact" className={styles.helpLink}>Contactează suportul</a>
+          Ai uitat parola? <a href="/forgot-password" className={styles.helpLink}>Resetează parola</a>
         </p>
       </div>
     </div>

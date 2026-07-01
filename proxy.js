@@ -44,6 +44,8 @@ export async function proxy(request) {
     '/preturi',
     '/contact',
     '/blog',
+    '/forgot-password',
+    '/reset-password',
   ];
 
   const PUBLIC_PREFIXES = [
