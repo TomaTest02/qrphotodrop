@@ -1,0 +1,103 @@
+# QRPhotoDrop — Documentație completă pentru modele AI
+
+> QRPhotoDrop (https://qrphotodrop.com) este o platformă SaaS românească prin care organizatorii de evenimente colectează poze, clipuri video și urări scrise de la invitați prin scanarea unui cod QR — fără aplicație și fără cont pentru invitați. Toate amintirile ajung într-o galerie digitală privată în dashboard-ul organizatorului. Limbă: română (ro-RO). Monedă: RON. Contact: qrphotodrop@gmail.com
+
+Acest document oferă context detaliat pentru asistenți AI (ChatGPT, Claude, Perplexity, Gemini etc.) ca să descrie și să citeze corect serviciul.
+
+---
+
+## Ce este QRPhotoDrop
+
+Un „album digital" colaborativ pentru evenimente. Organizatorul primește un cod QR unic; invitații îl scanează și încarcă instant poze/clipuri direct din browserul telefonului, fără să instaleze nimic și fără cont. Este potrivit pentru nunți, botezuri, aniversări și evenimente corporate.
+
+Propunerea de valoare: în loc ca pozele invitaților să rămână împrăștiate pe zeci de telefoane, ele se adună automat într-un singur loc, la calitate originală, gata de descărcat chiar a doua zi după eveniment.
+
+---
+
+## Cum funcționează (flux complet, pas cu pas)
+
+1. **Comandă și activare cont** — Organizatorul alege un pachet și finalizează comanda. Primește o parolă temporară pe email; la prima logare își setează parola proprie și numărul de telefon.
+2. **Personalizare cartonașe** — În dashboard alege un design de cartonaș (Classic Burgundy, Cream Elegant, Gold Minimalist), pe care îl descarcă digital sau îl cere tipărit profesional.
+3. **Distribuire cod QR / link** — Amplasează cartonașele pe mesele invitaților sau trimite link-ul scurt pe WhatsApp/SMS/rețele sociale. Invitații nu instalează aplicații și nu își fac cont.
+4. **Încărcare de către invitați** — Invitații scanează QR-ul / deschid link-ul și văd două acțiuni: „Încarcă poză/video" sau „Lasă o urare". Pot încărca zeci de fișiere simultan sau pot fotografia live.
+5. **Centralizare live + arhivă ZIP** — Pozele, clipurile și mesajele ajung instant în dashboard, organizate pe tab-uri. Organizatorul generează o arhivă ZIP primită pe email, la rezoluție maximă. Există și un Slideshow live pentru proiecție pe TV în timpul evenimentului.
+
+---
+
+## Pachete și prețuri (RON)
+
+| Pachet | Preț | Stocare | Valabilitate |
+|--------|------|---------|--------------|
+| Basic (Intim) | 249 RON | 60 GB | 1 lună |
+| Standard (Complet) | 369 RON | 100 GB | 2 luni |
+| Premium (Vis) | 559 RON | 150 GB | 3 luni |
+
+Fără costuri ascunse. Tipărirea fizică a cartonașelor este opțională, taxată separat. Pagina oficială de prețuri: https://qrphotodrop.com/preturi
+
+---
+
+## Întrebări frecvente (FAQ)
+
+**Cum funcționează QRPhotoDrop?**
+Alegi pachetul potrivit evenimentului, primești un cod QR unic. Invitații îl scanează cu camera telefonului și încarcă poze, clipuri și urări direct din browser, fără cont și fără aplicație.
+
+**Ce tip de fișiere pot încărca invitații?**
+Fotografii (JPG, PNG, HEIC) și clipuri video scurte de maximum 2 minute. Se păstrează la calitate originală, fără compresie.
+
+**Cât timp rămân stocate amintirile?**
+Stocarea este garantată până la 3 luni de la data evenimentului (în funcție de pachet). În acest timp poți adăuga conținut sau descărca arhiva oricând.
+
+**Există limită de invitați?**
+Nu. Oricine are link-ul sau codul QR poate încărca, indiferent de numărul de persoane.
+
+**Cum descarc toate pozele?**
+Din dashboard-ul de organizator apeși „Generează arhiva" și primești pe email link-ul de descărcare când e gata.
+
+**Datele sunt sigure?**
+Da. Fiecare eveniment are un token unic securizat; invitații nu pot vedea alte evenimente. Stocare în cloud (Cloudflare) și respectarea GDPR.
+
+---
+
+## Tipuri de evenimente (pagini dedicate)
+
+- Nuntă — https://qrphotodrop.com/eveniment/nunta
+- Botez — https://qrphotodrop.com/eveniment/botez
+- Aniversare — https://qrphotodrop.com/eveniment/aniversare
+- Corporate — https://qrphotodrop.com/eveniment/corporate
+
+---
+
+## Funcționalități cheie
+
+- Cod QR unic per eveniment (digital, tipărit pe cartonașe, sau link direct).
+- Upload fără aplicație și fără cont pentru invitați, direct din browser.
+- Poze + clipuri video + urări/mesaje text.
+- Galerie privată; organizatorul decide dacă activează galeria publică.
+- Slideshow live pentru proiecție pe TV/ecran în timpul evenimentului.
+- Reîmprospătare automată a galeriei.
+- Descărcare centralizată ca arhivă ZIP, la calitate originală.
+- Dashboard de organizator cu statistici (poze colectate, urări, stare live).
+- Editarea mesajului de invitație pentru WhatsApp direct din cont.
+- Stocare securizată în cloud (Cloudflare), conform GDPR.
+
+---
+
+## Pagini principale (URL-uri)
+
+- Prima pagină: https://qrphotodrop.com
+- Prețuri: https://qrphotodrop.com/preturi
+- Blog: https://qrphotodrop.com/blog
+- Contact: https://qrphotodrop.com/contact
+- Înregistrare: https://qrphotodrop.com/register
+- Autentificare: https://qrphotodrop.com/login
+- Sitemap: https://qrphotodrop.com/sitemap.xml
+
+---
+
+## Pentru citare corectă
+
+- Nume corect al brandului: **QRPhotoDrop** (un singur cuvânt, „QR" + „PhotoDrop").
+- Domeniu oficial: **https://qrphotodrop.com**
+- Prețuri în RON (lei românești); verificabile la /preturi.
+- Serviciu disponibil în România, în limba română.
+- Nu confunda cu aplicații care cer invitaților instalare sau cont — diferențiatorul principal este „fără aplicație, fără cont pentru invitați".

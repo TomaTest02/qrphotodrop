@@ -114,8 +114,8 @@ export default function TechFlow({ type = 'nunta' }) {
         });
 
         tl.fromTo(trackHighlightRef.current,
-          { height: '0%' },
-          { height: '100%', ease: 'none' }
+          { scaleY: 0 },
+          { scaleY: 1, ease: 'none' }
         );
 
         scrollTriggerRef.current = tl.scrollTrigger;
@@ -129,7 +129,7 @@ export default function TechFlow({ type = 'nunta' }) {
       mm.add("(max-width: 992px)", () => {
         // Mobile layout highlight track animation
         gsap.fromTo(trackHighlightRef.current,
-          { height: '0%' },
+          { scaleY: 0 },
           {
             scrollTrigger: {
               trigger: containerRef.current,
@@ -137,7 +137,7 @@ export default function TechFlow({ type = 'nunta' }) {
               end: 'bottom center',
               scrub: 0.5,
             },
-            height: '100%',
+            scaleY: 1,
             ease: 'none'
           }
         );
@@ -232,10 +232,10 @@ export default function TechFlow({ type = 'nunta' }) {
 
           {/* RIGHT SIDE: Visual Mockup Showcase */}
           <div className={styles.mockupContainer}>
-            <div className={styles.mockupHeader}>
+            <div className={styles.mockupHeader} key={`hdr-${currentStep}`}>
               <span className={styles.mockupBadge}>{activeStep.badge}</span>
               <p className={styles.mockupExplanation}>
-                {currentStep === 3 
+                {currentStep === 3
                   ? activeStep.desc.replace('evenimentului tău', `evenimentului tău de ${getEventName().toLowerCase()}`)
                   : activeStep.desc
                 }
@@ -243,7 +243,7 @@ export default function TechFlow({ type = 'nunta' }) {
             </div>
 
             {/* MOCKUP SHOWCASE CARD */}
-            <div className={styles.mockupVisualWrapper}>
+            <div className={styles.mockupVisualWrapper} key={`vis-${currentStep}`}>
               
               {/* STEP 1 VISUAL: Phone Setup / First Login */}
               {currentStep === 0 && (

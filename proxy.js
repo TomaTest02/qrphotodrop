@@ -69,7 +69,7 @@ export async function proxy(request) {
     '/apple-icon',     // app/apple-icon.png
     '/robots.txt',     // SEO — crawlere
     '/sitemap.xml',    // SEO — crawlere
-    '/llms.txt',       // descoperire de către LLM-uri (ChatGPT/Claude/etc.)
+    '/llms',           // llms.txt + llms-full.txt (descoperire LLM: ChatGPT/Claude/etc.)
     '/og-image',       // imagini OpenGraph
     '/images/',
     '/fonts/',

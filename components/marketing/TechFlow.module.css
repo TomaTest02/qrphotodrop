@@ -60,11 +60,12 @@
   flex-direction: column;
 }
 
+/* Linia verticală trece exact prin centrul nodurilor (node 44px + padding 16px => centru la 38px) */
 .timelineTrack {
   position: absolute;
-  left: 22px;
-  top: 30px;
-  bottom: 30px;
+  left: 37px;
+  top: 38px;
+  bottom: 38px;
   width: 2px;
   background: var(--color-cream-darker);
   z-index: 1;
@@ -72,9 +73,12 @@
 
 .timelineTrackHighlight {
   position: absolute;
-  left: 22px;
-  top: 30px;
+  left: 37px;
+  top: 38px;
+  bottom: 38px;
   width: 2px;
+  transform: scaleY(0); /* crește prin GSAP (scaleY 0 -> 1), aliniat exact pe track */
+  transform-origin: top center;
   background: var(--color-violet);
   z-index: 2;
 }
@@ -175,6 +179,8 @@
 
 .mockupHeader {
   text-align: left;
+  min-height: 88px;
+  animation: stepContentIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .mockupBadge {
@@ -217,7 +223,8 @@
   height: 420px;
   display: flex;
   justify-content: center;
-  animation: slideFadeIn 0.5s ease-out forwards;
+  animation: slideFadeIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: transform, opacity;
 }
 
 .phoneBezel {
@@ -358,17 +365,39 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideFadeIn 0.5s ease-out forwards;
+  animation: slideFadeIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: transform, opacity;
 }
 
 @keyframes slideFadeIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stepContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Respectăm preferința utilizatorului pentru mai puțină mișcare */
+@media (prefers-reduced-motion: reduce) {
+  .phoneVisualFrame,
+  .laptopVisualFrame,
+  .qrShareWrapper,
+  .mockupHeader {
+    animation: none !important;
   }
 }
 
@@ -497,7 +526,8 @@
   gap: 16px;
   width: 100%;
   align-items: center;
-  animation: slideFadeIn 0.5s ease-out forwards;
+  animation: slideFadeIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: transform, opacity;
 }
 
 .placeCardGraphic {
