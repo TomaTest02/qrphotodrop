@@ -1,6 +1,27 @@
 # QRPhotoDrop — Progress Journal
 
-**Last Updated:** 2026-07-02 | **Model:** Haiku 4.5
+**Last Updated:** 2026-07-03 | **Model:** Haiku 4.5 | **Status:** ✅ 95% COMPLETE — Ready for Final Setup
+
+---
+
+## 🎯 TODAY (2026-07-03) — Final Polish Session
+
+### ✅ COMPLETED TODAY
+1. **OG Image** — Created `public/og-image.svg` (1200×630) with gradient branding + QR icon + tagline
+2. **Contact Address Schema** — Added PostalAddress to LocalBusiness schema (placeholder: Iași)
+3. **Documentation** — Created `FINAL_SETUP.md` with 3 manual steps + test checklist + troubleshooting
+4. **Commit `4eb746a`** — og-image.svg + contact address schema
+
+### 📝 NEXT ACTIONS FOR USER (YOU)
+1. **Supabase:** Configure URL settings (Site URL + Redirect URLs for reset-password)
+2. **Vercel:** Update `NEXT_PUBLIC_APP_URL` to `https://qrphotodrop.com` + Redeploy
+3. **Optional:** Update contact address with real business location
+
+### ⏭️ AFTER SETUP
+- Run test checklist from `FINAL_SETUP.md`
+- Reset-password emails should work
+- OG image previews on social media
+- App is production-ready
 
 ---
 
