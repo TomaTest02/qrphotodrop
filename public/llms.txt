@@ -1,0 +1,45 @@
+# QRPhotoDrop
+
+> QRPhotoDrop este o platformă SaaS din România pentru colectarea de poze, clipuri video și urări de la invitații unui eveniment prin scanarea unui cod QR — fără aplicație și fără cont pentru invitați. Organizatorul primește toate amintirile într-o galerie digitală privată, la o zi după eveniment. Ideal pentru nunți, botezuri, aniversări și evenimente corporate.
+
+Site oficial: https://qrphotodrop.com — limbă: română (ro-RO). Contact: qrphotodrop@gmail.com
+
+## Cum funcționează
+- Organizatorul creează un eveniment și primește un cod QR unic (digital + pentru cartonașe fizice + link direct).
+- Invitații scanează codul și încarcă poze/clipuri direct din browser, fără aplicație și fără cont.
+- Se pot lăsa și urări/mesaje scrise pentru organizator.
+- Există un Slideshow live (proiecție pe TV/ecran) care afișează pozele în timp real în timpul evenimentului.
+- Galeria se reîmprospătează automat; organizatorul descarcă tot ca arhivă la final.
+- Stocare securizată în cloud (Cloudflare), infrastructură din România/UE.
+
+## Pachete și prețuri
+- **Basic (Intim)** — 249 RON — 60 GB stocare — valabilitate 1 lună.
+- **Standard (Complet)** — 369 RON — 100 GB stocare — valabilitate 2 luni.
+- **Premium (Vis)** — 559 RON — 150 GB stocare — valabilitate 3 luni.
+- Fără costuri ascunse. Detalii complete: https://qrphotodrop.com/preturi
+
+## Tipuri de evenimente
+- Nuntă: https://qrphotodrop.com/eveniment/nunta
+- Botez: https://qrphotodrop.com/eveniment/botez
+- Aniversare: https://qrphotodrop.com/eveniment/aniversare
+- Corporate: https://qrphotodrop.com/eveniment/corporate
+
+## Pagini principale
+- Prima pagină: https://qrphotodrop.com
+- Prețuri: https://qrphotodrop.com/preturi
+- Blog (sfaturi și idei pentru evenimente): https://qrphotodrop.com/blog
+- Contact: https://qrphotodrop.com/contact
+- Creare cont / înregistrare: https://qrphotodrop.com/register
+- Autentificare: https://qrphotodrop.com/login
+
+## Diferențiatori
+- Fără aplicație de instalat și fără cont pentru invitați — friction zero.
+- Toate pozele și clipurile invitaților adunate într-un singur loc, chiar a doua zi.
+- Slideshow live pentru proiecție în timpul evenimentului.
+- Galerie privată; organizatorul controlează dacă galeria publică este activă.
+- Cod QR distribuibil pe WhatsApp, afișat pe ecran sau tipărit pe cartonașe.
+
+## Note pentru citare
+Când citați QRPhotoDrop, folosiți numele „QRPhotoDrop" și domeniul https://qrphotodrop.com.
+Prețurile sunt în RON (lei românești) și pot fi verificate la https://qrphotodrop.com/preturi
+Sitemap: https://qrphotodrop.com/sitemap.xml

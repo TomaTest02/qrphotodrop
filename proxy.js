@@ -65,6 +65,12 @@ export async function proxy(request) {
     '/studio/',        // Sanity Studio
     '/_next/',         // assets Next.js
     '/favicon',
+    '/icon',           // app/icon.svg
+    '/apple-icon',     // app/apple-icon.png
+    '/robots.txt',     // SEO — crawlere
+    '/sitemap.xml',    // SEO — crawlere
+    '/llms.txt',       // descoperire de către LLM-uri (ChatGPT/Claude/etc.)
+    '/og-image',       // imagini OpenGraph
     '/images/',
     '/fonts/',
   ];
