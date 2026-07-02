@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundal brand burgundy, colțuri rotunjite -->
+  <rect width="512" height="512" rx="112" fill="#710927"/>
+
+  <!-- Pattern QR stilizat, crem + accent auriu (lizibil la 16px) -->
+  <g fill="#fbf4e9">
+    <!-- finder stânga-sus -->
+    <rect x="96"  y="96"  width="128" height="128" rx="24"/>
+    <!-- finder dreapta-sus -->
+    <rect x="288" y="96"  width="128" height="128" rx="24"/>
+    <!-- finder stânga-jos -->
+    <rect x="96"  y="288" width="128" height="128" rx="24"/>
+  </g>
+  <!-- centrele finder-elor (decupaj burgundy) -->
+  <g fill="#710927">
+    <rect x="136" y="136" width="48" height="48" rx="10"/>
+    <rect x="328" y="136" width="48" height="48" rx="10"/>
+    <rect x="136" y="328" width="48" height="48" rx="10"/>
+  </g>
+
+  <!-- modul auriu de accent (dreapta-jos) -->
+  <rect x="300" y="300" width="52" height="52" rx="12" fill="#bc965c"/>
+  <rect x="364" y="364" width="52" height="52" rx="12" fill="#bc965c"/>
+  <rect x="300" y="364" width="52" height="52" rx="12" fill="#fbf4e9"/>
+  <rect x="364" y="300" width="52" height="52" rx="12" fill="#fbf4e9"/>
+</svg>
