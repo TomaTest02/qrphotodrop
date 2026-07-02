@@ -45,7 +45,7 @@ export default function Footer() {
 
         <div className={styles.bottom}>
           <span>© {new Date().getFullYear()} QRPhotoDrop</span>
-          <span>+40 774 043 791 · contact@qrphotodrop.com</span>
+          <span>+40 774 043 791 · qrphotodrop@gmail.com</span>
         </div>
       </div>
     </footer>

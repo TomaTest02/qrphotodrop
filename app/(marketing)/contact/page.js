@@ -20,7 +20,7 @@ const jsonLd = {
   name: 'QRPhotoDrop',
   url: 'https://qrphotodrop.com',
   telephone: '+40774043791',
-  email: 'contact@qrphotodrop.com',
+  email: 'qrphotodrop@gmail.com',
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'Str. Ghe. Ghe. Manu 100', // TODO: UPDATE WITH ACTUAL ADDRESS
