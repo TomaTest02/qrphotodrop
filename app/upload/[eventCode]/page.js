@@ -84,6 +84,8 @@ export default function GuestUploadPage({ params }) {
       return;
     }
     const loadEvent = () => {
+      // Nu interogăm serverul când tab-ul e ascuns — economisim invocări (Vercel free).
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       fetch(`/api/events?code=${eventCode}`)
         .then(r => r.json())
         .then(data => {
@@ -93,9 +95,15 @@ export default function GuestUploadPage({ params }) {
         .catch(() => {});
     };
     loadEvent();
-    // Reîmprospătăm galeria publică la fiecare 15s ca să apară pozele noi fără refresh manual
-    const id = setInterval(loadEvent, 15000);
-    return () => clearInterval(id);
+    // Reîmprospătăm galeria publică la 30s ca să apară pozele noi fără refresh manual.
+    const id = setInterval(loadEvent, 30000);
+    // Când invitatul revine în tab, reîmprospătăm imediat (fără să așteptăm 30s).
+    const onVisible = () => { if (document.visibilityState === 'visible') loadEvent(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [eventCode, isDemo]);
 
   const handleFileSelect = (e) => {

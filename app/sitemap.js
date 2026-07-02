@@ -1,5 +1,9 @@
 import { client } from '../sanity/lib/client';
 
+// Se reîmprospătează instant prin webhook-ul /api/revalidate când postezi pe Sanity.
+// Fallback: o dată pe zi (dacă webhook-ul nu e configurat) — consum minim.
+export const revalidate = 86400;
+
 const BASE_URL = 'https://qrphotodrop.com';
 
 // Tipuri de evenimente

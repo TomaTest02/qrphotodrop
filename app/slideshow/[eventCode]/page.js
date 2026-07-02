@@ -16,6 +16,8 @@ export default function SlideshowPage({ params }) {
   useEffect(() => {
     let active = true;
     const load = async () => {
+      // Nu interogăm când proiecția e într-un tab ascuns — economisim invocări.
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         const res = await fetch(`/api/slideshow?code=${encodeURIComponent(eventCode)}`);
         if (!res.ok) { if (active) setLoaded(true); return; }

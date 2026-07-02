@@ -2,7 +2,7 @@ import styles from './blog.module.css';
 import { client } from '../../../sanity/lib/client';
 import { urlForImage } from '../../../sanity/lib/image';
 
-export const revalidate = 60; // ISR - forced rebuild for CSS
+export const revalidate = 3600; // fallback 1h; updatare instant via /api/revalidate (webhook Sanity)
 
 export const metadata = {
   title: 'Blog',
