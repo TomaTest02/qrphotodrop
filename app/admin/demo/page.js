@@ -213,7 +213,7 @@ export default function AdminDemoDashboard() {
               </p>
               <div className={styles.welcomeMsgBox}>
                 <code>
-                  {`Salut! Contul tău a fost creat cu succes pe QRPhotoDrop. Te poți loga pe qrphotodrop.ro/login cu emailul ${approvedAccountInfo.email} și parola temporară ${approvedAccountInfo.password}. La prima logare, vei fi solicitat să îți adaugi numărul de telefon și să îți schimbi parola temporară pentru securitate. Codul tău QR și linkul de upload sunt active!`}
+                  {`Salut! Contul tău a fost creat cu succes pe QRPhotoDrop. Te poți loga pe qrphotodrop.com/login cu emailul ${approvedAccountInfo.email} și parola temporară ${approvedAccountInfo.password}. La prima logare, vei fi solicitat să îți adaugi numărul de telefon și să îți schimbi parola temporară pentru securitate. Codul tău QR și linkul de upload sunt active!`}
                 </code>
               </div>
               <button onClick={() => setApprovedAccountInfo(null)} className={styles.welcomeCloseBtn}>
@@ -295,13 +295,13 @@ export default function AdminDemoDashboard() {
                       {/* Hardcoded main DEMO account row to represent our dashboard demo */}
                       <tr className={styles.demoAccountRow}>
                         <td>
-                          <strong>demo@qrphotodrop.ro</strong>
+                          <strong>demo@qrphotodrop.com</strong>
                           <span className={styles.badgeDemo}>DEMO PORTAL</span>
                         </td>
                         <td><span className={styles.statusActive}>Active</span></td>
                         <td><code>DEMO</code></td>
                         <td>
-                          <button onClick={() => handleOtp('demo@qrphotodrop.ro')} className={styles.actionBtn}>
+                          <button onClick={() => handleOtp('demo@qrphotodrop.com')} className={styles.actionBtn}>
                             🔑 OTP
                           </button>
                         </td>

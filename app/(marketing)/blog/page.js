@@ -8,12 +8,12 @@ export const metadata = {
   title: 'Blog',
   description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect. Idei pentru nunți, botezuri și aniversări.',
   alternates: {
-    canonical: 'https://qrphotodrop.ro/blog',
+    canonical: 'https://qrphotodrop.com/blog',
   },
   openGraph: {
     title: 'Blog — QRPhotoDrop',
     description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect.',
-    url: 'https://qrphotodrop.ro/blog',
+    url: 'https://qrphotodrop.com/blog',
     type: 'website',
   },
 };

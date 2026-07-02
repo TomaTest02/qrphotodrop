@@ -149,7 +149,7 @@ export default function OrganizerDemoDashboard() {
     const supportLogs = JSON.parse(localStorage.getItem('qrphotodrop_demo_support_logs') || '[]');
     supportLogs.unshift({
       id: 'support-log-' + Date.now(),
-      email: 'demo@qrphotodrop.ro',
+      email: 'demo@qrphotodrop.com',
       type: 'Comandă Printare',
       message: `Design: "${selectedDesign}" | Text pe cartonaș: "${cardText.trim()}"`,
       created_at: new Date().toISOString()
@@ -181,7 +181,7 @@ export default function OrganizerDemoDashboard() {
     const supportLogs = JSON.parse(localStorage.getItem('qrphotodrop_demo_support_logs') || '[]');
     supportLogs.unshift({
       id: 'support-log-' + Date.now(),
-      email: 'demo@qrphotodrop.ro',
+      email: 'demo@qrphotodrop.com',
       type: 'Suport Tehnic',
       message: supportMessage,
       created_at: new Date().toISOString()
@@ -197,7 +197,7 @@ export default function OrganizerDemoDashboard() {
     if (mounted && typeof window !== 'undefined') {
       return `${window.location.origin}/upload/DEMO`;
     }
-    return 'https://qrphotodrop.ro/upload/DEMO';
+    return 'https://qrphotodrop.com/upload/DEMO';
   };
 
   const handleCopyLink = () => {
@@ -234,7 +234,7 @@ export default function OrganizerDemoDashboard() {
           </nav>
 
           <div className={styles.sidebarFooter}>
-            <p className={styles.userEmail}>demo@qrphotodrop.ro</p>
+            <p className={styles.userEmail}>demo@qrphotodrop.com</p>
             <a href="/" className={styles.logoutBtn}>Deconectează-te</a>
           </div>
         </aside>
@@ -289,7 +289,7 @@ export default function OrganizerDemoDashboard() {
               )}
               {archiveState === 'ready' && (
                 <div className={styles.archiveBannerSuccess}>
-                  <Check size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva a fost trimisă cu succes la <strong>demo@qrphotodrop.ro</strong>! Verifică email-ul pentru link-ul de descărcare securizat.
+                  <Check size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva a fost trimisă cu succes la <strong>demo@qrphotodrop.com</strong>! Verifică email-ul pentru link-ul de descărcare securizat.
                 </div>
               )}
 
@@ -521,7 +521,7 @@ export default function OrganizerDemoDashboard() {
                     <label className={styles.inputLabel}>Adresă de Email</label>
                     <input 
                       type="email" 
-                      value="demo@qrphotodrop.ro" 
+                      value="demo@qrphotodrop.com" 
                       disabled 
                       className={styles.accountInput} 
                     />

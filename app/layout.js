@@ -21,7 +21,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://qrphotodrop.ro'),
+  metadataBase: new URL('https://qrphotodrop.com'),
   title: {
     default: 'QRPhotoDrop — Album Digital pentru Evenimente',
     template: '%s — QRPhotoDrop',
@@ -29,7 +29,7 @@ export const metadata = {
   description:
     'Colectează poze, clipuri și urări de la invitații tăi prin scanarea unui cod QR. Fără aplicație, fără cont. Simplu și elegant.',
   keywords: ['album digital', 'QR code nuntă', 'poze invitați', 'botez', 'aniversare', 'corporate', 'fotografii eveniment', 'cod QR'],
-  authors: [{ name: 'QRPhotoDrop', url: 'https://qrphotodrop.ro' }],
+  authors: [{ name: 'QRPhotoDrop', url: 'https://qrphotodrop.com' }],
   creator: 'QRPhotoDrop',
   publisher: 'QRPhotoDrop',
   robots: {
@@ -41,7 +41,7 @@ export const metadata = {
     title: 'QRPhotoDrop — Album Digital pentru Evenimente',
     description:
       'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.',
-    url: 'https://qrphotodrop.ro',
+    url: 'https://qrphotodrop.com',
     siteName: 'QRPhotoDrop',
     locale: 'ro_RO',
     type: 'website',
@@ -61,7 +61,7 @@ export const metadata = {
     images: ['/og-image.jpg'],
   },
   alternates: {
-    canonical: 'https://qrphotodrop.ro',
+    canonical: 'https://qrphotodrop.com',
   },
 };
 

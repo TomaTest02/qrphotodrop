@@ -1,4 +1,4 @@
-const BASE_URL = 'https://qrphotodrop.ro';
+const BASE_URL = 'https://qrphotodrop.com';
 
 // Slugurile blog — adaugă slug-urile Sanity aici când migrezi
 const BLOG_SLUGS = [

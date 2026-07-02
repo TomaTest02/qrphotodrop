@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
 
   const metaTitle = post.seoTitle || post.title;
   const metaDesc = post.seoDescription || post.excerpt;
-  const canonical = post.canonicalUrl || `https://qrphotodrop.ro/blog/${slug}`;
+  const canonical = post.canonicalUrl || `https://qrphotodrop.com/blog/${slug}`;
   const ogImage = post.mainImage?.asset ? urlForImage(post.mainImage).width(1200).height(630).url() : undefined;
 
   return {
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `${metaTitle} — QRPhotoDrop Blog`,
       description: metaDesc,
-      url: `https://qrphotodrop.ro/blog/${slug}`,
+      url: `https://qrphotodrop.com/blog/${slug}`,
       type: 'article',
       publishedTime: post.publishedAt,
       authors: [post.author || 'QRPhotoDrop Team'],
@@ -134,16 +134,16 @@ export default async function BlogPostPage({ params }) {
     author: {
       '@type': 'Organization',
       name: post.author || 'QRPhotoDrop Team',
-      url: 'https://qrphotodrop.ro',
+      url: 'https://qrphotodrop.com',
     },
     publisher: {
       '@type': 'Organization',
       name: 'QRPhotoDrop',
-      url: 'https://qrphotodrop.ro',
+      url: 'https://qrphotodrop.com',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://qrphotodrop.ro/blog/${slug}`,
+      '@id': `https://qrphotodrop.com/blog/${slug}`,
     },
     articleSection: post.category,
     inLanguage: 'ro-RO',
@@ -157,25 +157,25 @@ export default async function BlogPostPage({ params }) {
         '@type': 'ListItem',
         position: 1,
         name: 'Acasă',
-        item: 'https://qrphotodrop.ro/',
+        item: 'https://qrphotodrop.com/',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Blog',
-        item: 'https://qrphotodrop.ro/blog',
+        item: 'https://qrphotodrop.com/blog',
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: post.category || 'General',
-        item: 'https://qrphotodrop.ro/blog',
+        item: 'https://qrphotodrop.com/blog',
       },
       {
         '@type': 'ListItem',
         position: 4,
         name: post.title,
-        item: `https://qrphotodrop.ro/blog/${slug}`,
+        item: `https://qrphotodrop.com/blog/${slug}`,
       },
     ],
   };

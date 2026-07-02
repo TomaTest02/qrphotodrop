@@ -4,12 +4,12 @@ export const metadata = {
   title: 'Contact',
   description: 'Contactează echipa QRPhotoDrop. Răspundem rapid cu o ofertă personalizată pentru evenimentul tău.',
   alternates: {
-    canonical: 'https://qrphotodrop.ro/contact',
+    canonical: 'https://qrphotodrop.com/contact',
   },
   openGraph: {
     title: 'Contact — QRPhotoDrop',
     description: 'Contactează echipa QRPhotoDrop. Răspundem rapid cu o ofertă personalizată.',
-    url: 'https://qrphotodrop.ro/contact',
+    url: 'https://qrphotodrop.com/contact',
     type: 'website',
   },
 };
@@ -18,9 +18,9 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   name: 'QRPhotoDrop',
-  url: 'https://qrphotodrop.ro',
+  url: 'https://qrphotodrop.com',
   telephone: '+40774043791',
-  email: 'contact@qrphotodrop.ro',
+  email: 'contact@qrphotodrop.com',
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',

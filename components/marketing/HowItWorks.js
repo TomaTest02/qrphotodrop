@@ -121,7 +121,7 @@ export default function HowItWorks() {
                   <p className={styles.bubbleText}>
                     Salutare tuturor! Aici puteți pune toate pozele de la eveniment. Doar scanați sau deschideți linkul:
                   </p>
-                  <span className={styles.chatLink}>qrphotodrop.ro/nunta 🥂</span>
+                  <span className={styles.chatLink}>qrphotodrop.com/nunta 🥂</span>
                 </div>
               </div>
             </div>

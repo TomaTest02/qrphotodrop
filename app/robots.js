@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ['/admin/', '/dashboard/', '/api/', '/pending', '/first-login', '/studio/'],
       },
     ],
-    sitemap: 'https://qrphotodrop.ro/sitemap.xml',
+    sitemap: 'https://qrphotodrop.com/sitemap.xml',
   };
 }

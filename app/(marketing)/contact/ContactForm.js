@@ -105,7 +105,7 @@ export default function ContactForm() {
                 </div>
                 <div>
                   <p className={styles.infoItemLabel}>Email</p>
-                  <p className={styles.infoItemValue}>contact@qrphotodrop.ro</p>
+                  <p className={styles.infoItemValue}>contact@qrphotodrop.com</p>
                 </div>
                 <div>
                   <p className={styles.infoItemLabel}>Program</p>

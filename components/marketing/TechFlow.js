@@ -354,7 +354,7 @@ export default function TechFlow({ type = 'nunta' }) {
                         <QrCode size={48} className={styles.burgundyColorIcon} />
                       </div>
                       <p className={styles.placeCardInstruct}>Vrem să ne vedem povestea prin ochii tăi! Scanează codul QR pentru a trimite instant pozele de la eveniment.</p>
-                      <span className={styles.placeCardLogo}>qrphotodrop.ro</span>
+                      <span className={styles.placeCardLogo}>qrphotodrop.com</span>
                     </div>
                   </div>
 
@@ -366,7 +366,7 @@ export default function TechFlow({ type = 'nunta' }) {
                     </div>
                     <div className={styles.chatMessage}>
                       Salutare tuturor! Aici puteți pune toate pozele de la eveniment. Doar scanați cartonașul de pe mese sau deschideți linkul: <br />
-                      <strong style={{ color: '#2d1b69' }}>qrphotodrop.ro/upload/{type}-code 🥂</strong>
+                      <strong style={{ color: '#2d1b69' }}>qrphotodrop.com/upload/{type}-code 🥂</strong>
                     </div>
                   </div>
                 </div>

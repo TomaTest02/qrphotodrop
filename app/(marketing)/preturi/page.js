@@ -6,12 +6,12 @@ export const metadata = {
   title: 'Prețuri',
   description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse. De la 249 RON.',
   alternates: {
-    canonical: 'https://qrphotodrop.ro/preturi',
+    canonical: 'https://qrphotodrop.com/preturi',
   },
   openGraph: {
     title: 'Prețuri — QRPhotoDrop',
     description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse.',
-    url: 'https://qrphotodrop.ro/preturi',
+    url: 'https://qrphotodrop.com/preturi',
     type: 'website',
   },
 };
@@ -31,7 +31,7 @@ const jsonLd = {
         description: 'Până la 100 invitați, 60 GB stocare, 1 lună disponibilitate',
         price: '249',
         priceCurrency: 'RON',
-        url: 'https://qrphotodrop.ro/preturi',
+        url: 'https://qrphotodrop.com/preturi',
       },
     },
     {
@@ -43,7 +43,7 @@ const jsonLd = {
         description: 'Până la 250 invitați, 100 GB stocare, 2 luni disponibilitate',
         price: '369',
         priceCurrency: 'RON',
-        url: 'https://qrphotodrop.ro/preturi',
+        url: 'https://qrphotodrop.com/preturi',
       },
     },
     {
@@ -55,7 +55,7 @@ const jsonLd = {
         description: 'Până la 500 invitați, 150 GB stocare, 3 luni disponibilitate',
         price: '559',
         priceCurrency: 'RON',
-        url: 'https://qrphotodrop.ro/preturi',
+        url: 'https://qrphotodrop.com/preturi',
       },
     },
   ],

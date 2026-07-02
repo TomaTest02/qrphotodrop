@@ -15,12 +15,12 @@ export const metadata = {
   title: 'QRPhotoDrop — Album Digital pentru Evenimente',
   description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment. Fără aplicație, fără cont.',
   alternates: {
-    canonical: 'https://qrphotodrop.ro',
+    canonical: 'https://qrphotodrop.com',
   },
   openGraph: {
     title: 'QRPhotoDrop — Album Digital pentru Evenimente',
     description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment. Fără aplicație, fără cont.',
-    url: 'https://qrphotodrop.ro',
+    url: 'https://qrphotodrop.com',
     type: 'website',
   },
 };
@@ -30,12 +30,12 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Organization',
-      '@id': 'https://qrphotodrop.ro/#organization',
+      '@id': 'https://qrphotodrop.com/#organization',
       name: 'QRPhotoDrop',
-      url: 'https://qrphotodrop.ro',
+      url: 'https://qrphotodrop.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://qrphotodrop.ro/og-image.jpg',
+        url: 'https://qrphotodrop.com/og-image.jpg',
       },
       contactPoint: {
         '@type': 'ContactPoint',
@@ -46,10 +46,10 @@ const jsonLd = {
     },
     {
       '@type': 'WebSite',
-      '@id': 'https://qrphotodrop.ro/#website',
-      url: 'https://qrphotodrop.ro',
+      '@id': 'https://qrphotodrop.com/#website',
+      url: 'https://qrphotodrop.com',
       name: 'QRPhotoDrop',
-      publisher: { '@id': 'https://qrphotodrop.ro/#organization' },
+      publisher: { '@id': 'https://qrphotodrop.com/#organization' },
       inLanguage: 'ro-RO',
     },
     {

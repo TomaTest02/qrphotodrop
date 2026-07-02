@@ -10,7 +10,7 @@ export async function GET(request) {
 
   // Basic security check to ensure we only proxy from our R2 bucket
   const r2Url = process.env.CLOUDFLARE_R2_PUBLIC_URL || '';
-  if (!targetUrl.includes('.r2.dev') && !targetUrl.startsWith(r2Url) && !targetUrl.includes('qr-memory-drop.vercel.app')) {
+  if (!targetUrl.includes('.r2.dev') && !targetUrl.startsWith(r2Url) && !targetUrl.includes('qrphotodrop.com')) {
      return new NextResponse('Unauthorized proxy URL', { status: 403 });
   }
 
