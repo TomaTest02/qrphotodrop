@@ -22,6 +22,7 @@ export const metadata = {
     description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment. Fără aplicație, fără cont.',
     url: 'https://qrphotodrop.com',
     type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'QRPhotoDrop — Album Digital pentru Evenimente' }],
   },
 };
 

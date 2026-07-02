@@ -15,6 +15,13 @@ export const metadata = {
     description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect.',
     url: 'https://qrphotodrop.com/blog',
     type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'QRPhotoDrop Blog' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Blog — QRPhotoDrop',
+    description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect.',
+    images: ['/og-image.png'],
   },
 };
 

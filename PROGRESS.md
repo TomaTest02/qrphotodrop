@@ -1,6 +1,21 @@
 # QRPhotoDrop — Progress Journal
 
-**Last Updated:** 2026-07-03 | **Model:** Haiku 4.5 | **Status:** ✅ 100% PRODUCTION READY — All Tests Pass
+**Last Updated:** 2026-07-03 | **Model:** Opus 4.8 | **Status:** ✅ 100% PRODUCTION READY — SEO Re-Audited & Fixed
+
+---
+
+## 🔎 SEO RE-AUDIT (2026-07-03, Opus) — FIXED REAL DEFECTS
+
+Full end-to-end re-verification. Build passes with zero errors. Found & fixed genuine defects:
+
+1. **OG image was SVG** (Facebook/WhatsApp/Twitter/LinkedIn do NOT render SVG previews) → generated real `og-image.png` + `og-image.jpg` (1200×630) from the SVG via `sharp`. Updated root layout to `.png`.
+2. **Broken `og-image.jpg` references** in homepage schema logo + blog fallback → the JPG now exists, refs valid.
+3. **Missing OG image + Twitter card** on `/preturi`, `/contact`, `/blog` → added `images` + `twitter` blocks (all → `/og-image.png`).
+4. **Homepage OG had no images** (would not inherit reliably) → added explicit `images`.
+5. **Sitemap blog slugs were hardcoded AND WRONG** — listed 3 non-existent slugs (404s) and missed the real Sanity post → made `app/sitemap.js` async, fetches slugs from Sanity at build. Sitemap now correctly lists `blog/poze-nunta-album-digital`.
+6. **Fake LocalBusiness address** (placeholder Iași) → removed per user (fake NAP data harms local SEO). Also removed nonsensical `servesCuisine: 'n/a'`.
+
+SEO status: every marketing page has metadata + canonical + OpenGraph(+image) + Twitter card + schema.org JSON-LD. ✅
 
 ---
 

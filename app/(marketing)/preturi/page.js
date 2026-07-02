@@ -13,6 +13,13 @@ export const metadata = {
     description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse.',
     url: 'https://qrphotodrop.com/preturi',
     type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'QRPhotoDrop — Prețuri' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Prețuri — QRPhotoDrop',
+    description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse.',
+    images: ['/og-image.png'],
   },
 };
 

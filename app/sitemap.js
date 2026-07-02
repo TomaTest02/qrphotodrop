@@ -1,17 +1,23 @@
-const BASE_URL = 'https://qrphotodrop.com';
+import { client } from '../sanity/lib/client';
 
-// Slugurile blog — TODO: fetch dinamic din Sanity
-const BLOG_SLUGS = [
-  '5-idei-creative-poze-invitati',
-  'cum-sa-organizezi-botez-memorabil',
-  'cod-qr-viitorul-evenimentelor',
-];
+const BASE_URL = 'https://qrphotodrop.com';
 
 // Tipuri de evenimente
 const EVENT_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
 
-export default function sitemap() {
+const BLOG_SLUGS_QUERY = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current, "updated": coalesce(_updatedAt, publishedAt) }`;
+
+async function getBlogSlugs() {
+  try {
+    return await client.fetch(BLOG_SLUGS_QUERY);
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap() {
   const now = new Date().toISOString();
+  const posts = await getBlogSlugs();
 
   return [
     // Pagini principale
@@ -29,10 +35,10 @@ export default function sitemap() {
     // Autentificare (prioritate mică — nu sunt pagini SEO)
     { url: `${BASE_URL}/register`,       lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/login`,          lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
-    // Articole blog
-    ...BLOG_SLUGS.map((slug) => ({
-      url: `${BASE_URL}/blog/${slug}`,
-      lastModified: now,
+    // Articole blog (dinamic din Sanity)
+    ...posts.map((post) => ({
+      url: `${BASE_URL}/blog/${post.slug}`,
+      lastModified: post.updated || now,
       changeFrequency: 'monthly',
       priority: 0.7,
     })),
