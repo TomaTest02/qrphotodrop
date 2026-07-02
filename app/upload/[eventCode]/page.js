@@ -149,7 +149,8 @@ export default function GuestUploadPage({ params }) {
             publicUrl = await new Promise((resolve) => {
               const reader = new FileReader();
               reader.onload = (event) => {
-                const img = new Image();
+                // window.Image — evităm shadowing-ul de importul Phosphor `Image`.
+                const img = new window.Image();
                 img.onload = () => {
                   const canvas = document.createElement('canvas');
                   const MAX = 800;
@@ -186,6 +187,7 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
+    let succeeded = 0;
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       setUploadCurrent(i + 1);
@@ -213,9 +215,21 @@ export default function GuestUploadPage({ params }) {
           }
           throw new Error(errData.error || 'Upload failed');
         }
+        succeeded++;
       } catch (err) { console.error('Upload error:', err); }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
     }
+
+    // Feedback onest: nu declarăm succes dacă în realitate au eșuat fișiere.
+    if (succeeded === 0) {
+      alert('Nu am putut încărca fișierele. Verifică conexiunea și încearcă din nou.');
+      setView('mediaChoice');
+      return;
+    }
+    if (succeeded < filesToUpload.length) {
+      alert(`${succeeded} din ${filesToUpload.length} fișiere au fost încărcate. Pentru restul, încearcă din nou.`);
+    }
+    setUploadTotal(succeeded);
     setView('uploadSuccess');
   };
 

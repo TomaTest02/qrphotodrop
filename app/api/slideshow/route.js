@@ -12,11 +12,20 @@ export async function GET(request) {
   const supabase = createAdminClient();
   const { data: event } = await supabase
     .from('events')
-    .select('id, event_name, event_date')
+    .select('id, event_name, event_date, is_gallery_public')
     .eq('event_code', code)
     .single();
 
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+
+  // Galeria privată nu se expune prin slideshow (proiecția publică e opt-in).
+  if (!event.is_gallery_public) {
+    return NextResponse.json({
+      event: { event_name: event.event_name, event_date: event.event_date },
+      photos: [],
+      private: true,
+    });
+  }
 
   const { data: uploads } = await supabase
     .from('uploads')

@@ -19,6 +19,35 @@ SEO status: every marketing page has metadata + canonical + OpenGraph(+image) + 
 
 ---
 
+## 🔐 SECURITY & CODE-QUALITY AUDIT (2026-07-03, Opus) — REAL BUGS FIXED
+
+Ran 3 parallel review agents (API/auth security, RLS/storage/secrets, code correctness), then **verified every finding on the code myself** (2 agent findings were false positives — see below). Build passes.
+
+### FIXED — Security
+1. **Privilege escalation (CRITICAL)** — `users` UPDATE policy had no column protection; an authenticated user could `update({role:'admin'})` on their own row via the anon key and become admin. → migration `20260703120000_security_hardening.sql`: `REVOKE UPDATE ON users`, `GRANT UPDATE(must_change_password)` only; added `WITH CHECK`.
+2. **Forged rows via anon key** — `uploads`/`wishes`/`contact_messages` had `INSERT WITH CHECK (true)`, so anyone with the public anon key could insert arbitrary rows bypassing API validation. All legit inserts use service_role → dropped the anon INSERT policies.
+3. **SSRF in `/api/proxy`** — substring allowlist (`includes('.r2.dev')`) bypassable (`http://169.254.169.254/?x=.r2.dev`). → proper `new URL()` parse, HTTPS-only, exact/suffix hostname allowlist, `redirect:'error'`.
+4. **Private-gallery photo leak** — `/api/slideshow` returned all photos ignoring `is_gallery_public`. → gated on `is_gallery_public`.
+5. **Blog JSON-LD XSS** — CMS title/category injected into `<script>` unescaped. → escape `<` → `<`.
+
+### FIXED — Correctness bugs
+6. **`/eveniment/[type]` crash** — used `Layers` (never imported). → `Stack`.
+7. **ZIP archive truncation** — `lib/archive.js` concatenated chunks right after `finalize()` without waiting for `end`. → Promise resolving on `end` + error handling.
+8. **Upload false success** — guest saw "N poze adăugate" even when all uploads failed. → count successes, handle all-failed / partial, show real count.
+9. **Demo thumbnails broken** — `new Image()` shadowed by Phosphor `Image` import. → `new window.Image()`.
+
+### FALSE POSITIVES (verified, no action)
+- "Admin pages unauthenticated" (agent looked for `middleware.js`; the real gate is `proxy.js` lines 104-124 — verified admin role check present + build shows "ƒ Proxy (Middleware)").
+- Stripe webhook signature "missing" — it IS verified via `constructEvent` + `STRIPE_WEBHOOK_SECRET`.
+
+### RECOMMENDED (not done — needs infra/decisions)
+- **Distributed rate limiting** — current limiter is in-memory per-instance + IP-spoofable (Upstash/Redis needed).
+- **Stripe webhook idempotency** — add unique constraint on `stripe_session_id` + return non-2xx on failure so Stripe retries.
+- **Guest upload abuse** — 8-char event codes + no per-event upload cap; consider longer codes / short-lived guest token.
+- ⚠️ **Apply the new migration to prod** (`supabase db push` or run the SQL) — the privilege-escalation fix only takes effect once applied.
+
+---
+
 ## 🎯 TODAY (2026-07-03) — FINAL SESSION ✅ COMPLETE
 
 ### ✅ COMPLETED TODAY

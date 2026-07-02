@@ -184,11 +184,11 @@ export default async function BlogPostPage({ params }) {
     <article className={styles.article}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
       />
 
       <nav aria-label="breadcrumb" style={{ marginBottom: '32px', fontSize: '14px', fontWeight: '500', color: '#6B7280' }}>

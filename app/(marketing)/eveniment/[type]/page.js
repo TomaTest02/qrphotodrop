@@ -154,7 +154,7 @@ export default async function EventTypePage({ params }) {
           <div className={styles.accessGrid}>
             {[
               { icon: QrCode, title: 'Cod QR digital', desc: 'Trimis pe WhatsApp sau afișat pe ecran.' },
-              { icon: Layers, title: 'Cartonașe fizice', desc: 'Printat pe cartonașe elegante pe masă.' },
+              { icon: Stack, title: 'Cartonașe fizice', desc: 'Printat pe cartonașe elegante pe masă.' },
               { icon: Link, title: 'Link direct', desc: 'Distribuit pe orice canal digital.' },
             ].map((item, i) => {
               const IconComponent = item.icon;
