@@ -21,52 +21,17 @@ export default function Hero() {
       gsap.registerPlugin(ScrollTrigger);
 
       ctx = gsap.context(() => {
-      const tl = gsap.timeline();
-
-      // Initial state — use force3D for GPU layer
-      gsap.set(`.${styles.eyebrow}`, { opacity: 0, y: 20, force3D: true });
-      gsap.set(`.${styles.titleInner}`, { y: '100%', force3D: true });
-      gsap.set(`.${styles.subtitle}`, { opacity: 0, y: 30, force3D: true });
-      gsap.set(`.${styles.actions}`, { opacity: 0, y: 20, force3D: true });
-      gsap.set(photosRef.current, { 
-        opacity: 0, 
-        scale: 0.8, 
-        y: 60, 
+      // Textul (eyebrow/title/subtitle/actions) e animat prin CSS — nu depinde de
+      // încărcarea GSAP, ca să nu întârzie LCP. Aici animăm doar pozele decorative.
+      gsap.set(photosRef.current, {
+        opacity: 0,
+        scale: 0.8,
+        y: 60,
         rotation: (i) => [-25, -20, 25, 18, -18, 18][i] || 0,
         force3D: true
       });
 
-      // Intro sequence
-      tl.to(`.${styles.eyebrow}`, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        delay: 0.2,
-        force3D: true
-      })
-      .to(`.${styles.titleInner}`, {
-        y: '0%',
-        duration: 1,
-        stagger: 0.12,
-        ease: 'power4.out',
-        force3D: true
-      }, '-=0.5')
-      .to(`.${styles.subtitle}`, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        force3D: true
-      }, '-=0.6')
-      .to(`.${styles.actions}`, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        force3D: true
-      }, '-=0.6')
-      .to(photosRef.current, {
+      gsap.to(photosRef.current, {
         opacity: 1,
         scale: 1,
         y: 0,
@@ -74,8 +39,9 @@ export default function Hero() {
         duration: 1.2,
         stagger: 0.08,
         ease: 'back.out(1.2)',
+        delay: 0.2,
         force3D: true
-      }, '-=1');
+      });
 
       // Parallax effect on scroll
       gsap.to(containerRef.current, {
