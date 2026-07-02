@@ -21,6 +21,14 @@ const jsonLd = {
   url: 'https://qrphotodrop.com',
   telephone: '+40774043791',
   email: 'contact@qrphotodrop.com',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Str. Ghe. Ghe. Manu 100', // TODO: UPDATE WITH ACTUAL ADDRESS
+    addressLocality: 'Iași',
+    addressRegion: 'IS',
+    postalCode: '700000',
+    addressCountry: 'RO',
+  },
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',

@@ -47,7 +47,7 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'QRPhotoDrop — Album Digital pentru Evenimente',
@@ -58,7 +58,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'QRPhotoDrop — Album Digital pentru Evenimente',
     description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.',
-    images: ['/og-image.jpg'],
+    images: ['/og-image.svg'],
   },
   alternates: {
     canonical: 'https://qrphotodrop.com',
