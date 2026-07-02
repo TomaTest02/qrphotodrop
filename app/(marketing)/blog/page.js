@@ -30,9 +30,40 @@ const POSTS_QUERY = `*[_type == "post" && defined(slug.current)] | order(publish
 export default async function BlogPage() {
   const posts = await client.fetch(POSTS_QUERY);
 
+  const blogSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'QRPhotoDrop Blog',
+    description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect.',
+    url: 'https://qrphotodrop.com/blog',
+    publisher: {
+      '@type': 'Organization',
+      name: 'QRPhotoDrop',
+      url: 'https://qrphotodrop.com',
+    },
+    blogPost: posts.map((post) => ({
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.excerpt,
+      url: `https://qrphotodrop.com/blog/${post.slug}`,
+      datePublished: post.publishedAt,
+      author: {
+        '@type': 'Organization',
+        name: 'QRPhotoDrop',
+      },
+      image: post.mainImage?.asset ? urlForImage(post.mainImage).width(1200).url() : 'https://qrphotodrop.com/og-image.jpg',
+      articleSection: post.category || 'General',
+    })),
+  };
+
   return (
-    <section className={styles.section}>
-      <div className={styles.inner}>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+      <section className={styles.section}>
+        <div className={styles.inner}>
         <div className={styles.header}>
           <span className={styles.eyebrow}>Blog</span>
           <h1 className={styles.title}>Inspirație &amp; sfaturi utile</h1>
@@ -75,5 +106,6 @@ export default async function BlogPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }

@@ -39,9 +39,35 @@ const CONTENT = {
 export async function generateMetadata({ params }) {
   const { type } = await params;
   const content = CONTENT[type] || CONTENT.nunta;
+  const baseUrl = 'https://qrphotodrop.com';
+  const pageUrl = `${baseUrl}/eveniment/${type}`;
+
   return {
     title: `QRPhotoDrop — ${content.title}`,
     description: content.desc,
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title: `Colectare poze pentru ${content.title} | QRPhotoDrop`,
+      description: content.desc,
+      url: pageUrl,
+      type: 'website',
+      images: [
+        {
+          url: `${baseUrl}${content.bgImage}`,
+          width: 1200,
+          height: 630,
+          alt: `Imagine ${content.title} - QRPhotoDrop`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Colectare poze pentru ${content.title} | QRPhotoDrop`,
+      description: content.desc,
+      images: [`${baseUrl}${content.bgImage}`],
+    },
   };
 }
 
@@ -53,8 +79,35 @@ export default async function EventTypePage({ params }) {
     return <div style={{ padding: '100px 20px', textAlign: 'center' }}><h1>Pagină negăsită</h1></div>;
   }
 
+  const eventSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: `Soluție colectare poze — ${content.title}`,
+    description: content.desc,
+    url: `https://qrphotodrop.com/eveniment/${type}`,
+    image: `https://qrphotodrop.com${content.bgImage}`,
+    organizer: {
+      '@type': 'Organization',
+      name: 'QRPhotoDrop',
+      url: 'https://qrphotodrop.com',
+    },
+    offers: {
+      '@type': 'Offer',
+      name: `Pachet ${content.title}`,
+      description: `Colectare poze și clipuri pentru ${type}`,
+      url: 'https://qrphotodrop.com/preturi',
+      priceCurrency: 'RON',
+      price: '249', // Basic tier
+      availability: 'https://schema.org/InStock',
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
+      />
       {/* Hero */}
       <section className={styles.heroSection}>
         {content.bgImage && (

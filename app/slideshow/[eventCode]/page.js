@@ -67,7 +67,7 @@ export default function SlideshowPage({ params }) {
           key={current.id}
           className="ssImg"
           src={current.public_url}
-          alt=""
+          alt="Event slideshow"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: '60px 24px' }}
         />
       ) : (
