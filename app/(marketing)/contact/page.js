@@ -26,7 +26,7 @@ const jsonLd = {
   '@type': 'LocalBusiness',
   name: 'QRPhotoDrop',
   url: 'https://qrphotodrop.com',
-  telephone: '+40774043791',
+  telephone: '+40720726619',
   email: 'qrphotodrop@gmail.com',
   openingHoursSpecification: [
     {

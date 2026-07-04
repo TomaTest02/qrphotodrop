@@ -260,7 +260,7 @@ export default function TechFlow({ type = 'nunta' }) {
                           <label className={styles.mockLabel}>Telefon organizator</label>
                           <div className={styles.mockInputWrapper}>
                             <Phone size={11} className={styles.mockInputIcon} />
-                            <span className={styles.mockInputValue}>+40 774 043 791</span>
+                            <span className={styles.mockInputValue}>+40 (720) 726 619</span>
                           </div>
                         </div>
 

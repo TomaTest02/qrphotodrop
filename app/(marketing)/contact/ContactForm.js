@@ -101,7 +101,7 @@ export default function ContactForm() {
               <div className={styles.infoList}>
                 <div>
                   <p className={styles.infoItemLabel}>Telefon</p>
-                  <p className={styles.infoItemValue}>+40 774 043 791</p>
+                  <p className={styles.infoItemValue}>+40 (720) 726 619</p>
                 </div>
                 <div>
                   <p className={styles.infoItemLabel}>Email</p>

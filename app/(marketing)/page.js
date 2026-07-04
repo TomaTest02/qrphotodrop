@@ -40,7 +40,7 @@ const jsonLd = {
       },
       contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+40774043791',
+        telephone: '+40720726619',
         contactType: 'customer service',
         availableLanguage: 'Romanian',
       },
