@@ -57,11 +57,22 @@ export async function PUT(request, { params }) {
     const admin = createAdminClient();
     const body = await request.json();
 
-    const { phone, newPassword, eventData, status, payment } = body;
+    const { phone, newPassword, eventData, status, payment, referredBy } = body;
 
     // 1. Update phone in public.users
     if (phone !== undefined) {
       await admin.from('users').update({ phone }).eq('id', id);
+    }
+
+    // 1a. Atribuire wedding planner (referredBy = id planner sau '' / null pentru a scoate)
+    if (referredBy !== undefined) {
+      let refId = null;
+      if (referredBy) {
+        const { data: planner } = await admin.from('wedding_planners').select('id').eq('id', referredBy).maybeSingle();
+        if (!planner) return NextResponse.json({ error: 'Planner inexistent' }, { status: 400 });
+        refId = planner.id;
+      }
+      await admin.from('users').update({ referred_by: refId }).eq('id', id);
     }
 
     // 1b. Update status (active / suspended / pending)

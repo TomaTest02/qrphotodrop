@@ -33,14 +33,18 @@ export default function AdminContPage({ params }) {
   const [event, setEvent] = useState(null);
   const [stats, setStats] = useState(null);
 
+  const [planners, setPlanners] = useState([]);
   const [formData, setFormData] = useState({
-    phone: '', newPassword: '',
+    phone: '', newPassword: '', referredBy: '',
     event_name: '', event_date: '', location: '', couple_names: '',
     package_type: '', package_tier: '', expires_at: '',
   });
   const [payment, setPayment] = useState({ amount_paid: 0, payment_status: 'unpaid' });
 
   useEffect(() => { loadAccount(); }, [id]);
+  useEffect(() => {
+    fetch('/api/admin/planners').then((r) => r.ok ? r.json() : { planners: [] }).then((d) => setPlanners(d.planners || [])).catch(() => {});
+  }, []);
 
   async function loadAccount() {
     try {
@@ -53,6 +57,7 @@ export default function AdminContPage({ params }) {
         setFormData({
           phone: data.user?.phone || '',
           newPassword: '',
+          referredBy: data.user?.referred_by || '',
           event_name: data.event?.event_name || '',
           event_date: toDateInput(data.event?.event_date),
           location: data.event?.location || '',
@@ -104,6 +109,7 @@ export default function AdminContPage({ params }) {
     putAccount({
       phone: formData.phone,
       newPassword: formData.newPassword || undefined,
+      referredBy: formData.referredBy || null,
       eventData: {
         event_name: formData.event_name,
         event_date: formData.event_date,
@@ -219,6 +225,19 @@ export default function AdminContPage({ params }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ ...label, color: '#991b1b' }}>Forțează parolă nouă</label>
             <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Lasă gol pentru a nu modifica" style={{ ...input, border: '1px solid #fca5a5' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label style={label}>Recomandat de (wedding planner)</label>
+            <select value={formData.referredBy} onChange={(e) => setFormData((p) => ({ ...p, referredBy: e.target.value }))} style={{ ...input, background: '#fff' }}>
+              <option value="">— Niciunul —</option>
+              {planners.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+            </select>
+            {user?.referred_by_name && (
+              <span style={{ fontSize: '12px', color: user?.referred_by ? 'var(--color-text-muted)' : '#b45309' }}>
+                Scris la înscriere: „{user.referred_by_name}"{!user?.referred_by ? ' — neatribuit, alege plannerul din listă și salvează' : ''}
+              </span>
+            )}
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Se salvează cu butonul „Salvează modificările" de jos.</span>
           </div>
         </div>
       </div>

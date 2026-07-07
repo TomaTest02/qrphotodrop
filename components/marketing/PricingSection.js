@@ -14,13 +14,22 @@ gsap.registerPlugin(ScrollTrigger);
 const TIER_STORAGE = { intim: 60, complet: 100, vis: 150 };
 const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
 
-const tierFeatures = (tier) => [
-  'Album Digital & QR unic',
-  'Catalog & Design QR',
-  'Poze, urări și clipuri video (max. 2 min)',
-  `${TIER_STORAGE[tier]} GB stocare`,
-  `Disponibil ${TIER_DURATION[tier]} după eveniment`,
-];
+const tierFeatures = (tier) => {
+  const list = [
+    'Album digital pentru eveniment',
+    'Cod QR unic pentru acces',
+    'Încărcare poze de către invitați',
+    'Încărcare urări de către invitați',
+    'Încărcare clipuri video de maximum 2 minute',
+    `Spațiu de stocare: ${TIER_STORAGE[tier]} GB`,
+    `Disponibilitate după eveniment: ${TIER_DURATION[tier]}`,
+  ];
+  // Standard + Premium: printare & plastifiere carduri QR contra cost (preț în funcție de nr. de carduri)
+  if (tier === 'complet' || tier === 'vis') {
+    list.push('Opțional (contra cost): printare și plastifiere carduri QR — preț în funcție de numărul de carduri');
+  }
+  return list;
+};
 
 const PACKAGES = {
   nunta: [

@@ -353,6 +353,11 @@ export default function AdminConturiPage() {
                       {acc.email}
                     </a>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{acc.phone || 'fără telefon'}</div>
+                    {(acc.referrer_name || acc.referred_by_name) && (
+                      <div style={{ fontSize: '11px', color: acc.referrer_name ? 'var(--color-violet)' : '#b45309' }} title="Wedding planner care a recomandat">
+                        ↳ {acc.referrer_name || acc.referred_by_name}{!acc.referrer_name ? ' (neatribuit)' : ''}
+                      </div>
+                    )}
                     {acc.role === 'admin' && <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-violet)' }}>ADMIN</span>}
                   </td>
                   {/* Eveniment */}

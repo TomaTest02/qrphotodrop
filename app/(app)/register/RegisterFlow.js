@@ -9,13 +9,22 @@ import styles from './register.module.css';
 // ── Pachete (sursă unică pentru înregistrare) ───────────────────
 const TIER_STORAGE = { intim: 60, complet: 100, vis: 150 };
 const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
-const tierFeatures = (tier) => [
-  'Album Digital & QR unic',
-  'Catalog & Design QR',
-  'Poze, urări și clipuri video (max. 2 min)',
-  `${TIER_STORAGE[tier]} GB stocare`,
-  `Disponibil ${TIER_DURATION[tier]} după eveniment`,
-];
+const tierFeatures = (tier) => {
+  const list = [
+    'Album digital pentru eveniment',
+    'Cod QR unic pentru acces',
+    'Încărcare poze de către invitați',
+    'Încărcare urări de către invitați',
+    'Încărcare clipuri video de maximum 2 minute',
+    `Spațiu de stocare: ${TIER_STORAGE[tier]} GB`,
+    `Disponibilitate după eveniment: ${TIER_DURATION[tier]}`,
+  ];
+  // Standard + Premium: printare & plastifiere carduri QR contra cost (preț în funcție de nr. de carduri)
+  if (tier === 'complet' || tier === 'vis') {
+    list.push('Opțional (contra cost): printare și plastifiere carduri QR — preț în funcție de numărul de carduri');
+  }
+  return list;
+};
 const PACKAGES = {
   nunta: [
     { key: 'intim', name: 'Basic', price: 27900, subLabel: 'până în 100 invitați', features: tierFeatures('intim') },
@@ -60,6 +69,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
   const [eventDate, setEventDate] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referrerName, setReferrerName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -89,6 +99,8 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
           event_date: eventDate,
           // Recomandare wedding planner (dacă înregistrarea vine printr-un link /register/<slug>)
           ...(referrerSlug ? { referrer_slug: referrerSlug } : {}),
+          // Metodă de rezervă: numele scris manual (doar dacă NU a venit prin link)
+          ...(!referrerSlug && referrerName.trim() ? { referrer_name: referrerName.trim() } : {}),
         },
       },
     });
@@ -219,6 +231,12 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
             <label className={styles.label}>Confirmă parola</label>
             <input className={styles.input} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
           </div>
+          {!referrerSlug && (
+            <div className={styles.field}>
+              <label className={styles.label}>Ai fost recomandat de un wedding planner? <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>(opțional)</span></label>
+              <input className={styles.input} type="text" value={referrerName} onChange={(e) => setReferrerName(e.target.value)} placeholder="Ex: Mariana Events" />
+            </div>
+          )}
           <button type="submit" className={styles.submitBtn} disabled={loading}>
             {loading ? 'Se trimite cererea...' : 'Trimite cererea'}
           </button>
