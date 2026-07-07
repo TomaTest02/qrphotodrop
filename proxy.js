@@ -108,12 +108,21 @@ export async function proxy(request) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // getUser() poate reîmprospăta sesiunea (access token expiră la ~1h) și scrie
+  // cookie-uri noi pe `response`. La un redirect trebuie să le propagăm, altfel
+  // refresh token-ul rotit se pierde și utilizatorul e delogat pe neașteptate.
+  const redirectWithCookies = (url) => {
+    const r = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => r.cookies.set(c));
+    return r;
+  };
+
   // ─── Rutele /admin/* ───────────────────────────────────────────────────────
   if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     if (!user) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(loginUrl);
     }
 
     // Verificăm rolul de admin din tabelul users
@@ -125,7 +134,7 @@ export async function proxy(request) {
 
     if (profile?.role !== 'admin') {
       // User logat dar nu admin — îl trimitem la dashboard-ul lui
-      return NextResponse.redirect(new URL('/dashboard/evenimentul-meu', request.url));
+      return redirectWithCookies(new URL('/dashboard/evenimentul-meu', request.url));
     }
 
     return response;
@@ -136,7 +145,7 @@ export async function proxy(request) {
     if (!user) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
+      return redirectWithCookies(loginUrl);
     }
 
     // Verificăm că nu este pending (redirecționăm la /pending)
@@ -147,12 +156,12 @@ export async function proxy(request) {
       .single();
 
     if (profile?.status === 'pending') {
-      return NextResponse.redirect(new URL('/pending', request.url));
+      return redirectWithCookies(new URL('/pending', request.url));
     }
 
     // Adminul logat care accesează /dashboard — îl trimitem la /admin
     if (profile?.role === 'admin' && pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/admin', request.url));
+      return redirectWithCookies(new URL('/admin', request.url));
     }
 
     return response;
