@@ -2,8 +2,8 @@
 
 import { useState, useEffect, use } from 'react';
 
-const ADVANCE_MS = 6000;   // schimbă poza la 6s
-const REFRESH_MS = 20000;  // caută poze noi la 20s
+const ADVANCE_MS = 6000;   // schimbă poza la 6s (doar client, fără cost)
+const REFRESH_MS = 30000;  // caută poze noi la 30s (economie invocări pe Vercel/Supabase free)
 
 export default function SlideshowPage({ params }) {
   const { eventCode } = use(params);

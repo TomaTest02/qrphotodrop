@@ -18,13 +18,15 @@ export async function GET(request) {
 
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
+  const CACHE = { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' };
+
   // Galeria privată nu se expune prin slideshow (proiecția publică e opt-in).
   if (!event.is_gallery_public) {
     return NextResponse.json({
       event: { event_name: event.event_name, event_date: event.event_date },
       photos: [],
       private: true,
-    });
+    }, { headers: CACHE });
   }
 
   const { data: uploads } = await supabase
@@ -37,5 +39,5 @@ export async function GET(request) {
   return NextResponse.json({
     event: { event_name: event.event_name, event_date: event.event_date },
     photos: (uploads || []).filter((u) => u.public_url),
-  });
+  }, { headers: CACHE });
 }

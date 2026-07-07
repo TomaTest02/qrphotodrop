@@ -33,5 +33,9 @@ export async function GET(request) {
     photos = uploads || [];
   }
 
-  return NextResponse.json({ event, photos });
+  // Date publice după cod → cache la CDN-ul Vercel: request-urile concurente ale
+  // invitaților sunt servite din cache, nu generează invocare + query per invitat.
+  return NextResponse.json({ event, photos }, {
+    headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' },
+  });
 }

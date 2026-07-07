@@ -174,10 +174,12 @@ export const config = {
   matcher: [
     /*
      * Aplică middleware pe toate rutele EXCEPȚIE:
-     * - _next/static (fișiere statice)
-     * - _next/image (optimizare imagini)
+     * - _next/static (fișiere statice), _next/image (optimizare imagini)
      * - favicon.ico
+     * - fișiere statice după extensie (imagini/fonturi/video/SEO) — nu au nevoie
+     *   de auth și altfel middleware-ul ar rula pe FIECARE cerere de asset,
+     *   consumând invocări pe Vercel (free plan).
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|txt|xml|woff|woff2|ttf|otf|mp4|webm)$).*)',
   ],
 };

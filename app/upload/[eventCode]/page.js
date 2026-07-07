@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, use, useEffect, useRef } from 'react';
+import { useState, use, useEffect, useRef, useCallback } from 'react';
 import {
   Camera, Image, VideoCamera, Lock, ArrowLeft, UploadSimple,
   Check, Heart, ChatCircle, Envelope, MapPin, Calendar,
@@ -69,6 +69,19 @@ export default function GuestUploadPage({ params }) {
 
   const isDemo = eventCode?.toUpperCase() === 'DEMO';
 
+  const loadEvent = useCallback(() => {
+    // Nu interogăm serverul când tab-ul e ascuns — economisim invocări (Vercel free).
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    fetch(`/api/events?code=${eventCode}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.event) setEvent(data.event);
+        if (data.photos) setPublicPhotos(data.photos);
+      })
+      .catch(() => {});
+  }, [eventCode]);
+
+  // Încărcare inițială (o singură dată)
   useEffect(() => {
     if (isDemo) {
       setEvent({
@@ -83,28 +96,22 @@ export default function GuestUploadPage({ params }) {
       });
       return;
     }
-    const loadEvent = () => {
-      // Nu interogăm serverul când tab-ul e ascuns — economisim invocări (Vercel free).
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-      fetch(`/api/events?code=${eventCode}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.event) setEvent(data.event);
-          if (data.photos) setPublicPhotos(data.photos);
-        })
-        .catch(() => {});
-    };
     loadEvent();
-    // Reîmprospătăm galeria publică la 30s ca să apară pozele noi fără refresh manual.
-    const id = setInterval(loadEvent, 30000);
-    // Când invitatul revine în tab, reîmprospătăm imediat (fără să așteptăm 30s).
+  }, [isDemo, loadEvent]);
+
+  // Polling pentru galeria publică — DOAR când galeria e publică (altfel nu se
+  // afișează poze, deci nu are rost să interogăm). Pauză când tab-ul e ascuns.
+  const galleryPublic = !isDemo && !!event?.is_gallery_public;
+  useEffect(() => {
+    if (!galleryPublic) return undefined;
+    const id = setInterval(loadEvent, 60000); // 60s (era 30s)
     const onVisible = () => { if (document.visibilityState === 'visible') loadEvent(); };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       clearInterval(id);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [eventCode, isDemo]);
+  }, [galleryPublic, loadEvent]);
 
   const handleFileSelect = (e) => {
     const selected = Array.from(e.target.files || []);
