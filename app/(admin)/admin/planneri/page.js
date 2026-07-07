@@ -7,6 +7,7 @@ const TIER_LABEL = { intim: 'Basic', complet: 'Standard', vis: 'Premium' };
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('ro-RO') : '—');
 const RON = (n) => `${Math.round(Number(n || 0)).toLocaleString('ro-RO')} RON`;
 const pct = (rate) => `${Math.round(Number(rate || 0) * 100)}%`;
+const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const EMPTY_FORM = { name: '', email: '', phone: '', commissionPct: '15', notes: '' };
 
@@ -129,6 +130,84 @@ export default function AdminPlanneriPage() {
       ? Math.round(Number(acc.amount_paid || 0) * Number(detail?.planner?.commission_rate || 0))
       : 0;
 
+  // ── Export desfășurător PDF (via print-to-PDF într-o fereastră nouă) ──
+  const exportPdf = () => {
+    if (!detail) return;
+    const p = detail.planner;
+    const accs = detail.accounts || [];
+    const rate = Number(p.commission_rate || 0);
+    const paidAccs = accs.filter((a) => a.payment_status === 'paid');
+    const totalRevenue = paidAccs.reduce((s, a) => s + Number(a.amount_paid || 0), 0);
+    const totalCommission = Math.round(totalRevenue * rate);
+    const now = new Date().toLocaleString('ro-RO');
+    const payLabel = (s) => (s === 'paid' ? 'Plătit' : s === 'partial' ? 'Parțial' : 'Neplătit');
+
+    const rows = accs.map((a) => {
+      const com = accCommission(a);
+      return `<tr>
+        <td>${escapeHtml(a.email)}<div class="sub">${escapeHtml(a.phone || '')}</div></td>
+        <td>${escapeHtml(a.event_name || '—')}<div class="sub">${escapeHtml(a.event_type || '')} · ${fmtDate(a.event_date)}</div></td>
+        <td>${escapeHtml(TIER_LABEL[a.package_tier] || a.package_tier || '—')}</td>
+        <td class="num">${a.amount_paid ? RON(a.amount_paid) : '—'}</td>
+        <td>${payLabel(a.payment_status)}</td>
+        <td class="num">${com ? RON(com) : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `<!doctype html><html lang="ro"><head><meta charset="utf-8">
+<title>Desfasurator comision - ${escapeHtml(p.name)}</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1a1420;margin:32px}
+  h1{font-size:22px;margin:0 0 4px}
+  .muted{color:#666;font-size:13px;line-height:1.5}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #4a2b6b;padding-bottom:16px;margin-bottom:20px}
+  .brand{font-weight:700;color:#4a2b6b;font-size:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e5e0ea;vertical-align:top}
+  th{background:#f5f2f8;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#555}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  .sub{color:#999;font-size:11px}
+  tfoot td{font-weight:700;border-top:2px solid #4a2b6b;border-bottom:none}
+  .totals{margin-top:22px;display:flex;gap:16px;flex-wrap:wrap}
+  .tot{background:#f5f2f8;border-radius:10px;padding:12px 18px;min-width:130px}
+  .tot .l{font-size:11px;text-transform:uppercase;color:#666}
+  .tot .v{font-size:20px;font-weight:700;margin-top:2px}
+  .big{background:#4a2b6b;color:#fff}.big .l{color:#e5d9f2}
+  .note{margin-top:16px;font-size:12px;color:#888}
+  @media print{body{margin:12mm}button{display:none}}
+</style></head><body>
+  <div class="head">
+    <div>
+      <h1>Desfășurător comision</h1>
+      <div class="muted">Wedding planner: <strong>${escapeHtml(p.name)}</strong>${p.email ? ' · ' + escapeHtml(p.email) : ''}${p.phone ? ' · ' + escapeHtml(p.phone) : ''}<br>
+      Comision: <strong>${Math.round(rate * 100)}%</strong> din suma încasată · Generat: ${escapeHtml(now)}</div>
+    </div>
+    <div class="brand">QRPhotoDrop</div>
+  </div>
+  <table>
+    <thead><tr><th>Client</th><th>Eveniment</th><th>Pachet</th><th class="num">Sumă plătită</th><th>Stare plată</th><th class="num">Comision</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="6">Niciun cont adus.</td></tr>'}</tbody>
+    <tfoot><tr><td colspan="3">Total (${accs.length} conturi, ${paidAccs.length} plătite)</td><td class="num">${RON(totalRevenue)}</td><td></td><td class="num">${RON(totalCommission)}</td></tr></tfoot>
+  </table>
+  <div class="totals">
+    <div class="tot"><div class="l">Conturi aduse</div><div class="v">${accs.length}</div></div>
+    <div class="tot"><div class="l">Conturi plătite</div><div class="v">${paidAccs.length}</div></div>
+    <div class="tot"><div class="l">Total încasat</div><div class="v">${RON(totalRevenue)}</div></div>
+    <div class="tot big"><div class="l">Comision total de plată</div><div class="v">${RON(totalCommission)}</div></div>
+  </div>
+  <p class="note">Comisionul se calculează doar pe conturile marcate „plătit". Document informativ generat automat din QRPhotoDrop.</p>
+  <button onclick="window.print()" style="margin-top:20px;padding:10px 18px;font-size:14px;border:none;border-radius:8px;background:#4a2b6b;color:#fff;cursor:pointer">Printează / Salvează PDF</button>
+  <script>window.onload=function(){setTimeout(function(){window.print()},350)}</script>
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    if (!w) { alert('Permite ferestrele pop-up pentru a exporta PDF-ul.'); return; }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
+
   if (loading) return <div className={styles.loading}>Se încarcă...</div>;
 
   const cards = [
@@ -230,6 +309,11 @@ export default function AdminPlanneriPage() {
               <option key={p.id} value={p.id}>{p.name} ({p.accountCount} conturi)</option>
             ))}
           </select>
+          {detail && (
+            <button onClick={exportPdf} className={styles.actionBtn} style={{ background: '#3e405b', color: '#fff', border: 'none', cursor: 'pointer', padding: '9px 14px', borderRadius: '8px', fontWeight: 600 }}>
+              ⬇ Export PDF (desfășurător)
+            </button>
+          )}
         </div>
 
         {!selectedId ? (
