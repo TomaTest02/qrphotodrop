@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { SquaresFour, Users, SignOut, Printer, ChatCircleDots } from '@phosphor-icons/react';
+import { SquaresFour, Users, SignOut, Printer, ChatCircleDots, Handshake } from '@phosphor-icons/react';
 import styles from './AdminSidebar.module.css';
 
 const LINKS = [
   { href: '/admin', icon: SquaresFour, label: 'Dashboard' },
   { href: '/admin/conturi', icon: Users, label: 'Conturi' },
+  { href: '/admin/planneri', icon: Handshake, label: 'Planneri' },
   { href: '/admin/cereri', icon: ChatCircleDots, label: 'Cereri' },
   { href: '/admin/printari', icon: Printer, label: 'Printări' },
 ];

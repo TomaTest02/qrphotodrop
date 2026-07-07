@@ -49,6 +49,7 @@ export async function proxy(request) {
   ];
 
   const PUBLIC_PREFIXES = [
+    '/register/',      // link-uri de recomandare wedding planner (/register/<slug>)
     '/upload/',        // pagina de upload pentru invitați
     '/api/upload/',    // API-urile de upload pentru invitați
     '/api/events',     // lookup event by code (pentru invitați)

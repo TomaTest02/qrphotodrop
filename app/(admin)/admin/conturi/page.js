@@ -53,11 +53,22 @@ export default function AdminConturiPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
   const [createErr, setCreateErr] = useState('');
+  const [planners, setPlanners] = useState([]);
   const [createForm, setCreateForm] = useState({
-    email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '',
+    email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '', referredBy: '',
   });
 
-  useEffect(() => { loadAccounts(); }, []);
+  useEffect(() => { loadAccounts(); loadPlanners(); }, []);
+
+  async function loadPlanners() {
+    try {
+      const res = await fetch('/api/admin/planners');
+      if (res.ok) {
+        const { planners } = await res.json();
+        setPlanners(planners || []);
+      }
+    } catch { /* opțional — dropdown-ul rămâne gol */ }
+  }
 
   const submitCreate = async (e) => {
     e.preventDefault();
@@ -71,7 +82,7 @@ export default function AdminConturiPage() {
       const data = await res.json();
       if (res.ok) {
         setCreateOpen(false);
-        setCreateForm({ email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '' });
+        setCreateForm({ email: '', password: '', phone: '', eventName: '', eventType: 'nunta', packageTier: 'complet', eventDate: '', referredBy: '' });
         await loadAccounts();
       } else {
         setCreateErr(data.error || 'Eroare la creare.');
@@ -510,6 +521,15 @@ export default function AdminConturiPage() {
                   <option value="intim">Basic (60 GB)</option>
                   <option value="complet">Standard (100 GB)</option>
                   <option value="vis">Premium (150 GB)</option>
+                </select>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', gridColumn: '1 / -1' }}>
+                Recomandat de (wedding planner)
+                <select value={createForm.referredBy} onChange={(e) => setCreateForm({ ...createForm, referredBy: e.target.value })} style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', background: '#fff' }}>
+                  <option value="">— Niciunul —</option>
+                  {planners.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} ({Math.round(Number(p.commission_rate || 0) * 100)}%)</option>
+                  ))}
                 </select>
               </label>
               <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>

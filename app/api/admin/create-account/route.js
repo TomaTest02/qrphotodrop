@@ -16,7 +16,7 @@ export async function POST(request) {
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
-    const { email, password, phone, eventName, eventType, packageTier, eventDate } = body;
+    const { email, password, phone, eventName, eventType, packageTier, eventDate, referredBy } = body;
 
     if (!email || !password || password.length < 6) {
       return NextResponse.json({ error: 'Email și parolă (min 6 caractere) obligatorii.' }, { status: 400 });
@@ -43,7 +43,13 @@ export async function POST(request) {
     const newUserId = created.user.id;
 
     // 2. Marcăm contul activ (triggerul l-a creat ca pending) + telefon
-    await admin.from('users').update({ status: 'active', phone: phone || null }).eq('id', newUserId);
+    //    + atribuire opțională către un wedding planner (dacă e valid și activ)
+    const userUpdate = { status: 'active', phone: phone || null };
+    if (referredBy) {
+      const { data: planner } = await admin.from('wedding_planners').select('id').eq('id', referredBy).maybeSingle();
+      if (planner) userUpdate.referred_by = planner.id;
+    }
+    await admin.from('users').update(userUpdate).eq('id', newUserId);
 
     // 3. Creăm evenimentul cu pachet + dată + cod QR + stocare
     const { randomBytes } = await import('node:crypto');
