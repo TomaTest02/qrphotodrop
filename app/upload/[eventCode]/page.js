@@ -9,6 +9,20 @@ import {
 import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './upload.module.css';
 
+// Upload direct în R2 cu progres REAL. `fetch` nu raportează progresul upload-ului,
+// XMLHttpRequest da → invitatul vede procentul crescând (important la clipuri mari).
+function putWithProgress(url, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('R2 PUT ' + xhr.status)));
+    xhr.onerror = () => reject(new Error('R2 PUT network error'));
+    xhr.send(file);
+  });
+}
+
 // ─── Floating petals animation component ──────────────────────────────────────
 function FloatingPetals() {
   return (
@@ -224,9 +238,11 @@ export default function GuestUploadPage({ params }) {
         }
         const { uploadUrl, r2Key } = await signRes.json();
 
-        // 2. Încărcăm fișierul DIRECT în R2 (browser → R2), fără limita de 4.5MB a Vercel
-        const putRes = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-        if (!putRes.ok) throw new Error('R2 PUT ' + putRes.status);
+        // 2. Încărcăm fișierul DIRECT în R2 (browser → R2), fără limita de 4.5MB a Vercel.
+        //    Progres real per fișier → bară care se mișcă (nu pare blocat la clipuri mari).
+        await putWithProgress(uploadUrl, file, (frac) => {
+          setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
+        });
 
         // 3. Confirmăm — inserăm rândul cu metadate în baza de date
         const confirmRes = await fetch('/api/upload/confirm', {
