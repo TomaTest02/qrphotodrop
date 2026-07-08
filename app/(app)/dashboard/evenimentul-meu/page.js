@@ -26,7 +26,8 @@ export default function EvenimentulMeuPage() {
   const [downloadLoading, setDownloadLoading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [userProfile, setUserProfile] = useState(null);
-  const [selectedDesign, setSelectedDesign] = useState('Classic Burgundy');
+  const [selectedDesign, setSelectedDesign] = useState('Boho Pampas');
+  const [cardDownloading, setCardDownloading] = useState(false);
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [cardText, setCardText] = useState('');
   const [cardTextMode, setCardTextMode] = useState('preset');
@@ -152,6 +153,44 @@ export default function EvenimentulMeuPage() {
     } else {
       alert('Eroare la actualizarea setării.');
     }
+  };
+
+  // ── Catalog cartonașe QR ──────────────────────────────────────────────────
+  // qr = poziția codului pe model, ca fracții din imagine: cx/cy = centru, size = latura (din lățime)
+  const DESIGNS = [
+    { name: 'Boho Pampas',   image: '/images/designs/boho.png',          qr: { cx: 0.50, cy: 0.625, size: 0.40 } },
+    { name: 'Floral Roz',    image: '/images/designs/floral-roz.png',    qr: { cx: 0.50, cy: 0.585, size: 0.40 } },
+    { name: 'Negru & Auriu', image: '/images/designs/negru-auriu.png',   qr: { cx: 0.50, cy: 0.42,  size: 0.42 } },
+    { name: 'Auriu Elegant', image: '/images/designs/auriu-elegant.png', qr: { cx: 0.50, cy: 0.44,  size: 0.42 } },
+    { name: 'Verde Botanic', image: '/images/designs/verde-botanic.png', qr: { cx: 0.50, cy: 0.635, size: 0.42 } },
+  ];
+  const currentDesign = DESIGNS.find((d) => d.name === selectedDesign) || DESIGNS[0];
+
+  const loadImg = (src) => new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('img load failed'));
+    img.src = src;
+  });
+
+  const downloadCard = async () => {
+    setCardDownloading(true);
+    try {
+      const qrUrl = `${window.location.origin}/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=1000`;
+      const [tpl, qr] = await Promise.all([loadImg(currentDesign.image), loadImg(qrUrl)]);
+      const canvas = document.createElement('canvas');
+      canvas.width = tpl.naturalWidth;
+      canvas.height = tpl.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(tpl, 0, 0);
+      const s = currentDesign.qr.size * tpl.naturalWidth;
+      ctx.drawImage(qr, currentDesign.qr.cx * tpl.naturalWidth - s / 2, currentDesign.qr.cy * tpl.naturalHeight - s / 2, s, s);
+      await new Promise((res) => canvas.toBlob((blob) => { if (blob) saveAs(blob, `cartonas_${event.event_code}.png`); res(); }, 'image/png'));
+    } catch {
+      alert('Nu am putut genera cartonașul. Încearcă din nou.');
+    }
+    setCardDownloading(false);
   };
 
   const copyLink = (url) => {
@@ -540,15 +579,11 @@ export default function EvenimentulMeuPage() {
         </p>
 
         <div className={styles.designGrid}>
-          {[
-            { name: 'Classic Burgundy', image: '/images/mockups/classic_burgundy.png' },
-            { name: 'Cream Elegant', image: '/images/mockups/cream_elegant.png' },
-            { name: 'Gold Minimalist', image: '/images/mockups/gold_minimalist.png' }
-          ].map((design) => {
+          {DESIGNS.map((design) => {
             const isSelected = selectedDesign === design.name;
             return (
-              <div 
-                key={design.name} 
+              <div
+                key={design.name}
                 onClick={() => setSelectedDesign(design.name)}
                 className={`${styles.designCard} ${isSelected ? styles.designSelected : ''}`}
               >
@@ -566,12 +601,35 @@ export default function EvenimentulMeuPage() {
           })}
         </div>
 
+        {/* Previzualizare live — modelul ales cu codul QR suprapus exact în locul lui */}
+        <div style={{ marginTop: 'var(--space-lg)', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
+            Așa va arăta cartonașul tău cu codul QR:
+          </p>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '380px', margin: '0 auto', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 12px 38px rgba(45,44,74,0.20)' }}>
+            <img src={currentDesign.image} alt={currentDesign.name} style={{ width: '100%', display: 'block' }} />
+            <img
+              src={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/qrcode?text=${encodeURIComponent(uploadUrl)}&size=600`}
+              alt="Cod QR"
+              style={{ position: 'absolute', left: `${currentDesign.qr.cx * 100}%`, top: `${currentDesign.qr.cy * 100}%`, width: `${currentDesign.qr.size * 100}%`, transform: 'translate(-50%, -50%)' }}
+            />
+          </div>
+        </div>
+
         <div className={styles.designActions}>
-          <button 
+          <button
+            onClick={downloadCard}
+            disabled={cardDownloading}
+            className={styles.printBtn}
+            style={{ background: 'var(--color-violet)', color: '#fff', border: 'none' }}
+          >
+            <DownloadSimple size={16} weight="light" /> {cardDownloading ? 'Se generează...' : 'Descarcă cartonașul (PNG)'}
+          </button>
+          <button
             onClick={() => { setCardText(PRESET_TEXTS[0]); setPrintModalOpen(true); }}
             className={styles.printBtn}
           >
-            <Package size={16} weight="light" /> Cere administratorului să printeze cartonașele (Taxat extra)
+            <Package size={16} weight="light" /> Cere echipei să printeze (taxat extra)
           </button>
         </div>
       </div>
