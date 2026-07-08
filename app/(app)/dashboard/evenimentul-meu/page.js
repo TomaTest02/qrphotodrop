@@ -1103,7 +1103,7 @@ function EventSetupForm({ onCreated }) {
   const tierFeatures = (tier) => [
     'Album Digital & QR unic',
     'Catalog & Design QR',
-    'Poze, urări și clipuri video (max. 2 min)',
+    'Poze, urări și clipuri video (max. 1.5 GB)',
     `${TIER_STORAGE[tier]} GB stocare`,
     `Disponibil ${TIER_DURATION[tier]} după eveniment`,
   ];

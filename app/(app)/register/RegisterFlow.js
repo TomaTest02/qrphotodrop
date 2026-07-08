@@ -15,7 +15,7 @@ const tierFeatures = (tier) => {
     'Cod QR unic pentru acces',
     'Încărcare poze de către invitați',
     'Încărcare urări de către invitați',
-    'Încărcare clipuri video de maximum 2 minute',
+    'Încărcare clipuri video de până la 1.5 GB fiecare',
     `Spațiu de stocare: ${TIER_STORAGE[tier]} GB`,
     `Disponibilitate după eveniment: ${TIER_DURATION[tier]}`,
   ];
