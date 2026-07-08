@@ -42,7 +42,7 @@ const jsonLd = {
       closes: '16:00',
     },
   ],
-  priceRange: '249-699 RON',
+  priceRange: '279-649 RON',
   areaServed: 'România',
   inLanguage: 'ro-RO',
 };

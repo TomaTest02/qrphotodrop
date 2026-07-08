@@ -9,8 +9,8 @@ const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
 const PACKAGE_PRICES = {
   nunta: { intim: 279, complet: 399, vis: 649 },
   botez: { intim: 279, complet: 399, vis: 649 },
-  aniversare: { intim: 249, complet: 329, vis: 489 },
-  corporate: { intim: 329, complet: 459, vis: 699 },
+  aniversare: { intim: 279, complet: 399, vis: 649 },
+  corporate: { intim: 279, complet: 399, vis: 649 },
 };
 
 // ── Helperi ─────────────────────────────────────────────────────
