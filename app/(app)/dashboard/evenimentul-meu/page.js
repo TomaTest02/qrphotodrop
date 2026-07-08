@@ -1024,7 +1024,7 @@ function EventSetupForm({ onCreated }) {
   }, [eventType]);
 
   // Stocare și disponibilitate per nivel (identice pentru toate tipurile)
-  const TIER_STORAGE = { intim: 60, complet: 150, vis: 200 };
+  const TIER_STORAGE = { intim: 75, complet: 150, vis: 200 };
   const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
   const tierFeatures = (tier) => [
     'Album Digital & QR unic',

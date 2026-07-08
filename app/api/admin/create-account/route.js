@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-const STORAGE_LIMITS = { intim: 60, complet: 150, vis: 200 };
+const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
 const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
 const ALLOWED_TIERS = ['intim', 'complet', 'vis'];
 
@@ -60,7 +60,7 @@ export async function POST(request) {
       event_type: eventType,
       event_date: eventDate,
       status: 'active',
-      max_storage_bytes: (STORAGE_LIMITS[packageTier] || 60) * 1024 * 1024 * 1024,
+      max_storage_bytes: (STORAGE_LIMITS[packageTier] || 75) * 1024 * 1024 * 1024,
       package_type: eventType,
       package_tier: packageTier,
     });

@@ -123,9 +123,9 @@ export async function PUT(request, { params }) {
       if (location !== undefined) updatePayload.location = location;
       if (package_tier !== undefined) {
         updatePayload.package_tier = package_tier;
-        // Recalculăm stocarea conform nivelului ales (Basic/Standard/Premium = 60/150/200 GB)
-        const STORAGE_BY_TIER = { intim: 60, complet: 150, vis: 200 };
-        updatePayload.max_storage_bytes = (STORAGE_BY_TIER[package_tier] || 60) * 1024 * 1024 * 1024;
+        // Recalculăm stocarea conform nivelului ales (Basic/Standard/Premium = 75/150/200 GB)
+        const STORAGE_BY_TIER = { intim: 75, complet: 150, vis: 200 };
+        updatePayload.max_storage_bytes = (STORAGE_BY_TIER[package_tier] || 75) * 1024 * 1024 * 1024;
       }
       if (package_type !== undefined) updatePayload.package_type = package_type;
       if (expires_at !== undefined) updatePayload.expires_at = expires_at || null;
@@ -137,7 +137,7 @@ export async function PUT(request, { params }) {
         } else {
           // Creăm evenimentul cu toate câmpurile obligatorii (event_code, event_type, status, stocare)
           const { randomBytes } = await import('crypto');
-          const STORAGE_LIMITS = { intim: 60, complet: 150, vis: 200 };
+          const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
           const tier = updatePayload.package_tier || 'complet';
           const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
           const evType = ALLOWED_TYPES.includes(updatePayload.event_type) ? updatePayload.event_type : 'nunta';
@@ -150,7 +150,7 @@ export async function PUT(request, { params }) {
             couple_names: updatePayload.couple_names || null,
             location: updatePayload.location || null,
             status: 'active',
-            max_storage_bytes: (STORAGE_LIMITS[tier] || 60) * 1024 * 1024 * 1024,
+            max_storage_bytes: (STORAGE_LIMITS[tier] || 75) * 1024 * 1024 * 1024,
             package_type: updatePayload.package_type || evType,
             package_tier: tier,
             expires_at: updatePayload.expires_at || null,

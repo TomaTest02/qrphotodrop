@@ -7,7 +7,7 @@ import PricingCard from '@/components/marketing/PricingCard';
 import styles from './register.module.css';
 
 // ── Pachete (sursă unică pentru înregistrare) ───────────────────
-const TIER_STORAGE = { intim: 60, complet: 150, vis: 200 };
+const TIER_STORAGE = { intim: 75, complet: 150, vis: 200 };
 const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
 const tierFeatures = (tier) => {
   const list = [

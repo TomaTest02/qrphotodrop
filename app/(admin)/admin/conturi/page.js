@@ -523,7 +523,7 @@ export default function AdminConturiPage() {
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
                 Pachet
                 <select value={createForm.packageTier} onChange={(e) => setCreateForm({ ...createForm, packageTier: e.target.value })} style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', background: '#fff' }}>
-                  <option value="intim">Basic (60 GB)</option>
+                  <option value="intim">Basic (75 GB)</option>
                   <option value="complet">Standard (150 GB)</option>
                   <option value="vis">Premium (200 GB)</option>
                 </select>
