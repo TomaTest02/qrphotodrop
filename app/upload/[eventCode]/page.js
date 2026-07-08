@@ -23,9 +23,99 @@ function putWithProgress(url, file, onProgress) {
   });
 }
 
+// PUT pentru o bucată multipart. NU setăm Content-Type (URL-ul presemnat pentru
+// UploadPart nu-l semnează → l-am rupe). Progresul e raportat ca fracție 0..1.
+function putPart(url, blob, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('part PUT ' + xhr.status)));
+    xhr.onerror = () => reject(new Error('part PUT network error'));
+    xhr.send(blob);
+  });
+}
+
+async function putPartWithRetry(url, blob, onProgress, retries = 3) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      await putPart(url, blob, onProgress);
+      return;
+    } catch (err) {
+      lastErr = err;
+      if (onProgress) onProgress(0); // resetăm progresul bucății pentru reîncercare
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+// Upload multipart complet pentru un fișier mare. Întoarce 'ok' | 'storageFull';
+// aruncă la orice altă eroare (ca să putem cădea pe single-PUT).
+async function uploadMultipart(eventCode, file, fileType, onProgress) {
+  const createRes = await fetch('/api/upload/multipart/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
+  });
+  if (!createRes.ok) {
+    const e = await createRes.json().catch(() => ({}));
+    if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
+    throw new Error(e.error || 'multipart create failed');
+  }
+  const { uploadId, r2Key, partUrls, partSize } = await createRes.json();
+
+  try {
+    const totalParts = partUrls.length;
+    const frac = new Array(totalParts).fill(0);
+    const report = () => onProgress(frac.reduce((a, b) => a + b, 0) / totalParts);
+
+    let next = 0;
+    const worker = async () => {
+      while (next < totalParts) {
+        const idx = next++;
+        const start = idx * partSize;
+        const blob = file.slice(start, Math.min(start + partSize, file.size));
+        await putPartWithRetry(partUrls[idx], blob, (f) => { frac[idx] = f; report(); });
+        frac[idx] = 1;
+        report();
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(MULTIPART_CONCURRENCY, totalParts) }, worker)
+    );
+
+    const completeRes = await fetch('/api/upload/multipart/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId, eventCode, fileType, originalName: file.name }),
+    });
+    if (!completeRes.ok) {
+      const e = await completeRes.json().catch(() => ({}));
+      if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
+      throw new Error(e.error || 'multipart complete failed');
+    }
+    return 'ok';
+  } catch (err) {
+    // Curățăm uploadul neterminat (best-effort). R2 îl abandonează oricum în 7 zile.
+    fetch('/api/upload/multipart/abort', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId }),
+    }).catch(() => {});
+    throw err;
+  }
+}
+
 // ─── Limite de mărime — o SINGURĂ sursă de adevăr ────────────────────────────
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024;        // 20 MB / poză
 const MAX_VIDEO_BYTES = 1024 * 1024 * 1024;      // 1 GB / clip
+const MAX_BATCH_BYTES = 2 * 1024 * 1024 * 1024;  // 2 GB total / o încărcare
+const MULTIPART_THRESHOLD = 100 * 1024 * 1024;   // peste 100MB → upload multipart (bucăți paralele)
+const MULTIPART_CONCURRENCY = 3;                 // câte bucăți urcăm simultan
+
+const sumBytes = (files) => files.reduce((s, f) => s + f.size, 0);
 
 // Împarte fișierele în acceptate / prea mari. FOLOSIT DE TOATE căile de selecție
 // (galerie, „Adaugă", drag & drop) ca să nu mai dispară fișiere în tăcere.
@@ -180,6 +270,12 @@ export default function GuestUploadPage({ params }) {
   };
 
   const uploadFiles = async (filesToUpload) => {
+    // Plafon total per încărcare — cerem invitatului să trimită mai puține odată
+    if (sumBytes(filesToUpload) > MAX_BATCH_BYTES) {
+      setRejectMsg('Ai selectat prea mult (peste 2GB în total). Te rugăm încarcă mai puține fișiere odată (sub 2GB) — se încarcă mai repede.');
+      setView('preview');
+      return;
+    }
     setView('uploading');
     setUploadTotal(filesToUpload.length);
     setUploadCurrent(0);
@@ -245,6 +341,22 @@ export default function GuestUploadPage({ params }) {
       setUploadCurrent(i + 1);
       setUploadProgress(Math.round((i / filesToUpload.length) * 100));
       const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
+      const onFrac = (frac) => setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
+
+      // Fișiere mari → upload multipart (bucăți în paralel). Dacă eșuează din orice
+      // motiv, cădem pe metoda clasică single-PUT de mai jos (plasă de siguranță).
+      if (file.size > MULTIPART_THRESHOLD) {
+        try {
+          const res = await uploadMultipart(eventCode, file, fileType, onFrac);
+          if (res === 'storageFull') { storageFull = true; break; }
+          succeeded++;
+          setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+          continue;
+        } catch (err) {
+          console.error('Multipart failed, fallback to single PUT:', err);
+        }
+      }
+
       try {
         // 1. Cerem un URL presemnat — funcția Vercel doar SEMNEAZĂ, fișierul NU trece prin ea
         const signRes = await fetch('/api/upload/presigned', {
@@ -530,7 +642,9 @@ export default function GuestUploadPage({ params }) {
   );
 
   // ── PREVIEW ───────────────────────────────────────────────────────────────
-  if (view === 'preview') return (
+  if (view === 'preview') {
+    const batchOver = sumBytes(files) > MAX_BATCH_BYTES;
+    return (
     <PageShell isDemo={isDemo} onBack={() => setView('mediaChoice')}>
       <div className={styles.stepHeader}>
         <StepDots current={1} total={3} />
@@ -538,7 +652,9 @@ export default function GuestUploadPage({ params }) {
         <p className={styles.stepSubtitle}>{files.length} {files.length === 1 ? 'fișier selectat' : 'fișiere selectate'}</p>
       </div>
 
-      {rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>}
+      {batchOver
+        ? <div className={styles.rejectNote}>Ai selectat prea mult (peste 2GB în total). Elimină câteva fișiere sau încarcă-le în două rânduri — se încarcă mai repede.</div>
+        : (rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>)}
 
       <div className={styles.previewGrid}>
         {files.map((file, idx) => (
@@ -566,14 +682,15 @@ export default function GuestUploadPage({ params }) {
         </label>
       </div>
 
-      <button className={styles.uploadBtn} onClick={() => uploadFiles(files)}>
+      <button className={styles.uploadBtn} onClick={() => uploadFiles(files)} disabled={batchOver}>
         <CloudArrowUp size={18} weight="light" />
         Încarcă {files.length} {files.length === 1 ? 'fișier' : 'fișiere'}
       </button>
 
       <p className={styles.privacyNote}><Lock size={12} weight="light" /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
     </PageShell>
-  );
+    );
+  }
 
   // ── UPLOADING ─────────────────────────────────────────────────────────────
   if (view === 'uploading') return (

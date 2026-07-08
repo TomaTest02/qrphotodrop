@@ -645,6 +645,13 @@
 
 .uploadBtn:active { transform: translateY(0); }
 
+.uploadBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .privacyNote {
   font-size: 12px;
   color: #b0909a;
