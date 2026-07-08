@@ -340,34 +340,48 @@ export default function EvenimentulMeuPage() {
     setDownloadLoading(true);
     setDownloadProgress(0);
 
+    // Aducem fișierul DIRECT de pe CDN (rapid, fără dublul drum prin Vercel).
+    // CORS e setat pe bucket. Fallback pe proxy doar dacă fetch-ul direct pică.
+    const fetchFile = async (item) => {
+      const url = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('direct ' + r.status);
+        return await r.blob();
+      } catch {
+        const r = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
+        if (!r.ok) throw new Error('proxy ' + r.status);
+        return await r.blob();
+      }
+    };
+
     try {
+      // Un singur fișier → descărcare directă, FĂRĂ ZIP
+      if (toDownload.length === 1) {
+        const item = toDownload[0];
+        const blob = await fetchFile(item);
+        setDownloadProgress(100);
+        saveAs(blob, item.original_name || `fisier_${item.id}`);
+        return;
+      }
+
+      // Două sau mai multe → ZIP
       const zip = new JSZip();
-      
       for (let i = 0; i < toDownload.length; i++) {
         const item = toDownload[i];
-        const originalUrl = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
-        
-        // Pass through our proxy to bypass CORS
-        const proxyUrl = `/api/proxy?url=${encodeURIComponent(originalUrl)}`;
-        
         try {
-          const response = await fetch(proxyUrl);
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          const blob = await response.blob();
-          const filename = item.original_name || `photo_${item.id}.jpg`;
-          zip.file(filename, blob);
+          const blob = await fetchFile(item);
+          zip.file(item.original_name || `fisier_${item.id}`, blob);
         } catch (e) {
           console.error(`Eroare la descărcarea fișierului ${item.id}:`, e);
         }
-        
         setDownloadProgress(Math.round(((i + 1) / toDownload.length) * 100));
       }
-
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, `Poze_Eveniment_${event?.event_code || 'QRPhotoDrop'}.zip`);
+      saveAs(zipBlob, `Eveniment_${event?.event_code || 'QRPhotoDrop'}.zip`);
     } catch (error) {
-      console.error('Eroare la generarea arhivei:', error);
-      alert('Eroare la descărcarea arhivei. Vă rugăm să încercați din nou.');
+      console.error('Eroare la descărcare:', error);
+      alert('Eroare la descărcare. Încearcă din nou.');
     } finally {
       setDownloadLoading(false);
       setDownloadProgress(0);
