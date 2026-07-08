@@ -503,6 +503,18 @@
   color: #b58c4f;
 }
 
+.rejectNote {
+  background: rgba(138, 31, 43, 0.07);
+  border: 1px solid rgba(138, 31, 43, 0.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #710927;
+  text-align: left;
+  line-height: 1.5;
+}
+
 /* ── Preview grid ────────────────────────────────────────── */
 .previewGrid {
   display: grid;

@@ -23,6 +23,31 @@ function putWithProgress(url, file, onProgress) {
   });
 }
 
+// ─── Limite de mărime — o SINGURĂ sursă de adevăr ────────────────────────────
+const MAX_PHOTO_BYTES = 20 * 1024 * 1024;        // 20 MB / poză
+const MAX_VIDEO_BYTES = 1024 * 1024 * 1024;      // 1 GB / clip
+
+// Împarte fișierele în acceptate / prea mari. FOLOSIT DE TOATE căile de selecție
+// (galerie, „Adaugă", drag & drop) ca să nu mai dispară fișiere în tăcere.
+function splitFiles(list) {
+  const valid = [];
+  const tooBig = [];
+  for (const f of list) {
+    const isVideo = f.type.startsWith('video/');
+    const isImage = f.type.startsWith('image/');
+    if (!isVideo && !isImage) continue; // ignorăm ce nu e media
+    const max = isVideo ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES;
+    if (f.size > max) tooBig.push(f);
+    else valid.push(f);
+  }
+  return { valid, tooBig };
+}
+
+function tooBigMessage(files) {
+  const names = files.map(f => f.name).join(', ');
+  return `Prea mare, nu se poate încărca: ${names}. Limite: poze max 20MB, clipuri max 1GB.`;
+}
+
 // ─── Floating petals animation component ──────────────────────────────────────
 function FloatingPetals() {
   return (
@@ -77,6 +102,7 @@ export default function GuestUploadPage({ params }) {
   const [wishForm, setWishForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [rejectMsg, setRejectMsg] = useState('');
   const [publicPhotos, setPublicPhotos] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -128,12 +154,8 @@ export default function GuestUploadPage({ params }) {
   }, [galleryPublic, loadEvent]);
 
   const handleFileSelect = (e) => {
-    const selected = Array.from(e.target.files || []);
-    const valid = selected.filter(f => {
-      if (f.type.startsWith('image/') && f.size > 20 * 1024 * 1024) return false;
-      if (f.type.startsWith('video/') && f.size > 200 * 1024 * 1024) return false;
-      return true;
-    });
+    const { valid, tooBig } = splitFiles(Array.from(e.target.files || []));
+    setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
     if (valid.length > 0) {
       setFiles(valid);
       setView('preview');
@@ -143,11 +165,10 @@ export default function GuestUploadPage({ params }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const dropped = Array.from(e.dataTransfer.files).filter(f =>
-      f.type.startsWith('image/') || f.type.startsWith('video/')
-    );
-    if (dropped.length > 0) {
-      setFiles(dropped);
+    const { valid, tooBig } = splitFiles(Array.from(e.dataTransfer.files || []));
+    setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
+    if (valid.length > 0) {
+      setFiles(valid);
       setView('preview');
     }
   };
@@ -433,6 +454,8 @@ export default function GuestUploadPage({ params }) {
         <p className={styles.stepSubtitle}>De unde vrei să încarci amintirile?</p>
       </div>
 
+      {rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>}
+
       <div className={styles.infoNote}>
         <CloudArrowUp size={18} weight="light" />
         <span>
@@ -502,7 +525,7 @@ export default function GuestUploadPage({ params }) {
         </label>
       </div>
 
-      <p className={styles.fileNote}>Poze până la 20MB · Clipuri până la 200MB</p>
+      <p className={styles.fileNote}>Poze până la 20MB · Clipuri până la 1GB</p>
     </PageShell>
   );
 
@@ -514,6 +537,8 @@ export default function GuestUploadPage({ params }) {
         <h2 className={styles.stepTitle}>Verifică selecția</h2>
         <p className={styles.stepSubtitle}>{files.length} {files.length === 1 ? 'fișier selectat' : 'fișiere selectate'}</p>
       </div>
+
+      {rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>}
 
       <div className={styles.previewGrid}>
         {files.map((file, idx) => (
@@ -532,8 +557,9 @@ export default function GuestUploadPage({ params }) {
             accept="image/*,video/*"
             multiple
             onChange={(e) => {
-              const extra = Array.from(e.target.files || []);
-              setFiles(prev => [...prev, ...extra]);
+              const { valid, tooBig } = splitFiles(Array.from(e.target.files || []));
+              setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
+              if (valid.length > 0) setFiles(prev => [...prev, ...valid]);
             }}
             style={{ display: 'none' }}
           />
