@@ -48,7 +48,8 @@ export async function POST(request) {
     // Try to send notification email (graceful — won't crash if Resend not configured)
     try {
       if (process.env.RESEND_API_KEY) {
-        const { sendAdminNotification } = await import('@/lib/resend');
+        const { sendAccountApproved, sendAdminNotification } = await import('@/lib/resend');
+        await sendAccountApproved(targetUser.email);          // email către cuplu: contul e activ + link login
         await sendAdminNotification(
           `Cont aprobat: ${targetUser.email}`,
           `<p>Contul <strong>${targetUser.email}</strong> a fost aprobat cu succes.</p>`
