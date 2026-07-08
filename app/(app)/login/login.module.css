@@ -36,6 +36,7 @@
   font-size: 28px;
   font-weight: 700;
   color: var(--color-text);
+  letter-spacing: 0.04em;
   margin-bottom: var(--space-xs);
 }
 
