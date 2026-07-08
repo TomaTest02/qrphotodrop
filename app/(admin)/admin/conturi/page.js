@@ -8,7 +8,7 @@ const TIER_LABEL = { intim: 'Basic', complet: 'Standard', vis: 'Premium' };
 const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
 const PACKAGE_PRICES = {
   nunta: { intim: 279, complet: 399, vis: 649 },
-  botez: { intim: 249, complet: 329, vis: 489 },
+  botez: { intim: 279, complet: 399, vis: 649 },
   aniversare: { intim: 249, complet: 329, vis: 489 },
   corporate: { intim: 329, complet: 459, vis: 699 },
 };

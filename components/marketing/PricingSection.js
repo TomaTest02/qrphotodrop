@@ -36,9 +36,9 @@ const PACKAGES = {
     { key: 'vis',     name: 'Premium',  price: 64900, subLabel: 'ideal pentru evenimente până în 500 invitați', features: tierFeatures('vis') },
   ],
   botez: [
-    { key: 'intim',   name: 'Basic',    price: 24900, subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
-    { key: 'complet', name: 'Standard', price: 32900, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
-    { key: 'vis',     name: 'Premium',  price: 48900, subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
+    { key: 'intim',   name: 'Basic',    price: 27900, subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 39900, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 64900, subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
   ],
   aniversare: [
     { key: 'intim',   name: 'Basic',    price: 24900, subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
