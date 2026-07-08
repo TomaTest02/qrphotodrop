@@ -589,7 +589,7 @@ export default function GuestUploadPage({ params }) {
         </label>
       </div>
 
-      <button className={styles.uploadBtn} onClick={() => uploadFiles(files)} disabled={batchOver}>
+      <button className={styles.uploadBtn} onClick={() => uploadFiles(files)}>
         <CloudArrowUp size={18} weight="light" />
         Încarcă {files.length} {files.length === 1 ? 'fișier' : 'fișiere'}
       </button>
