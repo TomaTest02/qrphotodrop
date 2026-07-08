@@ -21,7 +21,6 @@ export default function EvenimentulMeuPage() {
   const [wishes, setWishes] = useState([]);
   const [activeTab, setActiveTab] = useState('poze');
   const [loading, setLoading] = useState(true);
-  const [archiveLoading, setArchiveLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
@@ -139,26 +138,6 @@ export default function EvenimentulMeuPage() {
     }
     setLoading(false);
   }
-
-  const handleArchive = async () => {
-    setArchiveLoading(true);
-    try {
-      const res = await fetch('/api/archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: event.id }),
-      });
-      if (res.ok) {
-        alert('Arhiva este în curs de generare. Vei fi notificat pe email când este gata.');
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        alert('Eroare la generarea arhivei: ' + (errData.error || 'Încearcă din nou.'));
-      }
-    } catch {
-      alert('Eroare de conexiune. Încearcă din nou.');
-    }
-    setArchiveLoading(false);
-  };
 
   const togglePublicGallery = async () => {
     const supabase = createClient();
@@ -448,9 +427,6 @@ export default function EvenimentulMeuPage() {
           <a className={styles.editBtn} href={`/slideshow/${event.event_code}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
             📺 Slideshow TV
           </a>
-          <button className={styles.archiveBtn} onClick={handleArchive} disabled={archiveLoading}>
-            {archiveLoading ? '⏳ Se generează...' : '📦 Arhivă pe email'}
-          </button>
         </div>
       </div>
 
