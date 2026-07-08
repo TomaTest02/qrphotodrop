@@ -47,7 +47,7 @@ export async function POST(request) {
     }
 
     // Limitele de stocare per nivel: Basic / Standard / Premium (GB)
-    const STORAGE_LIMITS = { intim: 60, complet: 100, vis: 150 };
+    const STORAGE_LIMITS = { intim: 60, complet: 150, vis: 200 };
     const allowedGB = STORAGE_LIMITS[packageTier] || 60;
     const safMaxStorageBytes = allowedGB * 1024 * 1024 * 1024;
 

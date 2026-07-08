@@ -28,7 +28,7 @@ export async function POST(request) {
     const { data: existingEvent } = await admin.from('events').select('id').eq('user_id', userId).maybeSingle();
     if (!existingEvent && targetUser.requested_package_tier) {
       const { randomBytes } = await import('node:crypto');
-      const STORAGE_LIMITS = { intim: 60, complet: 100, vis: 150 };
+      const STORAGE_LIMITS = { intim: 60, complet: 150, vis: 200 };
       const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
       const tier = targetUser.requested_package_tier;
       const evType = ALLOWED_TYPES.includes(targetUser.requested_event_type) ? targetUser.requested_event_type : 'nunta';

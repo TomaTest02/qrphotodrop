@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-const STORAGE_LIMITS = { intim: 60, complet: 100, vis: 150 };
+const STORAGE_LIMITS = { intim: 60, complet: 150, vis: 200 };
 const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
 const ALLOWED_TIERS = ['intim', 'complet', 'vis'];
 
