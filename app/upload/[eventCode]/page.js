@@ -202,37 +202,66 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
+    const STORAGE_FULL = 'Storage limit exceeded for this event';
     let succeeded = 0;
+    let storageFull = false;
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       setUploadCurrent(i + 1);
       setUploadProgress(Math.round((i / filesToUpload.length) * 100));
+      const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
       try {
-        const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('eventCode', eventCode);
-        formData.append('fileType', fileType);
-        formData.append('originalName', file.name);
-
-        const uploadRes = await fetch('/api/upload/direct', {
+        // 1. Cerem un URL presemnat — funcția Vercel doar SEMNEAZĂ, fișierul NU trece prin ea
+        const signRes = await fetch('/api/upload/presigned', {
           method: 'POST',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
         });
-
-        if (!uploadRes.ok) {
-          const errData = await uploadRes.json();
-          if (errData.error === 'Storage limit exceeded for this event') {
-            alert('Albumul a atins capacitatea maximă! Nu se mai pot adăuga poze.');
-            setView('mediaChoice');
-            return;
-          }
-          throw new Error(errData.error || 'Upload failed');
+        if (!signRes.ok) {
+          const errData = await signRes.json().catch(() => ({}));
+          if (errData.error === STORAGE_FULL) { storageFull = true; break; }
+          throw new Error(errData.error || 'Sign failed');
         }
+        const { uploadUrl, r2Key } = await signRes.json();
+
+        // 2. Încărcăm fișierul DIRECT în R2 (browser → R2), fără limita de 4.5MB a Vercel
+        const putRes = await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+        if (!putRes.ok) throw new Error('R2 PUT ' + putRes.status);
+
+        // 3. Confirmăm — inserăm rândul cu metadate în baza de date
+        const confirmRes = await fetch('/api/upload/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ r2Key, eventCode, fileType, sizeBytes: file.size, originalName: file.name }),
+        });
+        if (!confirmRes.ok) throw new Error('Confirm failed');
         succeeded++;
-      } catch (err) { console.error('Upload error:', err); }
+      } catch (err) {
+        console.error('Upload presigned error:', err);
+        // Fallback: fișiere mici (≤4MB) pot merge prin funcție dacă presigned/CORS eșuează
+        if (file.size <= 4 * 1024 * 1024) {
+          try {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('eventCode', eventCode);
+            fd.append('fileType', fileType);
+            fd.append('originalName', file.name);
+            const directRes = await fetch('/api/upload/direct', { method: 'POST', body: fd });
+            if (directRes.ok) { succeeded++; }
+            else {
+              const e = await directRes.json().catch(() => ({}));
+              if (e.error === STORAGE_FULL) { storageFull = true; break; }
+            }
+          } catch (e2) { console.error('Upload fallback error:', e2); }
+        }
+      }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+    }
+
+    if (storageFull) {
+      alert('Albumul a atins capacitatea maximă! Nu se mai pot adăuga poze.');
+      setView('mediaChoice');
+      return;
     }
 
     // Feedback onest: nu declarăm succes dacă în realitate au eșuat fișiere.

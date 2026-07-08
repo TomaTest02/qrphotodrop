@@ -10,9 +10,10 @@ export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
   // ─── Rate Limiting for critical API routes ─────────────────────────────
+  // NB: upload-urile invitaților (/api/upload/*) NU sunt rate-limitate pe IP —
+  // la nuntă zeci de invitați sunt pe același WiFi (un singur IP public) și ar fi
+  // blocați împreună. Abuzul e oricum limitat de plafonul de stocare per eveniment.
   if (pathname.startsWith('/api/events/create') ||
-      pathname.startsWith('/api/upload/presigned') ||
-      pathname.startsWith('/api/upload/direct') ||
       pathname.startsWith('/api/admin/otp')) {
     
     const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
