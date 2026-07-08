@@ -156,26 +156,40 @@
 }
 
 .designActions {
-  text-align: left;
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--space-lg);
 }
 
 .printBtn {
-  padding: 12px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
   background: var(--color-burgundy);
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 4px 10px rgba(113, 9, 39, 0.1);
+  box-shadow: 0 4px 10px rgba(113, 9, 39, 0.12);
 }
 
-.printBtn:hover {
+.printBtn:hover:not(:disabled) {
   background: #58051c;
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(113, 9, 39, 0.2);
+}
+
+.printBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 
