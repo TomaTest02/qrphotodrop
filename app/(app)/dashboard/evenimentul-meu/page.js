@@ -158,11 +158,11 @@ export default function EvenimentulMeuPage() {
   // ── Catalog cartonașe QR ──────────────────────────────────────────────────
   // qr = poziția codului pe model, ca fracții din imagine: cx/cy = centru, size = latura (din lățime)
   const DESIGNS = [
-    { name: 'Boho Pampas',   image: '/images/designs/boho.png',          qr: { cx: 0.50, cy: 0.625, size: 0.40 } },
-    { name: 'Floral Roz',    image: '/images/designs/floral-roz.png',    qr: { cx: 0.50, cy: 0.585, size: 0.40 } },
-    { name: 'Negru & Auriu', image: '/images/designs/negru-auriu.png',   qr: { cx: 0.50, cy: 0.42,  size: 0.42 } },
-    { name: 'Auriu Elegant', image: '/images/designs/auriu-elegant.png', qr: { cx: 0.50, cy: 0.44,  size: 0.42 } },
-    { name: 'Verde Botanic', image: '/images/designs/verde-botanic.png', qr: { cx: 0.50, cy: 0.635, size: 0.42 } },
+    { name: 'Boho Pampas',   image: '/images/designs/boho.jpg',          qr: { cx: 0.50, cy: 0.625, size: 0.40 } },
+    { name: 'Floral Roz',    image: '/images/designs/floral-roz.jpg',    qr: { cx: 0.50, cy: 0.585, size: 0.40 } },
+    { name: 'Negru & Auriu', image: '/images/designs/negru-auriu.jpg',   qr: { cx: 0.50, cy: 0.42,  size: 0.42 } },
+    { name: 'Auriu Elegant', image: '/images/designs/auriu-elegant.jpg', qr: { cx: 0.50, cy: 0.44,  size: 0.42 } },
+    { name: 'Verde Botanic', image: '/images/designs/verde-botanic.jpg', qr: { cx: 0.50, cy: 0.635, size: 0.42 } },
   ];
   const currentDesign = DESIGNS.find((d) => d.name === selectedDesign) || DESIGNS[0];
 
