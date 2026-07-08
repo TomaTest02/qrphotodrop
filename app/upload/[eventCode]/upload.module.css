@@ -515,6 +515,75 @@
   line-height: 1.5;
 }
 
+/* ── Pop-up (limită 2GB / upload) ────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 27, 105, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  animation: modalFade 0.2s ease;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalCard {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 26px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.modalIcon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(113, 9, 39, 0.08);
+  color: #710927;
+}
+
+.modalTitle {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  color: #710927;
+  margin: 0 0 10px;
+}
+
+.modalText {
+  font-size: 14px;
+  color: #4a3f52;
+  line-height: 1.6;
+  margin: 0 0 22px;
+}
+
+.modalBtn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #710927 0%, #a03050 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 /* ── Preview grid ────────────────────────────────────────── */
 .previewGrid {
   display: grid;

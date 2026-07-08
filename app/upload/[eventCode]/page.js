@@ -193,6 +193,7 @@ export default function GuestUploadPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [rejectMsg, setRejectMsg] = useState('');
+  const [batchPopup, setBatchPopup] = useState(false);
   const [publicPhotos, setPublicPhotos] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -270,10 +271,9 @@ export default function GuestUploadPage({ params }) {
   };
 
   const uploadFiles = async (filesToUpload) => {
-    // Plafon total per încărcare — cerem invitatului să trimită mai puține odată
+    // Plafon total per încărcare — pop-up care cere invitatului să trimită mai puține odată
     if (sumBytes(filesToUpload) > MAX_BATCH_BYTES) {
-      setRejectMsg('Ai selectat prea mult (peste 2GB în total). Te rugăm încarcă mai puține fișiere odată (sub 2GB) — se încarcă mai repede.');
-      setView('preview');
+      setBatchPopup(true);
       return;
     }
     setView('uploading');
@@ -642,9 +642,7 @@ export default function GuestUploadPage({ params }) {
   );
 
   // ── PREVIEW ───────────────────────────────────────────────────────────────
-  if (view === 'preview') {
-    const batchOver = sumBytes(files) > MAX_BATCH_BYTES;
-    return (
+  if (view === 'preview') return (
     <PageShell isDemo={isDemo} onBack={() => setView('mediaChoice')}>
       <div className={styles.stepHeader}>
         <StepDots current={1} total={3} />
@@ -652,9 +650,21 @@ export default function GuestUploadPage({ params }) {
         <p className={styles.stepSubtitle}>{files.length} {files.length === 1 ? 'fișier selectat' : 'fișiere selectate'}</p>
       </div>
 
-      {batchOver
-        ? <div className={styles.rejectNote}>Ai selectat prea mult (peste 2GB în total). Elimină câteva fișiere sau încarcă-le în două rânduri — se încarcă mai repede.</div>
-        : (rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>)}
+      {rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>}
+
+      {batchPopup && (
+        <div className={styles.modalOverlay} onClick={() => setBatchPopup(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalIcon}><CloudArrowUp size={30} weight="light" /></div>
+            <h3 className={styles.modalTitle}>Prea multe fișiere odată</h3>
+            <p className={styles.modalText}>
+              Ai selectat peste 2GB într-un singur upload. Te rugăm încarcă mai puține fișiere odată
+              (sub 2GB) — se încarcă mai repede și mai sigur. Poți trimite restul imediat după, într-un al doilea upload.
+            </p>
+            <button className={styles.modalBtn} onClick={() => setBatchPopup(false)}>Am înțeles</button>
+          </div>
+        </div>
+      )}
 
       <div className={styles.previewGrid}>
         {files.map((file, idx) => (
@@ -689,8 +699,7 @@ export default function GuestUploadPage({ params }) {
 
       <p className={styles.privacyNote}><Lock size={12} weight="light" /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
     </PageShell>
-    );
-  }
+  );
 
   // ── UPLOADING ─────────────────────────────────────────────────────────────
   if (view === 'uploading') return (
