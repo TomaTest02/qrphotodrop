@@ -275,8 +275,7 @@ export default function GuestUploadPage({ params }) {
     }
 
     if (storageFull) {
-      alert('Albumul a atins capacitatea maximă! Nu se mai pot adăuga poze.');
-      setView('mediaChoice');
+      setView('limitReached');
       return;
     }
 
@@ -704,6 +703,28 @@ export default function GuestUploadPage({ params }) {
             <Camera size={16} weight="light" /> Trimite și poze
           </button>
           <button className={styles.successBtnSecondary} onClick={() => { setView('landing'); setWishForm({ firstName: '', lastName: '', email: '', message: '' }); }}>
+            Înapoi la început
+          </button>
+        </div>
+      </div>
+    </PageShell>
+  );
+
+  // ── LIMITĂ ATINSĂ ─────────────────────────────────────────────────────────
+  if (view === 'limitReached') return (
+    <PageShell isDemo={isDemo}>
+      <FloatingPetals />
+      <div className={styles.successWrap}>
+        <div className={styles.successOrb} style={{ background: 'linear-gradient(135deg, #710927, #a8384f)' }}>
+          <Heart size={38} weight="fill" style={{ color: '#fff' }} />
+        </div>
+        <h2 className={styles.successTitle}>Mulțumim că ați făcut parte din povestea noastră!</h2>
+        <p className={styles.successMsg}>
+          Limita de poze a fost atinsă.<br />
+          Galeria evenimentului este completă — mulțumim pentru fiecare amintire! 💛
+        </p>
+        <div className={styles.successActions}>
+          <button className={styles.successBtnSecondary} onClick={() => setView('landing')}>
             Înapoi la început
           </button>
         </div>
