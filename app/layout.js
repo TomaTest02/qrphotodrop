@@ -6,8 +6,8 @@ import "./globals.css";
 const playfair = Playfair_Display({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["italic"],
+  weight: ["400", "700", "900"],
+  style: ["normal", "italic"],
   display: "swap",
   preload: true,
 });
