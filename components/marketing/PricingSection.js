@@ -24,10 +24,8 @@ const tierFeatures = (tier) => {
     `Spațiu de stocare: ${TIER_STORAGE[tier]} GB`,
     `Disponibilitate după eveniment: ${TIER_DURATION[tier]}`,
   ];
-  // Standard + Premium: printare & plastifiere carduri QR contra cost (preț în funcție de nr. de carduri)
-  if (tier === 'complet' || tier === 'vis') {
-    list.push('Opțional (contra cost): printare și plastifiere carduri QR — preț în funcție de numărul de carduri');
-  }
+  // Toate pachetele: printare & plastifiere carduri QR contra cost (preț în funcție de nr. de carduri)
+  list.push('Opțional (contra cost): printare și plastifiere carduri QR — preț în funcție de numărul de carduri');
   return list;
 };
 
