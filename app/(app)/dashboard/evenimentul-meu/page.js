@@ -692,6 +692,13 @@ export default function EvenimentulMeuPage() {
                 <>
                   <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>{selectedIds.size} selectate</span>
                   <button
+                    onClick={() => downloadSelected(videos)}
+                    disabled={downloadLoading}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: downloadLoading ? 0.7 : 1 }}
+                  >
+                    {downloadLoading ? `⏳ Se descarcă (${downloadProgress}%)` : '⬇ Descarcă selectate'}
+                  </button>
+                  <button
                     onClick={deleteSelected}
                     disabled={deleteLoading}
                     style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
@@ -699,6 +706,15 @@ export default function EvenimentulMeuPage() {
                     {deleteLoading ? '⏳ Se șterge...' : '🗑 Șterge selectate'}
                   </button>
                 </>
+              )}
+              {selectedIds.size === 0 && (
+                <button
+                  onClick={() => downloadSelected(videos)}
+                  disabled={downloadLoading}
+                  style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, background: 'var(--color-violet-ultra)', color: 'var(--color-violet)', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: downloadLoading ? 0.7 : 1 }}
+                >
+                  {downloadLoading ? `⏳ Se descarcă (${downloadProgress}%)` : '⬇ Descarcă tot'}
+                </button>
               )}
             </div>
           )}
