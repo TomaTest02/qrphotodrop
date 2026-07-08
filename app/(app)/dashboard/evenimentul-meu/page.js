@@ -42,6 +42,14 @@ export default function EvenimentulMeuPage() {
   const [waOpen, setWaOpen] = useState(false);
   const [waMessage, setWaMessage] = useState('');
   const [waSaving, setWaSaving] = useState(false);
+  // Flag global controlat de admin: dacă e off, opțiunea de galerie publică nu apare deloc
+  const [galleryFeatureEnabled, setGalleryFeatureEnabled] = useState(true);
+
+  useEffect(() => {
+    createClient()
+      .from('app_settings').select('value').eq('key', 'public_gallery_enabled').maybeSingle()
+      .then(({ data }) => { if (data) setGalleryFeatureEnabled(data.value === 'true'); }, () => {});
+  }, []);
 
   const PRESET_TEXTS = [
     'Vrem să ne vedem povestea prin ochii tăi! Scanează codul QR pentru a ne trimite instant pozele de la eveniment.',
@@ -536,10 +544,12 @@ export default function EvenimentulMeuPage() {
             </div>
             <p className={styles.qrCode}>Cod eveniment: <strong>{event.event_code}</strong></p>
 
-            <label className={styles.galleryToggle}>
-              <input type="checkbox" checked={!!event.is_gallery_public} onChange={togglePublicGallery} />
-              <span>Permite invitaților să vadă galeria foto publică</span>
-            </label>
+            {galleryFeatureEnabled && (
+              <label className={styles.galleryToggle}>
+                <input type="checkbox" checked={!!event.is_gallery_public} onChange={togglePublicGallery} />
+                <span>Permite invitaților să vadă galeria foto publică</span>
+              </label>
+            )}
           </div>
         </div>
       </div>

@@ -20,8 +20,12 @@ export async function GET(request) {
 
   const CACHE = { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' };
 
-  // Galeria privată nu se expune prin slideshow (proiecția publică e opt-in).
-  if (!event.is_gallery_public) {
+  // Flag global admin: dacă galeria publică e dezactivată global, oprim proiecția
+  const { data: setting } = await supabase.from('app_settings').select('value').eq('key', 'public_gallery_enabled').maybeSingle();
+  const galleryEnabled = setting ? setting.value === 'true' : true;
+
+  // Galeria privată (sau dezactivată global) nu se expune prin slideshow.
+  if (!event.is_gallery_public || !galleryEnabled) {
     return NextResponse.json({
       event: { event_name: event.event_name, event_date: event.event_date },
       photos: [],
