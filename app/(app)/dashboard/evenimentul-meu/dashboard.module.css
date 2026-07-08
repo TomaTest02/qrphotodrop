@@ -12,7 +12,7 @@
   font-weight: 700;
   letter-spacing: -0.5px;
   color: var(--color-text);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   line-height: 1.2;
 }
 .archiveBtn { padding: 12px 24px; background: var(--color-violet); color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-mid); font-family: var(--font-sans); }
@@ -89,8 +89,10 @@
 .sectionSubtitle {
   font-size: 14px;
   color: var(--color-text-muted);
+  margin-top: 0;
   margin-bottom: var(--space-lg);
-  margin-top: -6px;
+  line-height: 1.5;
+  max-width: 620px;
 }
 
 .designGrid {
