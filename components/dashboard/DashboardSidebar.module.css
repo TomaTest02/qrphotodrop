@@ -94,6 +94,8 @@
 
 /* Content area */
 .content {
+  flex: 1;
+  min-width: 0;
   margin-left: 260px;
   min-height: 100vh;
   background: var(--color-cream);
