@@ -433,6 +433,16 @@ export default function GuestUploadPage({ params }) {
         <p className={styles.stepSubtitle}>De unde vrei să încarci amintirile?</p>
       </div>
 
+      <div className={styles.infoNote}>
+        <CloudArrowUp size={18} weight="light" />
+        <span>
+          <strong>Un moment de răbdare la clipuri.</strong> După ce selectezi fișierele și apeși
+          pe bifa de confirmare, așteaptă câteva secunde până se încarcă pe serverele noastre —
+          videoclipurile sunt mai mari și pot dura puțin. Te rugăm să nu apeși de mai multe ori;
+          încărcarea continuă automat.
+        </span>
+      </div>
+
       {/* Drag & Drop Zone */}
       <div
         className={`${styles.dropZone} ${dragOver ? styles.dropZoneActive : ''}`}

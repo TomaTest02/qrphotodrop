@@ -477,6 +477,32 @@
   text-align: center;
 }
 
+.infoNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(181, 140, 79, 0.09);
+  border: 1px solid rgba(181, 140, 79, 0.28);
+  border-radius: 14px;
+  padding: 13px 16px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: #574318;
+  text-align: left;
+  line-height: 1.55;
+}
+
+.infoNote strong {
+  color: #710927;
+  font-weight: 700;
+}
+
+.infoNote svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #b58c4f;
+}
+
 /* ── Preview grid ────────────────────────────────────────── */
 .previewGrid {
   display: grid;
