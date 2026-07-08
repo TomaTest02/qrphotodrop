@@ -724,11 +724,12 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(video.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <video
-                    src={video.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${video.r2_key}`}
+                    src={(video.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${video.r2_key}`) + '#t=0.5'}
                     className={styles.photoImg}
                     controls
+                    playsInline
                     preload="metadata"
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', background: '#141018' }}
                   />
                   <p className={styles.photoName}>{video.original_name}</p>
                 </div>
