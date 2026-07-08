@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getPublicUrl } from '@/lib/r2';
+import { getPublicUrl, deleteObject, r2Client } from '@/lib/r2';
+import { HeadObjectCommand } from '@aws-sdk/client-s3';
 
 const ALLOWED_FILE_TYPES = ['photo', 'video'];
 
@@ -37,7 +38,7 @@ export async function POST(request) {
     // Obținem event ID și verificăm că evenimentul este ACTIV
     const { data: event } = await supabase
       .from('events')
-      .select('id, status')
+      .select('id, status, max_storage_bytes')
       .eq('event_code', eventCode)
       .single();
 
@@ -54,6 +55,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'r2Key does not belong to this event' }, { status: 403 });
     }
 
+    // ── Securitate: mărimea REALĂ din R2, nu ce a declarat clientul ──
+    // URL-ul presemnat nu limitează cât se urcă, așa că verificăm după upload și,
+    // dacă depășește, ștergem obiectul (evită umplerea storage-ului / bypass plafon).
+    let actualSize = 0;
+    try {
+      const head = await r2Client.send(new HeadObjectCommand({
+        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+        Key: r2Key,
+      }));
+      actualSize = Number(head.ContentLength || 0);
+    } catch {
+      return NextResponse.json({ error: 'Object not found in storage' }, { status: 400 });
+    }
+
+    // Limită per fișier (poză 150MB / video 2GB), pe mărimea reală
+    const isVideo = fileType === 'video';
+    const MAX_SIZE = isVideo ? 2 * 1024 * 1024 * 1024 : 150 * 1024 * 1024;
+    if (actualSize > MAX_SIZE) {
+      await deleteObject(r2Key).catch(() => {});
+      return NextResponse.json({ error: 'Fișierul depășește limita' }, { status: 413 });
+    }
+
+    // Plafon de stocare per eveniment, pe mărimea reală
+    const { data: usageRows } = await supabase.from('uploads').select('size_bytes').eq('event_id', event.id);
+    const used = (usageRows || []).reduce((s, u) => s + (u.size_bytes || 0), 0);
+    if (used + actualSize > event.max_storage_bytes) {
+      await deleteObject(r2Key).catch(() => {});
+      return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
+    }
+
     const publicUrl = getPublicUrl(r2Key);
 
     // Sanitizare originalName
@@ -61,13 +92,13 @@ export async function POST(request) {
       .replace(/[^a-zA-Z0-9._\-\s]/g, '')
       .substring(0, 255);
 
-    // Insert upload record
+    // Insert upload record (cu mărimea REALĂ, nu cea declarată de client)
     const { data, error } = await supabase.from('uploads').insert({
       event_id: event.id,
       r2_key: r2Key,
       public_url: publicUrl,
       file_type: fileType || 'photo',
-      size_bytes: sizeBytes || 0,
+      size_bytes: actualSize,
       original_name: safeOriginalName,
     }).select().single();
 

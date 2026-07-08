@@ -11,9 +11,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    // Security: Whitelist MIME Types to prevent malicious uploads (XSS/Executables)
-    if (!contentType.startsWith('image/') && !contentType.startsWith('video/')) {
-      return NextResponse.json({ error: 'Invalid file type. Only images and videos are allowed.' }, { status: 415 });
+    // Security: whitelist MIME strict — blocăm SVG (poate executa JS) și orice non-media
+    const ALLOWED_MIME = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif',
+      'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/mov',
+    ];
+    if (!ALLOWED_MIME.includes(contentType)) {
+      return NextResponse.json({ error: 'Tip de fișier nepermis' }, { status: 415 });
     }
 
     // Verify event exists and is active
