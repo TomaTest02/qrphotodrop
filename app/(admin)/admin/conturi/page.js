@@ -180,12 +180,19 @@ export default function AdminConturiPage() {
   const handleSendOTP = async (userId) => {
     setBusyId(userId);
     try {
-      await fetch('/api/admin/otp', {
+      const res = await fetch('/api/admin/otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
       });
-      alert('Parolă temporară generată/trimisă.');
-    } catch (err) { console.error(err); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert('Eroare: ' + (data.error || 'nu s-a putut reseta parola.'));
+      } else if (!data.emailSent) {
+        alert('Parola a fost resetată, dar emailul NU s-a trimis (Resend neconfigurat în Vercel).');
+      } else {
+        alert('Parolă temporară trimisă pe email.');
+      }
+    } catch (err) { console.error(err); alert('Eroare de conexiune.'); }
     setBusyId(null);
   };
 

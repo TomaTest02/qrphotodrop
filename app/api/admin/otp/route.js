@@ -22,27 +22,33 @@ export async function POST(request) {
     // Generate new temp password
     const tempPassword = uuidv4().slice(0, 12);
 
-    // Update password in Supabase Auth
-    await admin.auth.admin.updateUserById(userId, {
+    // Update password in Supabase Auth — verificăm eroarea (altfel eșua pe tăcute)
+    const { error: pwErr } = await admin.auth.admin.updateUserById(userId, {
       password: tempPassword,
     });
+    if (pwErr) {
+      console.error('OTP updateUserById error:', pwErr);
+      return NextResponse.json({ error: 'Nu am putut schimba parola: ' + pwErr.message }, { status: 500 });
+    }
 
     // Set must_change_password
     await admin.from('users').update({ must_change_password: true }).eq('id', userId);
 
-    // Try to send OTP email (graceful — won't crash if Resend not configured)
+    // Trimitem parola temporară pe email (dacă Resend e configurat)
+    let emailSent = false;
     try {
       if (process.env.RESEND_API_KEY) {
         const { sendOTP } = await import('@/lib/resend');
         await sendOTP(targetUser.email, tempPassword);
+        emailSent = true;
       } else {
-        console.warn(`OTP generated for ${targetUser.email}: ${tempPassword} (Resend not configured, email not sent)`);
+        console.warn(`OTP pt ${targetUser.email}: ${tempPassword} (Resend neconfigurat, email netrimis)`);
       }
     } catch (emailErr) {
       console.warn('OTP email skipped:', emailErr.message);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, emailSent });
   } catch (err) {
     console.error('OTP error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
