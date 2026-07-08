@@ -99,7 +99,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-lg);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
 }
 
 .designCard {
@@ -108,52 +108,76 @@
   border: 1px solid var(--color-cream-darker);
   overflow: hidden;
   cursor: pointer;
-  transition: all var(--transition-mid);
+  transition: transform var(--transition-mid), box-shadow var(--transition-mid), border-color var(--transition-mid);
   box-shadow: var(--shadow-sm);
 }
 
 .designCard:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   border-color: var(--color-violet-light);
   box-shadow: var(--shadow-md);
 }
 
 .designSelected {
   border-color: var(--color-violet);
-  outline: 2px solid var(--color-violet);
+  box-shadow: 0 0 0 3px var(--color-violet-ultra), var(--shadow-md);
 }
 
+/* Model întreg (portret), pe un fundal cald — nu mai e tăiat */
 .designPreview {
-  height: 220px;
-  overflow: hidden;
   position: relative;
-  background: var(--color-cream-dark);
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .designPreviewImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
+.designBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-violet);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(45, 44, 74, 0.3);
+}
+
 .designCardInfo {
-  padding: 12px;
+  padding: 13px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #ffffff;
+  border-top: 1px solid var(--color-cream);
 }
 
 .designCardName {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--color-text);
 }
 
 .designCardStatus {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.designSelected .designCardStatus {
   color: var(--color-violet);
 }
 

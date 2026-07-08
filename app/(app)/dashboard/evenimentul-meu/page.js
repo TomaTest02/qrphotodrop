@@ -589,12 +589,11 @@ export default function EvenimentulMeuPage() {
               >
                 <div className={styles.designPreview}>
                   <img src={design.image} alt={design.name} className={styles.designPreviewImg} />
+                  {isSelected && <span className={styles.designBadge}><Check size={16} weight="bold" /></span>}
                 </div>
                 <div className={styles.designCardInfo}>
                   <span className={styles.designCardName}>{design.name}</span>
-                  <span className={styles.designCardStatus}>
-                    {isSelected ? <><Check size={12} weight="bold" /> Selectat</> : 'Alege model'}
-                  </span>
+                  <span className={styles.designCardStatus}>{isSelected ? '✓ Selectat' : 'Alege'}</span>
                 </div>
               </div>
             );
