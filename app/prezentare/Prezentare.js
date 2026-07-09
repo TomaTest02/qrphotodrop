@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Fragment } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { QrCode, Lock, Sparkle, Heart, CheckCircle, ArrowRight, Check } from '@phosphor-icons/react';
@@ -8,7 +8,7 @@ import styles from './prezentare.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HEADLINE = 'Toate pozele de la invitați, adunate singure.';
+const HEADLINE = 'Fiecare invitat, fotograful evenimentului tău.';
 
 const DESIGNS = [
   { src: '/images/designs/boho.jpg', name: 'Boho' },
@@ -136,14 +136,16 @@ export default function Prezentare() {
             <span className={styles.eyebrow} data-hero-fade>Album digital pentru evenimente</span>
             <h1 className={styles.h1} aria-label={HEADLINE}>
               {HEADLINE.split(' ').map((w, i) => (
-                <span key={i} className={styles.wordMask} aria-hidden="true">
-                  <span className={styles.word} data-word>{w}</span>
-                </span>
+                <Fragment key={i}>
+                  <span className={styles.wordMask} aria-hidden="true">
+                    <span className={styles.word} data-word>{w}</span>
+                  </span>{' '}
+                </Fragment>
               ))}
             </h1>
             <p className={styles.subtitle} data-hero-fade>
-              Invitații scanează un cod QR și încarcă pozele, clipurile și urările direct de pe telefon —
-              fără aplicație, fără cont. Tu le primești pe toate, gata organizate.
+              Invitații scanează un cod QR și încarcă pozele, clipurile și urările direct de pe telefon,
+              fără aplicație și fără cont. Tu le primești pe toate, gata organizate.
             </p>
             <div className={styles.heroActions} data-hero-fade>
               <a href="/upload/DEMO" className={styles.btnPrimary} data-magnetic>
@@ -187,7 +189,7 @@ export default function Prezentare() {
             <h2 className={styles.slideTitle}><LineTitle>Pui codul QR pe mese</LineTitle></h2>
             <p className={styles.slideDesc} data-step-fade>
               Primești un cod QR unic pentru evenimentul tău, pe un cartonaș elegant. Îl pui pe mese,
-              la intrare sau pe panouri — oriunde îl văd invitații.
+              la intrare sau pe panouri, oriunde îl văd invitații.
             </p>
             <ul className={styles.slideList}>
               <li data-step-fade><Check className={styles.slideCheck} size={18} weight="bold" /> Cod QR unic, generat instant</li>
@@ -211,7 +213,7 @@ export default function Prezentare() {
             <span className={styles.slideKicker} data-step-fade>Pasul doi</span>
             <h2 className={styles.slideTitle}><LineTitle>Invitații scanează și încarcă</LineTitle></h2>
             <p className={styles.slideDesc} data-step-fade>
-              Cu telefonul, scanează codul și încarcă poze, clipuri și urări în câteva secunde —
+              Cu telefonul, scanează codul și încarcă poze, clipuri și urări în câteva secunde,
               direct din browser. Fără aplicație instalată, fără cont creat.
             </p>
             <ul className={styles.slideList}>
@@ -256,7 +258,7 @@ export default function Prezentare() {
         <div className={styles.sectionHead}>
           <span className={styles.eyebrow}>Personalizat</span>
           <h2 className={styles.sectionTitle}><LineTitle>Alegi designul cartonașului</LineTitle></h2>
-          <p className={styles.sectionDesc} data-step-fade>Cartonașe elegante, pe stilul evenimentului tău — cu codul QR integrat frumos.</p>
+          <p className={styles.sectionDesc} data-step-fade>Cartonașe elegante, pe stilul evenimentului tău, cu codul QR integrat frumos.</p>
         </div>
         <div className={styles.marqueeWrap}>
           <div className={styles.marqueeTrack} data-marquee>

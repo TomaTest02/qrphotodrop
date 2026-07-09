@@ -23,7 +23,7 @@
 .eyebrow { display: inline-block; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: var(--color-gold); margin-bottom: var(--space-md); }
 
 /* ── Măști de text (reveal cinematic) ── */
-.wordMask { display: inline-block; overflow: hidden; vertical-align: bottom; margin-right: 0.26em; padding-bottom: 0.12em; }
+.wordMask { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.12em; }
 .word { display: inline-block; will-change: transform; }
 .lineMask { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.1em; }
 .line { display: inline-block; will-change: transform; }
