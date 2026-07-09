@@ -1,30 +1,17 @@
 'use client';
 
 import {
-  QrCode, DeviceMobile, Images, Lock, Sparkle, Heart,
-  CheckCircle, ArrowRight,
+  QrCode, Lock, Sparkle, Heart,
+  CheckCircle, ArrowRight, Check,
 } from '@phosphor-icons/react';
 import styles from './prezentare.module.css';
 
-const STEPS = [
-  {
-    num: '01',
-    Icon: QrCode,
-    title: 'Pui codul QR pe mese',
-    desc: 'Primești un cod QR unic pentru evenimentul tău. Îl pui pe mese, la intrare sau pe invitații — oriunde îl văd invitații.',
-  },
-  {
-    num: '02',
-    Icon: DeviceMobile,
-    title: 'Invitații scanează și încarcă',
-    desc: 'Cu telefonul, scanează codul și încarcă poze, clipuri și urări în câteva secunde. Fără aplicație instalată, fără cont creat.',
-  },
-  {
-    num: '03',
-    Icon: Images,
-    title: 'Primești toate amintirile',
-    desc: 'Pozele și clipurile se adună automat în contul tău. Le vezi și le descarci oricând, la calitate maximă.',
-  },
+const DESIGNS = [
+  { src: '/images/designs/boho.jpg', name: 'Boho' },
+  { src: '/images/designs/floral-roz.jpg', name: 'Floral Roz' },
+  { src: '/images/designs/auriu-elegant.jpg', name: 'Auriu Elegant' },
+  { src: '/images/designs/negru-auriu.jpg', name: 'Negru & Auriu' },
+  { src: '/images/designs/verde-botanic.jpg', name: 'Verde Botanic' },
 ];
 
 const BENEFITS = [
@@ -43,68 +30,148 @@ export default function Prezentare() {
         <a href="/contact" className={styles.topCta}>Contactează-ne</a>
       </header>
 
-      {/* Hero */}
+      {/* HERO */}
       <section className={`${styles.hero} ${styles.reveal}`}>
-        <span className={styles.eyebrow}>Album digital pentru evenimente</span>
-        <h1 className={styles.h1}>Toate pozele și clipurile de la invitați, adunate automat</h1>
-        <p className={styles.subtitle}>
-          Invitații scanează un cod QR și încarcă pozele, clipurile și urările direct de pe telefon —
-          fără aplicație și fără cont. Tu le primești pe toate, organizate și gata de descărcat.
-        </p>
-        <div className={styles.heroActions}>
-          <a href="/upload/DEMO" className={styles.btnPrimary}>
-            Încearcă demo live <ArrowRight size={17} weight="bold" />
-          </a>
-          <a href="/preturi" className={styles.btnOutline}>Vezi prețuri</a>
-        </div>
-        <div className={styles.trust}>
-          <span>Fără aplicație</span>
-          <span className={styles.trustDot} />
-          <span>Fără cont</span>
-          <span className={styles.trustDot} />
-          <span>Calitate originală</span>
+        <div className={styles.heroGrid}>
+          <div className={styles.heroText}>
+            <span className={styles.eyebrow}>Album digital pentru evenimente</span>
+            <h1 className={styles.h1}>Toate pozele de la invitați, adunate singure.</h1>
+            <p className={styles.subtitle}>
+              Invitații scanează un cod QR și încarcă pozele, clipurile și urările direct de pe telefon —
+              fără aplicație, fără cont. Tu le primești pe toate, gata organizate.
+            </p>
+            <div className={styles.heroActions}>
+              <a href="/upload/DEMO" className={styles.btnPrimary}>
+                Încearcă demo live <ArrowRight size={17} weight="bold" />
+              </a>
+              <a href="/preturi" className={styles.btnOutline}>Vezi prețuri</a>
+            </div>
+            <div className={styles.trust}>
+              <span>Fără aplicație</span>
+              <span className={styles.trustDot} />
+              <span>Fără cont</span>
+              <span className={styles.trustDot} />
+              <span>Calitate originală</span>
+            </div>
+          </div>
+
+          <div className={styles.heroVisual}>
+            <img className={styles.heroPhoto} src="/images/hero/wedding.jpg" alt="Cuplu la nuntă" />
+            <div className={styles.heroBadge}>
+              <span className={styles.heroBadgeQr}><QrCode size={26} weight="light" /></span>
+              <span className={styles.heroBadgeText}>
+                <strong>Scan & Share</strong>
+                <span>218 amintiri adunate</span>
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Cei 3 pași */}
-      <section className={styles.steps}>
-        <div className={styles.sectionInner}>
-          <div className={styles.sectionHead}>
-            <span className={styles.eyebrow}>Simplu de tot</span>
-            <h2 className={styles.sectionTitle}>Cum funcționează, în 3 pași</h2>
-            <p className={styles.sectionDesc}>Fără instalări, fără complicații. Atât.</p>
+      {/* PAS 1 — QR pe mese */}
+      <section className={`${styles.slide} ${styles.slideAlt}`}>
+        <div className={styles.slideGrid}>
+          <div className={styles.slideVisual}>
+            <span className={styles.slideNum}>1</span>
+            <img className={styles.slidePhoto} src="/images/mockups/classic_burgundy.png" alt="Cartonaș cu cod QR pe masă" />
           </div>
+          <div className={styles.slideText}>
+            <span className={styles.slideKicker}>Pasul întâi</span>
+            <h2 className={styles.slideTitle}>Pui codul QR pe mese</h2>
+            <p className={styles.slideDesc}>
+              Primești un cod QR unic pentru evenimentul tău, pe un cartonaș elegant. Îl pui pe mese,
+              la intrare sau pe panouri — oriunde îl văd invitații.
+            </p>
+            <ul className={styles.slideList}>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Cod QR unic, generat instant</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Design de cartonaș pe stilul evenimentului</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Îl printezi singur sau ți-l printăm noi</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-          <div className={styles.stepGrid}>
-            {STEPS.map(({ num, Icon, title, desc }) => (
-              <div key={num} className={styles.stepCard}>
-                <span className={styles.stepNum}>{num}</span>
-                <div className={styles.stepIcon}><Icon size={32} weight="light" /></div>
-                <h3 className={styles.stepTitle}>{title}</h3>
-                <p className={styles.stepDesc}>{desc}</p>
-              </div>
-            ))}
+      {/* PAS 2 — scanează & încarcă */}
+      <section className={styles.slide}>
+        <div className={`${styles.slideGrid} ${styles.reverse}`}>
+          <div className={styles.slideVisual}>
+            <span className={styles.slideNum}>2</span>
+            <img className={styles.slidePhoto} src="/images/events/selfie_wedding.png" alt="Invitați care fac o poză cu telefonul" />
           </div>
+          <div className={styles.slideText}>
+            <span className={styles.slideKicker}>Pasul doi</span>
+            <h2 className={styles.slideTitle}>Invitații scanează și încarcă</h2>
+            <p className={styles.slideDesc}>
+              Cu telefonul, scanează codul și încarcă poze, clipuri și urări în câteva secunde —
+              direct din browser. Fără aplicație instalată, fără cont creat.
+            </p>
+            <ul className={styles.slideList}>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Merge pe orice telefon, instant</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Poze, clipuri video și mesaje de urare</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Zero pași de instalare pentru invitați</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* PAS 3 — primești amintirile */}
+      <section className={`${styles.slide} ${styles.slideAlt}`}>
+        <div className={styles.slideGrid}>
+          <div className={styles.slideVisual}>
+            <span className={styles.slideNum}>3</span>
+            <div className={styles.collage}>
+              <img className={styles.collageBig} src="/images/hero/wedding.jpg" alt="Amintire eveniment" />
+              <img src="/images/hero/party.png" alt="Amintire petrecere" />
+              <img src="/images/hero/toast.jpg" alt="Amintire toast" />
+              <div className={styles.collagePill}><span>♥</span> 218 amintiri</div>
+            </div>
+          </div>
+          <div className={styles.slideText}>
+            <span className={styles.slideKicker}>Pasul trei</span>
+            <h2 className={styles.slideTitle}>Primești toate amintirile</h2>
+            <p className={styles.slideDesc}>
+              Pozele, clipurile și urările se adună automat în contul tău de organizator.
+              Le vezi în timp real și le descarci oricând, la calitate maximă.
+            </p>
+            <ul className={styles.slideList}>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Panou de organizator cu tot ce s-a încărcat</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Descarci tot ca arhivă, la calitate maximă</li>
+              <li><Check className={styles.slideCheck} size={18} weight="bold" /> Opțional: galerie publică pentru toți invitații</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase design-uri cartonaș */}
+      <section className={styles.designs}>
+        <div className={styles.sectionHead}>
+          <span className={styles.eyebrow}>Personalizat</span>
+          <h2 className={styles.sectionTitle}>Alegi designul cartonașului</h2>
+          <p className={styles.sectionDesc}>Cartonașe elegante, pe stilul evenimentului tău — cu codul QR integrat frumos.</p>
+        </div>
+        <div className={styles.designRow}>
+          {DESIGNS.map((d) => (
+            <div key={d.name} className={styles.designCard}>
+              <img src={d.src} alt={`Design cartonaș ${d.name}`} loading="lazy" />
+            </div>
+          ))}
         </div>
       </section>
 
       {/* De ce QRPhotoDrop */}
       <section className={styles.why}>
-        <div className={styles.sectionInner}>
-          <div className={styles.sectionHead}>
-            <span className={styles.eyebrow}>De ce QRPhotoDrop</span>
-            <h2 className={styles.sectionTitle}>Simplu pentru invitați, complet pentru tine</h2>
-          </div>
-
-          <div className={styles.whyGrid}>
-            {BENEFITS.map(({ Icon, title, desc }) => (
-              <div key={title} className={styles.whyCard}>
-                <div className={styles.whyIcon}><Icon size={26} weight="light" /></div>
-                <div className={styles.whyTitle}>{title}</div>
-                <p className={styles.whyDesc}>{desc}</p>
-              </div>
-            ))}
-          </div>
+        <div className={styles.sectionHead}>
+          <span className={styles.eyebrow}>De ce QRPhotoDrop</span>
+          <h2 className={styles.sectionTitle}>Simplu pentru invitați, complet pentru tine</h2>
+        </div>
+        <div className={styles.whyGrid}>
+          {BENEFITS.map(({ Icon, title, desc }) => (
+            <div key={title} className={styles.whyCard}>
+              <div className={styles.whyIcon}><Icon size={26} weight="light" /></div>
+              <div className={styles.whyTitle}>{title}</div>
+              <p className={styles.whyDesc}>{desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -113,9 +180,7 @@ export default function Prezentare() {
         <div className={styles.ctaInner}>
           <span className={styles.ctaEyebrow}>Vezi cu ochii tăi</span>
           <h2 className={styles.ctaTitle}>Deschide un demo live în 10 secunde</h2>
-          <p className={styles.ctaSubtitle}>
-            Exact ce văd invitații tăi când scanează codul QR de pe masă.
-          </p>
+          <p className={styles.ctaSubtitle}>Exact ce văd invitații tăi când scanează codul QR de pe masă.</p>
           <div className={styles.ctaActions}>
             <a href="/upload/DEMO" className={styles.ctaBtnPrimary}>
               Deschide demo <ArrowRight size={17} weight="bold" />
@@ -125,7 +190,7 @@ export default function Prezentare() {
         </div>
       </section>
 
-      {/* Footer minimal */}
+      {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>QRPhotoDrop</div>
         <div>amintirile evenimentului tău · <a href="https://qrphotodrop.com" className={styles.footerLink}>qrphotodrop.com</a></div>
