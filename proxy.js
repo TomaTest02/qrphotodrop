@@ -47,6 +47,7 @@ export async function proxy(request) {
     '/blog',
     '/forgot-password',
     '/reset-password',
+    '/prezentare',     // landing de prezentare pentru vânzări (link direct, nu în navbar)
   ];
 
   const PUBLIC_PREFIXES = [

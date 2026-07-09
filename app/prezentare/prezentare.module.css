@@ -1,0 +1,365 @@
+/* Landing de prezentare (vânzări) — stil identic cu site-ul: crem/bordo/auriu */
+
+.page {
+  background: var(--color-cream);
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Bară de sus minimală (fără meniu de navigare) ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 22px var(--space-xl);
+}
+
+.logo {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-burgundy);
+}
+
+.topCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-burgundy);
+  border: 1.5px solid var(--color-cream-darker);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-mid);
+}
+.topCta:hover { border-color: var(--color-gold); background: var(--color-violet-pale); }
+
+/* ── Hero ── */
+.hero {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px var(--space-xl) 72px;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--color-gold);
+  margin-bottom: var(--space-md);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(38px, 6vw, 64px);
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  color: var(--color-burgundy);
+  margin-bottom: var(--space-lg);
+}
+
+.subtitle {
+  font-size: clamp(16px, 2.2vw, 19px);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 620px;
+  margin: 0 auto var(--space-xl);
+}
+
+.heroActions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 30px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-burgundy);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(113, 9, 39, 0.22);
+  transition: all var(--transition-mid);
+}
+.btnPrimary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(113, 9, 39, 0.32); }
+
+.btnOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 30px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-burgundy);
+  background: transparent;
+  border: 1.5px solid var(--color-cream-darker);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-mid);
+}
+.btnOutline:hover { border-color: var(--color-gold); background: var(--color-violet-pale); }
+
+.trust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+.trustDot { width: 4px; height: 4px; border-radius: 50%; background: var(--color-gold-light); }
+
+/* ── Secțiunea cei 3 pași ── */
+.steps {
+  background: var(--color-cream-dark);
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 96px 0;
+}
+
+.sectionInner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+.sectionHead {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 64px;
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--color-burgundy);
+  line-height: 1.15;
+  margin-bottom: var(--space-md);
+}
+
+.sectionDesc {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.stepGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.stepCard {
+  position: relative;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-cream-dark);
+  border-radius: var(--radius-lg);
+  padding: 40px 28px 32px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-mid), box-shadow var(--transition-mid);
+}
+.stepCard:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+.stepNum {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-family: var(--font-serif);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-cream-darker);
+  opacity: 0.7;
+}
+
+.stepIcon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+  background: var(--color-violet-pale);
+  border: 1px solid rgba(181, 140, 79, 0.2);
+}
+
+.stepTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.stepDesc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+/* ── Strip beneficii ── */
+.why {
+  padding: 96px 0;
+}
+
+.whyGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+}
+
+.whyCard {
+  text-align: center;
+  padding: 0 8px;
+}
+
+.whyIcon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-burgundy);
+  background: rgba(113, 9, 39, 0.06);
+}
+
+.whyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.whyDesc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-light);
+}
+
+/* ── Banner CTA (bordo) ── */
+.cta {
+  background: var(--color-burgundy);
+  padding: var(--space-3xl) 0;
+  text-align: center;
+}
+
+.ctaInner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+.ctaEyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-md);
+}
+
+.ctaTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #fff;
+  margin-bottom: var(--space-md);
+}
+
+.ctaSubtitle {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-cream-dark);
+  margin-bottom: var(--space-xl);
+}
+
+.ctaActions { display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap; }
+
+.ctaBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #3a0514;
+  background: var(--color-gold);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-mid);
+}
+.ctaBtnPrimary:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(181, 140, 79, 0.4); }
+
+.ctaBtnOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-mid);
+}
+.ctaBtnOutline:hover { border-color: var(--color-gold); background: rgba(255, 255, 255, 0.06); }
+
+/* ── Footer minimal ── */
+.footer {
+  padding: 40px var(--space-xl);
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: 13px;
+}
+.footerLogo {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  margin-bottom: 6px;
+}
+.footerLink { color: var(--color-gold); font-weight: 600; }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .stepGrid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .whyGrid { grid-template-columns: repeat(2, 1fr); gap: var(--space-xl) var(--space-md); }
+  .steps, .why { padding: 64px 0; }
+}
+
+@media (max-width: 440px) {
+  .whyGrid { grid-template-columns: 1fr; max-width: 300px; margin: 0 auto; }
+  .heroActions { flex-direction: column; }
+  .btnPrimary, .btnOutline { justify-content: center; }
+}
+
+/* Intrare delicată la încărcare */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal { animation: riseIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
