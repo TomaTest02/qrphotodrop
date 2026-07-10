@@ -23,6 +23,114 @@ function putWithProgress(url, file, onProgress) {
   });
 }
 
+// ─── Upload multipart (fișiere mari) ─────────────────────────────────────────
+const MULTIPART_THRESHOLD = 32 * 1024 * 1024; // peste 32MB → multipart
+const MULTIPART_CONCURRENCY = 3;              // bucăți în paralel
+const SIGN_BATCH = 8;                         // câte URL-uri cerem odată
+
+// PUT o bucată. FĂRĂ Content-Type (URL-ul presemnat UploadPart nu-l semnează).
+function putPart(url, blob, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('part PUT ' + xhr.status)));
+    xhr.onerror = () => reject(new Error('part PUT network error'));
+    xhr.send(blob);
+  });
+}
+
+// Upload multipart complet. Întoarce 'ok' | 'storageFull'; aruncă la alte erori.
+async function uploadMultipart(eventCode, file, fileType, onProgress) {
+  const createRes = await fetch('/api/upload/multipart/create', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
+  });
+  if (!createRes.ok) {
+    const e = await createRes.json().catch(() => ({}));
+    if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
+    throw new Error(e.error || 'multipart create failed');
+  }
+  const { uploadId, r2Key, partSize, totalParts } = await createRes.json();
+
+  const urlCache = {};
+  const signParts = async (nums) => {
+    const need = nums.filter((n) => !urlCache[n]);
+    if (!need.length) return;
+    const res = await fetch('/api/upload/multipart/sign', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId, partNumbers: need }),
+    });
+    if (!res.ok) throw new Error('sign failed');
+    Object.assign(urlCache, (await res.json()).urls);
+  };
+  const signOne = async (n) => {
+    const res = await fetch('/api/upload/multipart/sign', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId, partNumbers: [n] }),
+    });
+    if (!res.ok) throw new Error('sign failed');
+    const url = (await res.json()).urls[n];
+    urlCache[n] = url;
+    return url;
+  };
+
+  try {
+    const frac = new Array(totalParts).fill(0);
+    const report = () => onProgress(frac.reduce((a, b) => a + b, 0) / totalParts);
+    let next = 1; // numerele bucăților: 1..totalParts
+
+    const worker = async () => {
+      while (next <= totalParts) {
+        const partNumber = next++;
+        const idx = partNumber - 1;
+        const start = idx * partSize;
+        const blob = file.slice(start, Math.min(start + partSize, file.size));
+        // pre-semnăm un lot începând de la bucata curentă (economisim invocări)
+        if (!urlCache[partNumber]) {
+          const window = [];
+          for (let p = partNumber; p < Math.min(partNumber + SIGN_BATCH, totalParts + 1); p++) window.push(p);
+          await signParts(window);
+        }
+        let url = urlCache[partNumber];
+        let done = false;
+        for (let attempt = 0; attempt <= 3 && !done; attempt++) {
+          try {
+            if (attempt > 0) url = await signOne(partNumber); // URL proaspăt la retry → nu expiră
+            await putPart(url, blob, (f) => { frac[idx] = f; report(); });
+            done = true;
+          } catch (err) {
+            if (attempt === 3) throw err;
+            frac[idx] = 0; report();
+            await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+          }
+        }
+        frac[idx] = 1; report();
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(MULTIPART_CONCURRENCY, totalParts) }, worker));
+
+    const completeRes = await fetch('/api/upload/multipart/complete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId, eventCode, fileType, originalName: file.name }),
+    });
+    if (!completeRes.ok) {
+      const e = await completeRes.json().catch(() => ({}));
+      if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
+      throw new Error(e.error || 'multipart complete failed');
+    }
+    return 'ok';
+  } catch (err) {
+    // Anulăm sesiunea multipart → eliberăm spațiul rezervat în R2 (best-effort)
+    fetch('/api/upload/multipart/abort', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ r2Key, uploadId }),
+    }).catch(() => {});
+    throw err;
+  }
+}
+
 // ─── Limite de mărime — o SINGURĂ sursă de adevăr ────────────────────────────
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024;        // 20 MB / poză
 const MAX_VIDEO_BYTES = 1536 * 1024 * 1024;      // 1.5 GB / clip
@@ -254,6 +362,22 @@ export default function GuestUploadPage({ params }) {
       setUploadCurrent(i + 1);
       setUploadProgress(Math.round((i / filesToUpload.length) * 100));
       const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
+      const onFrac = (frac) => setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
+
+      // Fișiere mari → upload MULTIPART (bucăți paralele, retry, fără expirare).
+      // Dacă eșuează din orice motiv, cădem pe single-PUT (plasă de siguranță).
+      if (file.size > MULTIPART_THRESHOLD) {
+        try {
+          const res = await uploadMultipart(eventCode, file, fileType, onFrac);
+          if (res === 'storageFull') { storageFull = true; break; }
+          succeeded++;
+          setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+          continue;
+        } catch (err) {
+          console.error('Multipart failed, fallback to single PUT:', err);
+        }
+      }
+
       try {
         // 1. Cerem un URL presemnat — funcția Vercel doar SEMNEAZĂ, fișierul NU trece prin ea
         const signRes = await fetch('/api/upload/presigned', {
