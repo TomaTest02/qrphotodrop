@@ -468,11 +468,12 @@ export default function GuestUploadPage({ params }) {
       return;
     }
     try {
-      await fetch('/api/wishes', {
+      const res = await fetch('/api/wishes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...wishForm, eventCode }),
       });
+      if (!res.ok) throw new Error('wish failed');
       setView('wishSuccess');
     } catch { alert('Eroare la trimitere. Încearcă din nou.'); }
     setLoading(false);
