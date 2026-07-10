@@ -51,7 +51,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
     if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
     throw new Error(e.error || 'multipart create failed');
   }
-  const { uploadId, r2Key, partSize, totalParts } = await createRes.json();
+  const { sessionId, partSize, totalParts } = await createRes.json();
 
   const urlCache = {};
   const signParts = async (nums) => {
@@ -59,7 +59,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
     if (!need.length) return;
     const res = await fetch('/api/upload/multipart/sign', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ r2Key, uploadId, partNumbers: need }),
+      body: JSON.stringify({ sessionId, partNumbers: need }),
     });
     if (!res.ok) throw new Error('sign failed');
     Object.assign(urlCache, (await res.json()).urls);
@@ -67,7 +67,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
   const signOne = async (n) => {
     const res = await fetch('/api/upload/multipart/sign', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ r2Key, uploadId, partNumbers: [n] }),
+      body: JSON.stringify({ sessionId, partNumbers: [n] }),
     });
     if (!res.ok) throw new Error('sign failed');
     const url = (await res.json()).urls[n];
@@ -113,7 +113,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
 
     const completeRes = await fetch('/api/upload/multipart/complete', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ r2Key, uploadId, eventCode, sizeBytes: file.size, originalName: file.name }),
+      body: JSON.stringify({ sessionId, originalName: file.name }),
     });
     if (!completeRes.ok) {
       const e = await completeRes.json().catch(() => ({}));
@@ -122,10 +122,10 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
     }
     return 'ok';
   } catch (err) {
-    // Anulăm sesiunea multipart → eliberăm spațiul rezervat în R2 (best-effort)
+    // Anulăm sesiunea → eliberăm bucățile din R2 + rezervarea de spațiu (best-effort)
     fetch('/api/upload/multipart/abort', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ r2Key, uploadId }),
+      body: JSON.stringify({ sessionId }),
     }).catch(() => {});
     throw err;
   }

@@ -559,3 +559,63 @@ Ramura: `feat/multipart-upload` (nu e în producție încă).
 | 12 | Lifecycle R2: abort multipart abandonat la 1–2 zile | ⚙️ **Config Cloudflare** (nu cod) — de setat în panoul R2 → bucket → Settings. |
 
 **Parametri (16 MiB / concurență 3 / loturi 8 / 3 retry)** — validați de reviewer, rămân neschimbați.
+
+---
+
+## 8. Runda 3 — sesiuni multipart + rezervare atomică + rute securizate
+
+> ⚠️ Codul din secțiunea 4 (rute care primeau `r2Key`/`uploadId` de la client) este **înlocuit** de modelul de mai jos. Acum clientul primește doar un **`sessionId`** neutru; serverul ține r2_key/upload_id în DB.
+
+### 8.1 Tabel + rezervare atomică (`supabase/migrations/20260710130000_multipart_sessions.sql`)
+
+Tabel `multipart_sessions`: `id, event_id, r2_key (unique), upload_id, expected_size_bytes, part_size_bytes, total_parts, status (pending|uploading|completed|failed|aborted), created_at, expires_at`.
+
+Rezervarea e o **funcție Postgres** cu `FOR UPDATE` pe rândul evenimentului (serializează cererile concurente):
+
+```sql
+create or replace function public.reserve_multipart_session(...) returns uuid language plpgsql as $$
+declare v_max bigint; v_used bigint; v_reserved bigint; v_id uuid;
+begin
+  select max_storage_bytes into v_max from public.events where id = p_event_id for update;
+  if v_max is null then return null; end if;
+  select coalesce(sum(size_bytes),0) into v_used from public.uploads where event_id = p_event_id;
+  select coalesce(sum(expected_size_bytes),0) into v_reserved
+    from public.multipart_sessions
+    where event_id = p_event_id and status in ('pending','uploading') and expires_at > now();
+  if v_used + v_reserved + p_expected_size > v_max then return null; end if;   -- fără loc
+  insert into public.multipart_sessions (...) values (..., 'pending', p_expires_at) returning id into v_id;
+  return v_id;
+end; $$;
+```
+
+`reserved` = suma sesiunilor `pending`/`uploading` neexpirate. La `completed` → iese din reserved, intră în `used` (rândul din `uploads`). La `aborted`/`failed`/expirat → iese din reserved. Fără coloană separată de „reserved".
+
+### 8.2 Contractele rutelor (session-based)
+
+| Rută | Primește | Face |
+|---|---|---|
+| `create` | `{ eventCode, contentType, sizeBytes }` | event activ + MIME + plafon per fișier → `CreateMultipartUpload` în R2 → **`reserve_multipart_session` (atomic)**; dacă nu e loc → abort R2 + 403. Întoarce `{ sessionId, partSize, totalParts }` (NU r2Key/uploadId). |
+| `sign` | `{ sessionId, partNumbers[] }` | citește sesiunea; verifică `status ∈ {pending,uploading}`, neexpirată, `partNumber ∈ 1..totalParts`; semnează cu `r2_key`/`upload_id` **din sesiune**; marchează `uploading`. |
+| `complete` | `{ sessionId, originalName }` | idempotent (dacă `completed` → întoarce rândul existent); `ListParts` → validează **exact `totalParts`, consecutive 1..N, toate egale cu `part_size` fără ultima, suma == `expected_size`** ÎNAINTE de asamblare; `CompleteMultipartUpload` → HEAD (`actualSize == expected`) → insert `uploads` → `status=completed`. Orfan-safe + tratează `23505` ca idempotent. |
+| `abort` | `{ sessionId }` | citește sesiunea → `AbortMultipartUpload` → `status=aborted` (eliberează rezervarea). |
+
+### 8.3 Status final al punctelor din review
+
+| # | Punct | Status |
+|---|---|---|
+| 1 | Sesiune multipart în Supabase | ✅ Tabel `multipart_sessions` |
+| 2 | Rute pe `sessionId`, nu pe r2Key/uploadId de la client | ✅ `sign`/`complete`/`abort` citesc totul din sesiune |
+| 3 | Validări în `sign` (există, pending/uploading, neexpirată, partNumber ∈ 1..N) | ✅ |
+| 4 | Validare bucăți ÎNAINTE de `complete` (count/consecutive/size/sumă) | ✅ |
+| 5 | Rezervare atomică a spațiului | ✅ funcție Postgres cu `FOR UPDATE` |
+| 6 | `complete` idempotent + index unic pe `r2_key` | ✅ |
+| 7 | Fără orfan dacă DB eșuează după finalizare | ✅ ștergere obiect / idempotent pe 23505 |
+| 8 | `abort` verifică sesiunea, marchează aborted, eliberează rezervarea | ✅ |
+| — | fără fallback single-PUT, 16MiB/3/8/3-retry, MIME+ext, index unic | ✅ păstrate |
+| 10 | Lifecycle R2 abort la 1–2 zile | ⚙️ **de setat în panoul Cloudflare** (nu cod) |
+| (9) | Galerie privată: URL semnat în loc de `public_url` | 🔷 task separat (arhitectura de vizualizare a întregii aplicații) |
+
+### 8.4 De rulat înainte ca ramura să funcționeze
+1. Rulează în Supabase (SQL Editor) migrarea `20260710130000_multipart_sessions.sql` **și** `20260710120000_uploads_r2key_unique.sql`.
+2. (Opțional, recomandat) În Cloudflare R2 → bucket → Settings, setează lifecycle „abort incomplete multipart uploads" la 1–2 zile.
+3. CORS R2: neschimbat (PUT + originea site-ului, deja configurate).
