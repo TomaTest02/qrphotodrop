@@ -8,16 +8,14 @@ import { HeadObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'nodejs';
 
-const ALLOWED_FILE_TYPES = ['photo', 'video'];
 const STORAGE_FULL = 'Storage limit exceeded for this event';
 
 export async function POST(request) {
   try {
-    const { r2Key, uploadId, eventCode, fileType, originalName } = await request.json();
+    const { r2Key, uploadId, eventCode, sizeBytes, originalName } = await request.json();
 
     if (!r2Key || !uploadId || !eventCode) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     if (!r2Key.startsWith('events/') || r2Key.includes('..')) return NextResponse.json({ error: 'Invalid r2Key format' }, { status: 400 });
-    if (fileType && !ALLOWED_FILE_TYPES.includes(fileType)) return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     if (!/^[a-zA-Z0-9]{6,12}$/.test(eventCode)) return NextResponse.json({ error: 'Invalid event code' }, { status: 400 });
 
     const supabase = createAdminClient();
@@ -51,7 +49,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Object not found after complete' }, { status: 400 });
     }
 
-    const isVideo = fileType === 'video';
+    // Tipul din cheie (videos/ vs photos/), setat la create din MIME — nu din client
+    const isVideo = r2Key.includes('/videos/');
+
+    // Integritate: dacă lipsesc bucăți, mărimea reală ≠ cea așteptată → NU accepta fișier incomplet
+    if (sizeBytes && actualSize !== Number(sizeBytes)) {
+      await deleteObject(r2Key).catch(() => {});
+      return NextResponse.json({ error: 'Upload incomplet — reîncearcă' }, { status: 400 });
+    }
+
     const MAX_SIZE = isVideo ? 2 * 1024 * 1024 * 1024 : 150 * 1024 * 1024;
     if (actualSize > MAX_SIZE) {
       await deleteObject(r2Key).catch(() => {});
@@ -75,12 +81,14 @@ export async function POST(request) {
       event_id: event.id,
       r2_key: r2Key,
       public_url: publicUrl,
-      file_type: fileType || 'video',
+      file_type: isVideo ? 'video' : 'photo',
       size_bytes: actualSize,
       original_name: safeOriginalName,
     }).select().single();
 
     if (error) {
+      // Nu lăsăm fișier orfan în R2 dacă inserarea în DB eșuează
+      await deleteObject(r2Key).catch(() => {});
       console.error('Multipart complete DB error:', error);
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }

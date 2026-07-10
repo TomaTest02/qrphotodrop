@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createMultipartUpload, R2_PART_SIZE } from '@/lib/r2';
+import { createMultipartUpload, R2_PART_SIZE, extForMime } from '@/lib/r2';
 import { v4 as uuidv4 } from 'uuid';
 
 export const runtime = 'nodejs';
@@ -13,7 +13,7 @@ const ALLOWED_MIME = [
 
 export async function POST(request) {
   try {
-    const { eventCode, contentType, fileType, sizeBytes = 0 } = await request.json();
+    const { eventCode, contentType, sizeBytes = 0 } = await request.json();
 
     if (!eventCode || !contentType || !sizeBytes) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -32,8 +32,9 @@ export async function POST(request) {
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     if (event.status !== 'active') return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
 
-    // Plafon per fișier (declarat; mărimea reală se verifică la complete)
-    const isVideo = fileType === 'video';
+    // Tipul îl derivăm din MIME (NU din ce zice clientul) → nu poate trimite
+    // fileType:video pentru o imagine sau invers.
+    const isVideo = contentType.startsWith('video/');
     const perFileMax = isVideo ? 1536 * 1024 * 1024 : 20 * 1024 * 1024; // video 1.5GB / poză 20MB
     if (sizeBytes > perFileMax) return NextResponse.json({ error: 'File too large' }, { status: 413 });
 
@@ -48,7 +49,7 @@ export async function POST(request) {
     const totalParts = Math.max(1, Math.ceil(sizeBytes / partSize));
     if (totalParts > 10000) return NextResponse.json({ error: 'File too large' }, { status: 413 });
 
-    const ext = contentType.split('/')[1] || 'bin';
+    const ext = extForMime(contentType);
     const folder = isVideo ? 'videos' : 'photos';
     const r2Key = `events/${event.id}/${folder}/${uuidv4()}.${ext}`;
 

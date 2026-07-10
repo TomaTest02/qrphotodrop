@@ -113,7 +113,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
 
     const completeRes = await fetch('/api/upload/multipart/complete', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ r2Key, uploadId, eventCode, fileType, originalName: file.name }),
+      body: JSON.stringify({ r2Key, uploadId, eventCode, sizeBytes: file.size, originalName: file.name }),
     });
     if (!completeRes.ok) {
       const e = await completeRes.json().catch(() => ({}));
@@ -365,17 +365,18 @@ export default function GuestUploadPage({ params }) {
       const onFrac = (frac) => setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
 
       // Fișiere mari → upload MULTIPART (bucăți paralele, retry, fără expirare).
-      // Dacă eșuează din orice motiv, cădem pe single-PUT (plasă de siguranță).
+      // NU cad pe single-PUT dacă eșuează — n-are rost să reîncărcăm 1.5GB dintr-o
+      // bucată (fragil). La eșec: rămâne necontat, iar userul reîncearcă.
       if (file.size > MULTIPART_THRESHOLD) {
         try {
           const res = await uploadMultipart(eventCode, file, fileType, onFrac);
           if (res === 'storageFull') { storageFull = true; break; }
           succeeded++;
-          setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
-          continue;
         } catch (err) {
-          console.error('Multipart failed, fallback to single PUT:', err);
+          console.error('Multipart failed:', err);
         }
+        setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+        continue;
       }
 
       try {
