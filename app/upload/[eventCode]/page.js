@@ -134,29 +134,48 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
 // ─── Limite de mărime — o SINGURĂ sursă de adevăr ────────────────────────────
 const MAX_PHOTO_BYTES = 20 * 1024 * 1024;        // 20 MB / poză
 const MAX_VIDEO_BYTES = 1536 * 1024 * 1024;      // 1.5 GB / clip
-const MAX_BATCH_BYTES = 2 * 1024 * 1024 * 1024;  // 2 GB total / o încărcare
+const MAX_PHOTOS = 20;                            // max poze / o încărcare
+const MAX_VIDEOS = 2;                             // max clipuri / o încărcare
 
-const sumBytes = (files) => files.reduce((s, f) => s + f.size, 0);
+const isVid = (f) => f.type.startsWith('video/');
+const isImg = (f) => f.type.startsWith('image/');
 
-// Împarte fișierele în acceptate / prea mari. FOLOSIT DE TOATE căile de selecție
-// (galerie, „Adaugă", drag & drop) ca să nu mai dispară fișiere în tăcere.
-function splitFiles(list) {
-  const valid = [];
+// Aplică limitele de MĂRIME și de NUMĂR (max 20 poze + 2 clipuri / încărcare).
+// FOLOSIT DE TOATE căile de selecție (galerie, „Adaugă", drag & drop).
+// `existing` = fișierele deja selectate (pentru „Adaugă"); [] la selecție nouă.
+function applyLimits(existing, incoming) {
+  let photos = existing.filter(isImg).length;
+  let videos = existing.filter(isVid).length;
+  const accepted = [];
   const tooBig = [];
-  for (const f of list) {
-    const isVideo = f.type.startsWith('video/');
-    const isImage = f.type.startsWith('image/');
-    if (!isVideo && !isImage) continue; // ignorăm ce nu e media
-    const max = isVideo ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES;
-    if (f.size > max) tooBig.push(f);
-    else valid.push(f);
+  let overPhotos = false;
+  let overVideos = false;
+  for (const f of incoming) {
+    const video = isVid(f), image = isImg(f);
+    if (!video && !image) continue; // ignorăm ce nu e media
+    if (f.size > (video ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES)) { tooBig.push(f); continue; }
+    if (video) {
+      if (videos >= MAX_VIDEOS) { overVideos = true; continue; }
+      videos++;
+    } else {
+      if (photos >= MAX_PHOTOS) { overPhotos = true; continue; }
+      photos++;
+    }
+    accepted.push(f);
   }
-  return { valid, tooBig };
+  return { accepted, tooBig, overPhotos, overVideos };
 }
 
-function tooBigMessage(files) {
-  const names = files.map(f => f.name).join(', ');
-  return `Prea mare, nu se poate încărca: ${names}. Limite: poze max 20MB, clipuri max 1.5GB.`;
+// Mesaj clar de ce nu s-au adăugat toate fișierele.
+function limitMessage({ tooBig, overPhotos, overVideos }) {
+  const parts = [];
+  if (overPhotos || overVideos) {
+    parts.push(`Poți încărca maxim ${MAX_PHOTOS} de poze și ${MAX_VIDEOS} clipuri odată. Restul nu au fost adăugate — le poți trimite într-o a doua încărcare.`);
+  }
+  if (tooBig.length) {
+    parts.push(`Prea mare, nu se poate încărca: ${tooBig.map((f) => f.name).join(', ')}. Limite: poze max 20MB, clipuri max 1.5GB.`);
+  }
+  return parts.join(' ');
 }
 
 // ─── Floating petals animation component ──────────────────────────────────────
@@ -214,7 +233,6 @@ export default function GuestUploadPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [rejectMsg, setRejectMsg] = useState('');
-  const [batchPopup, setBatchPopup] = useState(false);
   const [publicPhotos, setPublicPhotos] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -266,10 +284,10 @@ export default function GuestUploadPage({ params }) {
   }, [galleryPublic, loadEvent]);
 
   const handleFileSelect = (e) => {
-    const { valid, tooBig } = splitFiles(Array.from(e.target.files || []));
-    setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
-    if (valid.length > 0) {
-      setFiles(valid);
+    const { accepted, ...rej } = applyLimits([], Array.from(e.target.files || []));
+    setRejectMsg(limitMessage(rej));
+    if (accepted.length > 0) {
+      setFiles(accepted);
       setView('preview');
     }
   };
@@ -277,10 +295,10 @@ export default function GuestUploadPage({ params }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const { valid, tooBig } = splitFiles(Array.from(e.dataTransfer.files || []));
-    setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
-    if (valid.length > 0) {
-      setFiles(valid);
+    const { accepted, ...rej } = applyLimits([], Array.from(e.dataTransfer.files || []));
+    setRejectMsg(limitMessage(rej));
+    if (accepted.length > 0) {
+      setFiles(accepted);
       setView('preview');
     }
   };
@@ -292,11 +310,6 @@ export default function GuestUploadPage({ params }) {
   };
 
   const uploadFiles = async (filesToUpload) => {
-    // Plafon total per încărcare — pop-up care cere invitatului să trimită mai puține odată
-    if (sumBytes(filesToUpload) > MAX_BATCH_BYTES) {
-      setBatchPopup(true);
-      return;
-    }
     setView('uploading');
     setUploadTotal(filesToUpload.length);
     setUploadCurrent(0);
@@ -660,7 +673,7 @@ export default function GuestUploadPage({ params }) {
         </label>
       </div>
 
-      <p className={styles.fileNote}>Poze până la 20MB · Clipuri până la 1.5GB</p>
+      <p className={styles.fileNote}>Maxim 20 de poze și 2 clipuri odată · poze până la 20MB · clipuri până la 1.5GB</p>
     </PageShell>
   );
 
@@ -674,20 +687,6 @@ export default function GuestUploadPage({ params }) {
       </div>
 
       {rejectMsg && <div className={styles.rejectNote}>{rejectMsg}</div>}
-
-      {batchPopup && (
-        <div className={styles.modalOverlay} onClick={() => setBatchPopup(false)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalIcon}><CloudArrowUp size={30} weight="light" /></div>
-            <h3 className={styles.modalTitle}>Prea multe fișiere odată</h3>
-            <p className={styles.modalText}>
-              Ai selectat peste 2GB într-un singur upload. Te rugăm încarcă mai puține fișiere odată
-              (sub 2GB) — se încarcă mai repede și mai sigur. Poți trimite restul imediat după, într-un al doilea upload.
-            </p>
-            <button className={styles.modalBtn} onClick={() => setBatchPopup(false)}>Am înțeles</button>
-          </div>
-        </div>
-      )}
 
       <div className={styles.previewGrid}>
         {files.map((file, idx) => (
@@ -706,9 +705,9 @@ export default function GuestUploadPage({ params }) {
             accept="image/*,video/*"
             multiple
             onChange={(e) => {
-              const { valid, tooBig } = splitFiles(Array.from(e.target.files || []));
-              setRejectMsg(tooBig.length ? tooBigMessage(tooBig) : '');
-              if (valid.length > 0) setFiles(prev => [...prev, ...valid]);
+              const { accepted, ...rej } = applyLimits(files, Array.from(e.target.files || []));
+              setRejectMsg(limitMessage(rej));
+              if (accepted.length > 0) setFiles(prev => [...prev, ...accepted]);
             }}
             style={{ display: 'none' }}
           />
