@@ -607,10 +607,9 @@ export default function GuestUploadPage({ params }) {
       <div className={styles.infoNote}>
         <CloudArrowUp size={18} weight="light" />
         <span>
-          <strong>Un moment de răbdare la clipuri.</strong> După ce selectezi fișierele și apeși
-          pe bifa de confirmare, așteaptă câteva secunde până se încarcă pe serverele noastre —
-          videoclipurile sunt mai mari și pot dura puțin. Te rugăm să nu apeși de mai multe ori;
-          încărcarea continuă automat.
+          <strong>Maxim 20 de poze și 2 clipuri video per încărcare.</strong> Ai mai multe? Le poți
+          trimite într-o a doua încărcare. La clipuri, după ce apeși confirmare, așteaptă câteva
+          secunde până se urcă — nu apăsa de mai multe ori, încărcarea continuă automat.
         </span>
       </div>
 
