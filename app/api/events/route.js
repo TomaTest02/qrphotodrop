@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getSettings, num, uploadsPaused } from '@/lib/settings';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -21,12 +22,22 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  // Flag global admin: dacă galeria publică e dezactivată global, o forțăm off la toate conturile
-  const { data: setting } = await supabase.from('app_settings').select('value').eq('key', 'public_gallery_enabled').maybeSingle();
-  const galleryEnabled = setting ? setting.value === 'true' : true;
+  // Setări globale (un singur query): galerie publică, pauză upload, limite.
+  const settings = await getSettings(supabase);
+  const galleryEnabled = settings.public_gallery_enabled === 'true';
   const showGallery = !!event.is_gallery_public && galleryEnabled;
   // Reflectăm starea EFECTIVĂ (pagina de upload oprește polling-ul + ascunde galeria dacă e off)
   event.is_gallery_public = showGallery;
+
+  // Pauză upload globală + limite — pagina de upload le folosește pentru UX
+  // (impunerea reală se face oricum server-side în rutele /api/upload/*).
+  event.uploadsPaused = uploadsPaused(settings);
+  event.limits = {
+    maxPhotoMb: num(settings, 'max_photo_mb'),
+    maxVideoMb: num(settings, 'max_video_mb'),
+    maxPhotos: num(settings, 'max_photos_per_upload'),
+    maxVideos: num(settings, 'max_videos_per_upload'),
+  };
 
   let photos = [];
   if (showGallery) {

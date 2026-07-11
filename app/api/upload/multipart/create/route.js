@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createMultipartUpload, abortMultipartUpload, R2_PART_SIZE, extForMime } from '@/lib/r2';
+import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { v4 as uuidv4 } from 'uuid';
 
 export const runtime = 'nodejs';
@@ -38,10 +39,14 @@ export async function POST(request) {
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     if (event.status !== 'active') return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
 
+    // Setări globale: pauză upload + limită configurabilă de mărime
+    const settings = await getSettings(supabase);
+    if (uploadsPaused(settings)) {
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+    }
     // Tipul îl derivăm din MIME (NU din client)
     const isVideo = contentType.startsWith('video/');
-    const perFileMax = isVideo ? 1536 * 1024 * 1024 : 20 * 1024 * 1024; // video 1.5GB / poză 20MB
-    if (size > perFileMax) return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    if (size > maxBytesFor(settings, isVideo)) return NextResponse.json({ error: 'File too large' }, { status: 413 });
 
     const partSize = R2_PART_SIZE;
     const totalParts = Math.max(1, Math.ceil(size / partSize));

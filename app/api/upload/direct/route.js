@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { r2Client, getPublicUrl } from '@/lib/r2';
+import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -55,6 +56,15 @@ export async function POST(request) {
 
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     if (event.status !== 'active') return NextResponse.json({ error: 'Event not active' }, { status: 403 });
+
+    // Setări globale: pauză upload + limită configurabilă de mărime
+    const settings = await getSettings(supabase);
+    if (uploadsPaused(settings)) {
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+    }
+    if (file.size > maxBytesFor(settings, isVideo)) {
+      return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
+    }
 
     // Verificam storage
     const { data: uploadStats } = await supabase

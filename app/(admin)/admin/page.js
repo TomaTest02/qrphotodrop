@@ -1,5 +1,6 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import styles from './admin.module.css';
+import { getSettings, num } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,12 @@ export default async function AdminDashboard() {
   const unpaidActive = accounts.filter((a) => a.event_id && a.payment_status !== 'paid').length;
 
   const storageTotal = accounts.reduce((s, a) => s + Number(a.storage_used || 0), 0);
+
+  // Alertă stocare R2 (prag configurabil din setări)
+  const settings = await getSettings();
+  const storageAlertGb = num(settings, 'storage_alert_gb');
+  const storageTotalGb = storageTotal / GB;
+  const storageOver = storageTotalGb >= storageAlertGb;
   const totalPhotos = accounts.reduce((s, a) => s + Number(a.photo_count || 0), 0);
   const totalVideos = accounts.reduce((s, a) => s + Number(a.video_count || 0), 0);
   const activeEvents = accounts.filter((a) => a.event_id && a.event_status === 'active').length;
@@ -100,6 +107,13 @@ export default async function AdminDashboard() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Dashboard Admin</h1>
+
+      {storageOver && (
+        <div style={{ background: '#fffbeb', border: '1px solid #d97706', color: '#92400e', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', fontSize: '14px', fontWeight: 600 }}>
+          ⚠️ Stocare R2: <strong>{storageTotalGb.toFixed(1)} GB</strong> — a depășit pragul de alertă de {storageAlertGb} GB.
+          {' '}Verifică <a href="/admin/setari" style={{ color: '#92400e', textDecoration: 'underline' }}>setările de retenție</a> pentru a reduce costul.
+        </div>
+      )}
 
       {/* Stats */}
       <div className={styles.statsGrid}>

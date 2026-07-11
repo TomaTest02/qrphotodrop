@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPresignedUploadUrl } from '@/lib/r2';
+import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
@@ -34,6 +35,16 @@ export async function POST(request) {
 
     if (event.status !== 'active') {
       return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
+    }
+
+    // Setări globale: pauză upload + limită configurabilă de mărime
+    const settings = await getSettings(supabase);
+    if (uploadsPaused(settings)) {
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+    }
+    const isVideo = fileType === 'video' || contentType.startsWith('video/');
+    if (Number(sizeBytes) > maxBytesFor(settings, isVideo)) {
+      return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
 
     // Check storage limits

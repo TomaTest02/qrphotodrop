@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { deleteObject } from '@/lib/r2';
+import { getSettings, num } from '@/lib/settings';
 
-// Retenție per nivel (luni după data evenimentului)
-const TIER_MONTHS = { intim: 1, complet: 2, vis: 3 };
-
-function isExpired(ev) {
+function isExpired(ev, tierMonths) {
   let expiry;
   if (ev.expires_at) {
     expiry = new Date(ev.expires_at);
   } else if (ev.event_date) {
     expiry = new Date(ev.event_date);
-    expiry.setMonth(expiry.getMonth() + (TIER_MONTHS[ev.package_tier] || 3));
+    expiry.setMonth(expiry.getMonth() + (tierMonths[ev.package_tier] ?? 3));
   } else {
     return false;
   }
@@ -27,6 +25,14 @@ export async function GET(request) {
 
   const admin = createAdminClient();
 
+  // Retenție per nivel (luni după data evenimentului) — configurabilă din admin
+  const settings = await getSettings(admin);
+  const tierMonths = {
+    intim: num(settings, 'retention_months_intim'),
+    complet: num(settings, 'retention_months_complet'),
+    vis: num(settings, 'retention_months_vis'),
+  };
+
   // Evenimente care nu sunt deja marcate ca expirate
   const { data: events, error } = await admin
     .from('events')
@@ -38,7 +44,7 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Database error' }, { status: 500 });
   }
 
-  const expired = (events || []).filter(isExpired);
+  const expired = (events || []).filter((ev) => isExpired(ev, tierMonths));
   let deletedFiles = 0;
   let processedEvents = 0;
   const r2Errors = [];

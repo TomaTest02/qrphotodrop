@@ -131,19 +131,28 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
   }
 }
 
-// ─── Limite de mărime — o SINGURĂ sursă de adevăr ────────────────────────────
-const MAX_PHOTO_BYTES = 20 * 1024 * 1024;        // 20 MB / poză
-const MAX_VIDEO_BYTES = 1536 * 1024 * 1024;      // 1.5 GB / clip
-const MAX_PHOTOS = 20;                            // max poze / o încărcare
-const MAX_VIDEOS = 2;                             // max clipuri / o încărcare
+// ─── Limite de mărime — valori IMPLICITE (suprascrise de setările globale) ─────
+const DEFAULT_LIMITS = {
+  maxPhotoBytes: 20 * 1024 * 1024,      // 20 MB / poză
+  maxVideoBytes: 1536 * 1024 * 1024,    // 1.5 GB / clip
+  maxPhotos: 20,                        // max poze / o încărcare
+  maxVideos: 2,                         // max clipuri / o încărcare
+};
+
+const mb = (bytes) => Math.round(bytes / (1024 * 1024));
+// Etichetă prietenoasă: 1536MB → „1.5GB", 800MB → „800MB"
+const sizeLabel = (bytes) => {
+  const m = mb(bytes);
+  return m >= 1024 ? `${+(m / 1024).toFixed(m % 1024 ? 1 : 0)}GB` : `${m}MB`;
+};
 
 const isVid = (f) => f.type.startsWith('video/');
 const isImg = (f) => f.type.startsWith('image/');
 
-// Aplică limitele de MĂRIME și de NUMĂR (max 20 poze + 2 clipuri / încărcare).
+// Aplică limitele de MĂRIME și de NUMĂR (configurabile din admin).
 // FOLOSIT DE TOATE căile de selecție (galerie, „Adaugă", drag & drop).
 // `existing` = fișierele deja selectate (pentru „Adaugă"); [] la selecție nouă.
-function applyLimits(existing, incoming) {
+function applyLimits(existing, incoming, lim = DEFAULT_LIMITS) {
   let photos = existing.filter(isImg).length;
   let videos = existing.filter(isVid).length;
   const accepted = [];
@@ -153,12 +162,12 @@ function applyLimits(existing, incoming) {
   for (const f of incoming) {
     const video = isVid(f), image = isImg(f);
     if (!video && !image) continue; // ignorăm ce nu e media
-    if (f.size > (video ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES)) { tooBig.push(f); continue; }
+    if (f.size > (video ? lim.maxVideoBytes : lim.maxPhotoBytes)) { tooBig.push(f); continue; }
     if (video) {
-      if (videos >= MAX_VIDEOS) { overVideos = true; continue; }
+      if (videos >= lim.maxVideos) { overVideos = true; continue; }
       videos++;
     } else {
-      if (photos >= MAX_PHOTOS) { overPhotos = true; continue; }
+      if (photos >= lim.maxPhotos) { overPhotos = true; continue; }
       photos++;
     }
     accepted.push(f);
@@ -167,13 +176,13 @@ function applyLimits(existing, incoming) {
 }
 
 // Mesaj clar de ce nu s-au adăugat toate fișierele.
-function limitMessage({ tooBig, overPhotos, overVideos }) {
+function limitMessage({ tooBig, overPhotos, overVideos }, lim = DEFAULT_LIMITS) {
   const parts = [];
   if (overPhotos || overVideos) {
-    parts.push(`Poți încărca maxim ${MAX_PHOTOS} de poze și ${MAX_VIDEOS} clipuri odată. Restul nu au fost adăugate — le poți trimite într-o a doua încărcare.`);
+    parts.push(`Poți încărca maxim ${lim.maxPhotos} de poze și ${lim.maxVideos} clipuri odată. Restul nu au fost adăugate — le poți trimite într-o a doua încărcare.`);
   }
   if (tooBig.length) {
-    parts.push(`Prea mare, nu se poate încărca: ${tooBig.map((f) => f.name).join(', ')}. Limite: poze max 20MB, clipuri max 1.5GB.`);
+    parts.push(`Prea mare, nu se poate încărca: ${tooBig.map((f) => f.name).join(', ')}. Limite: poze max ${sizeLabel(lim.maxPhotoBytes)}, clipuri max ${sizeLabel(lim.maxVideoBytes)}.`);
   }
   return parts.join(' ');
 }
@@ -239,6 +248,14 @@ export default function GuestUploadPage({ params }) {
 
   const isDemo = eventCode?.toUpperCase() === 'DEMO';
 
+  // Limite efective: din setările globale (payload eveniment) sau valorile implicite.
+  const lim = event?.limits ? {
+    maxPhotoBytes: (event.limits.maxPhotoMb ?? 20) * 1024 * 1024,
+    maxVideoBytes: (event.limits.maxVideoMb ?? 1536) * 1024 * 1024,
+    maxPhotos: event.limits.maxPhotos ?? 20,
+    maxVideos: event.limits.maxVideos ?? 2,
+  } : DEFAULT_LIMITS;
+
   const loadEvent = useCallback(() => {
     // Nu interogăm serverul când tab-ul e ascuns — economisim invocări (Vercel free).
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -284,8 +301,8 @@ export default function GuestUploadPage({ params }) {
   }, [galleryPublic, loadEvent]);
 
   const handleFileSelect = (e) => {
-    const { accepted, ...rej } = applyLimits([], Array.from(e.target.files || []));
-    setRejectMsg(limitMessage(rej));
+    const { accepted, ...rej } = applyLimits([], Array.from(e.target.files || []), lim);
+    setRejectMsg(limitMessage(rej, lim));
     if (accepted.length > 0) {
       setFiles(accepted);
       setView('preview');
@@ -295,8 +312,8 @@ export default function GuestUploadPage({ params }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const { accepted, ...rej } = applyLimits([], Array.from(e.dataTransfer.files || []));
-    setRejectMsg(limitMessage(rej));
+    const { accepted, ...rej } = applyLimits([], Array.from(e.dataTransfer.files || []), lim);
+    setRejectMsg(limitMessage(rej, lim));
     if (accepted.length > 0) {
       setFiles(accepted);
       setView('preview');
@@ -536,14 +553,24 @@ export default function GuestUploadPage({ params }) {
         )}
 
         <div className={styles.landingActions}>
-          <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
-            <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
-            <div className={styles.actionCardBody}>
-              <strong>Trimite poze & videoclipuri</strong>
-              <span>Din galerie sau direct cu camera</span>
+          {event?.uploadsPaused && !isDemo ? (
+            <div className={styles.actionCardPrimary} style={{ cursor: 'default', opacity: 0.9 }}>
+              <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
+              <div className={styles.actionCardBody}>
+                <strong>Încărcările sunt momentan în pauză</strong>
+                <span>Revenim în scurt timp — încearcă puțin mai târziu. 💛</span>
+              </div>
             </div>
-            <span className={styles.actionCardArrow}>→</span>
-          </button>
+          ) : (
+            <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
+              <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
+              <div className={styles.actionCardBody}>
+                <strong>Trimite poze & videoclipuri</strong>
+                <span>Din galerie sau direct cu camera</span>
+              </div>
+              <span className={styles.actionCardArrow}>→</span>
+            </button>
+          )}
 
           <button className={styles.actionCardSecondary} onClick={() => setView('wish')}>
             <div className={styles.actionCardIcon}><Envelope size={26} weight="light" /></div>
@@ -607,7 +634,7 @@ export default function GuestUploadPage({ params }) {
       <div className={styles.infoNote}>
         <CloudArrowUp size={18} weight="light" />
         <span>
-          <strong>Maxim 20 de poze și 2 clipuri video per încărcare.</strong> Ai mai multe? Le poți
+          <strong>Maxim {lim.maxPhotos} de poze și {lim.maxVideos} clipuri video per încărcare.</strong> Ai mai multe? Le poți
           trimite într-o a doua încărcare. La clipuri, după ce apeși confirmare, așteaptă câteva
           secunde până se urcă — nu apăsa de mai multe ori, încărcarea continuă automat.
         </span>
@@ -672,7 +699,7 @@ export default function GuestUploadPage({ params }) {
         </label>
       </div>
 
-      <p className={styles.fileNote}>Maxim 20 de poze și 2 clipuri odată · poze până la 20MB · clipuri până la 1.5GB</p>
+      <p className={styles.fileNote}>Maxim {lim.maxPhotos} de poze și {lim.maxVideos} clipuri odată · poze până la {sizeLabel(lim.maxPhotoBytes)} · clipuri până la {sizeLabel(lim.maxVideoBytes)}</p>
     </PageShell>
   );
 
@@ -704,8 +731,8 @@ export default function GuestUploadPage({ params }) {
             accept="image/*,video/*"
             multiple
             onChange={(e) => {
-              const { accepted, ...rej } = applyLimits(files, Array.from(e.target.files || []));
-              setRejectMsg(limitMessage(rej));
+              const { accepted, ...rej } = applyLimits(files, Array.from(e.target.files || []), lim);
+              setRejectMsg(limitMessage(rej, lim));
               if (accepted.length > 0) setFiles(prev => [...prev, ...accepted]);
             }}
             style={{ display: 'none' }}
