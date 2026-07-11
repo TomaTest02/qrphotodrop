@@ -11,7 +11,6 @@ function isAllowedHost(hostname) {
   return (
     h === 'qrphotodrop.com' ||
     h.endsWith('.qrphotodrop.com') ||
-    h.endsWith('.r2.dev') ||
     allowed.includes(h)
   );
 }

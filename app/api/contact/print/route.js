@@ -3,7 +3,7 @@ import { sendContactForm } from '@/lib/resend';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-const ALLOWED_DESIGNS = ['Classic Burgundy', 'Cream Elegant', 'Gold Minimalist'];
+const ALLOWED_DESIGNS = ['Boho Pampas', 'Floral Roz', 'Negru & Auriu', 'Auriu Elegant', 'Verde Botanic'];
 
 export async function POST(request) {
   try {
