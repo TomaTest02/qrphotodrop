@@ -14,13 +14,18 @@ const ALLOWED_MIME = [
 
 export async function POST(request) {
   try {
-    const { eventCode, contentType, sizeBytes = 0 } = await request.json();
+    const { eventCode, contentType, sizeBytes } = await request.json();
 
-    if (!eventCode || !contentType || !sizeBytes) {
+    if (!eventCode || !contentType) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
     if (!ALLOWED_MIME.includes(contentType)) {
       return NextResponse.json({ error: 'Tip de fișier nepermis' }, { status: 415 });
+    }
+    // Validare strictă a mărimii declarate (endpoint public — nu avem încredere în client)
+    const size = Number(sizeBytes);
+    if (!Number.isSafeInteger(size) || size <= 0) {
+      return NextResponse.json({ error: 'Invalid file size' }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -36,10 +41,10 @@ export async function POST(request) {
     // Tipul îl derivăm din MIME (NU din client)
     const isVideo = contentType.startsWith('video/');
     const perFileMax = isVideo ? 1536 * 1024 * 1024 : 20 * 1024 * 1024; // video 1.5GB / poză 20MB
-    if (sizeBytes > perFileMax) return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    if (size > perFileMax) return NextResponse.json({ error: 'File too large' }, { status: 413 });
 
     const partSize = R2_PART_SIZE;
-    const totalParts = Math.max(1, Math.ceil(sizeBytes / partSize));
+    const totalParts = Math.max(1, Math.ceil(size / partSize));
     if (totalParts > 10000) return NextResponse.json({ error: 'File too large' }, { status: 413 });
 
     const ext = extForMime(contentType);
@@ -56,7 +61,7 @@ export async function POST(request) {
       p_event_id: event.id,
       p_r2_key: r2Key,
       p_upload_id: uploadId,
-      p_expected_size: sizeBytes,
+      p_expected_size: size,
       p_part_size: partSize,
       p_total_parts: totalParts,
       p_expires_at: expiresAt,
