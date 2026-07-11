@@ -94,7 +94,7 @@ export default function Navbar() {
               Contact
             </a>
 
-            <a href="/login" className={styles.cta}>
+            <a href="/dashboard/evenimentul-meu" className={styles.cta}>
               Accesează Aplicația
             </a>
           </div>
@@ -137,7 +137,7 @@ export default function Navbar() {
         <a href="/contact" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
           Contact
         </a>
-        <a href="/login" className={styles.cta} onClick={() => setMobileOpen(false)}>
+        <a href="/dashboard/evenimentul-meu" className={styles.cta} onClick={() => setMobileOpen(false)}>
           Accesează Aplicația
         </a>
       </div>
