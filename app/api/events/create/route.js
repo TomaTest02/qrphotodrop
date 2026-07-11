@@ -12,6 +12,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 });
     }
 
+    // Doar conturile APROBATE (active) pot crea evenimente — nu ocolim aprobarea manuală.
+    const { data: profile } = await createAdminClient()
+      .from('users').select('status').eq('id', user.id).single();
+    if (profile?.status !== 'active') {
+      return NextResponse.json({ error: 'Contul tău nu este activ încă.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       eventName,
@@ -20,7 +27,6 @@ export async function POST(request) {
       coupleNames,
       location,
       maxGuests,
-      maxStorageBytes,
       packageType,
       packageTier,
     } = body;
@@ -46,10 +52,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Data invalidă' }, { status: 400 });
     }
 
-    // Limitele de stocare per nivel: Basic / Standard / Premium (GB)
+    // Whitelist pachet + stocare derivată pe SERVER (niciodată din client)
     const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
-    const allowedGB = STORAGE_LIMITS[packageTier] || 75;
-    const safMaxStorageBytes = allowedGB * 1024 * 1024 * 1024;
+    const tier = STORAGE_LIMITS[packageTier] ? packageTier : 'intim';
+    const safMaxStorageBytes = STORAGE_LIMITS[tier] * 1024 * 1024 * 1024;
 
     // Verificam ca userul nu are deja un eveniment activ (un cont = un eveniment)
     const { data: existingEvent } = await createAdminClient()
@@ -82,7 +88,7 @@ export async function POST(request) {
         max_guests: Math.min(maxGuests || 100, 1000),
         max_storage_bytes: safMaxStorageBytes,
         package_type: packageType || eventType,
-        package_tier: packageTier || 'complet',
+        package_tier: tier,
       })
       .select('*')
       .single();
