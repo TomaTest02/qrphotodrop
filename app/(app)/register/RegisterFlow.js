@@ -68,6 +68,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referrerName, setReferrerName] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -81,6 +82,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
     if (!eventDate) { setError('Completează data evenimentului.'); return; }
     if (password !== confirmPassword) { setError('Parolele nu se potrivesc.'); return; }
     if (password.length < 6) { setError('Parola trebuie să aibă minim 6 caractere.'); return; }
+    if (!acceptedTerms) { setError('Trebuie să accepți Termenii și Condițiile pentru a continua.'); return; }
 
     setLoading(true);
     const supabase = createClient();
@@ -235,7 +237,22 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
               <input className={styles.input} type="text" value={referrerName} onChange={(e) => setReferrerName(e.target.value)} placeholder="Ex: Mariana Events" />
             </div>
           )}
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '14px', lineHeight: 1.55, cursor: 'pointer', margin: '2px 0 4px' }}>
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, cursor: 'pointer' }}
+            />
+            <span>
+              Am citit și accept{' '}
+              <a href="/termeni" target="_blank" rel="noopener noreferrer" className={styles.helpLink}>
+                Termenii și Condițiile
+              </a>{' '}
+              și înțeleg că serviciul este furnizat „ca atare", pe propriul meu risc.
+            </span>
+          </label>
+          <button type="submit" className={styles.submitBtn} disabled={loading || !acceptedTerms}>
             {loading ? 'Se trimite cererea...' : 'Trimite cererea'}
           </button>
         </form>

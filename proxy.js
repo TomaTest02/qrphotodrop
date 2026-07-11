@@ -45,6 +45,7 @@ export async function proxy(request) {
     '/preturi',
     '/contact',
     '/blog',
+    '/termeni',
     '/forgot-password',
     '/reset-password',
     '/prezentare',     // landing de prezentare pentru vânzări (link direct, nu în navbar)

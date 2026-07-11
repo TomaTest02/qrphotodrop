@@ -1,0 +1,92 @@
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 120px 24px 96px;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 700;
+  color: var(--color-text, #1a1a1a);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.meta {
+  font-size: 0.95rem;
+  color: var(--color-text-muted, #777);
+  margin: 0 0 32px;
+}
+
+/* Casetă evidențiată pentru clauzele-cheie de răspundere */
+.disclaimer {
+  background: var(--color-burgundy-pale, #fdf2f4);
+  border: 1px solid var(--color-burgundy, #8a1f3d);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 0 0 40px;
+}
+
+.disclaimer p {
+  margin: 0;
+  color: var(--color-burgundy, #8a1f3d);
+  font-size: 0.98rem;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.section {
+  margin: 0 0 32px;
+}
+
+.h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text, #1a1a1a);
+  margin: 0 0 12px;
+}
+
+.section p {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-text-secondary, #3a3a3a);
+  margin: 0 0 12px;
+}
+
+.section ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.section li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary, #3a3a3a);
+  margin: 0 0 8px;
+}
+
+.section strong {
+  color: var(--color-text, #1a1a1a);
+}
+
+.placeholder {
+  background: #fff8e1;
+  border: 1px dashed #d4a017;
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: #8a6d1f;
+  font-size: 0.92rem;
+}
+
+.contact {
+  margin-top: 8px;
+  padding: 20px 24px;
+  background: var(--color-bg-soft, #f7f5f2);
+  border-radius: 14px;
+}
+
+.contact a {
+  color: var(--color-burgundy, #8a1f3d);
+  text-decoration: none;
+  font-weight: 600;
+}

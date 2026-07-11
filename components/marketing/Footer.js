@@ -36,7 +36,7 @@ export default function Footer() {
           <div>
             <p className={styles.heading}>Legal</p>
             <div className={styles.linkList}>
-              <a href="#" className={styles.linkItem}>Termeni și condiții</a>
+              <a href="/termeni" className={styles.linkItem}>Termeni și condiții</a>
               <a href="#" className={styles.linkItem}>Politica de cookies</a>
               <a href="#" className={styles.linkItem}>Confidențialitate</a>
             </div>
