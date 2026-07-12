@@ -126,7 +126,8 @@ export default function TermeniPage() {
           <li>deții toate drepturile necesare asupra conținutului încărcat sau colectat și că acesta nu încalcă drepturi de autor, mărci sau alte drepturi ale terților;</li>
           <li>ai obținut <strong>consimțământul persoanelor</strong> care apar în fotografii și clipuri pentru colectarea și afișarea acestora, conform legislației aplicabile;</li>
           <li>conținutul nu este ilegal, defăimător, obscen, ofensator și nu încalcă drepturile sau demnitatea vreunei persoane;</li>
-          <li>vei informa invitații cu privire la modul în care sunt colectate și folosite fotografiile lor.</li>
+          <li>vei informa invitații cu privire la modul în care sunt colectate și folosite fotografiile lor;</li>
+          <li><strong>promovarea evenimentului către invitați îți revine exclusiv ție</strong> — afișarea codului QR/link-ului, anunțarea invitaților și încurajarea lor să încarce poze și clipuri. QRPhotoDrop pune la dispoziție platforma, dar nu garantează și nu influențează câți invitați încarcă conținut.</li>
         </ul>
         <p>
           Ne rezervăm dreptul, fără a avea însă obligația, de a elimina orice conținut care
@@ -221,6 +222,13 @@ export default function TermeniPage() {
           Accesul la anumite funcționalități depinde de pachetul ales. Detaliile privind
           prețurile și modalitatea de plată sunt comunicate separat. Cu excepția cazurilor
           prevăzute expres de lege, sumele achitate nu sunt rambursabile.
+        </p>
+        <p>
+          Prețul acoperă accesul la Serviciu (pagina evenimentului, codul QR și spațiul de
+          stocare al pachetului), <strong>nu un rezultat garantat</strong>. Câte poze sau clipuri
+          încarcă invitații depinde exclusiv de modul în care îți promovezi evenimentul.
+          <strong> Participarea redusă sau lipsa încărcărilor din partea invitaților NU constituie
+          motiv de rambursare</strong>, atât timp cât platforma a fost disponibilă și funcțională.
         </p>
       </section>
 
