@@ -28,11 +28,9 @@ export default function TermeniPage() {
         <h2 className={styles.h2}>1. Cine suntem</h2>
         <p>
           Platforma QRPhotoDrop (denumită în continuare „Platforma", „Serviciul" sau
-          „QRPhotoDrop"), disponibilă la adresa qrphotodrop.com, este operată de{' '}
-          <span className={styles.placeholder}>
-            [de completat: denumire legală firmă / PFA, CUI, sediu social]
-          </span>{' '}
-          (denumit în continuare „Operatorul", „noi").
+          „QRPhotoDrop"), disponibilă la adresa qrphotodrop.com, este operată de echipa
+          QRPhotoDrop (denumită în continuare „Operatorul", „noi"), care poate fi
+          contactată la qrphotodrop@gmail.com.
         </p>
         <p>
           Acești Termeni și Condiții („Termenii") reglementează relația dintre Operator și
