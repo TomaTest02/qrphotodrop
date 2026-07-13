@@ -248,6 +248,11 @@ export default function GuestUploadPage({ params }) {
 
   const isDemo = eventCode?.toUpperCase() === 'DEMO';
 
+  // Evenimentul nu mai primește conținut (cont suspendat, eveniment oprit sau expirat).
+  // Serverul refuză oricum și upload-urile, și urările — deci îi spunem invitatului CLAR
+  // din start, în loc să-l lăsăm să aleagă poze și să aștepte un upload care va eșua.
+  const eventInactiv = !isDemo && !!event && event.status !== 'active';
+
   // Limite efective: din setările globale (payload eveniment) sau valorile implicite.
   const lim = event?.limits ? {
     maxPhotoBytes: (event.limits.maxPhotoMb ?? 20) * 1024 * 1024,
@@ -387,6 +392,7 @@ export default function GuestUploadPage({ params }) {
     const STORAGE_FULL = 'Storage limit exceeded for this event';
     let succeeded = 0;
     let storageFull = false;
+    let motivServer = ''; // motivul REAL trimis de server (ex. eveniment inactiv)
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       setUploadCurrent(i + 1);
@@ -439,6 +445,11 @@ export default function GuestUploadPage({ params }) {
         succeeded++;
       } catch (err) {
         console.error('Upload presigned error:', err);
+        // Reținem motivul REAL de la server (ex. „Evenimentul nu mai este activ"),
+        // ca să nu-i spunem invitatului „verifică conexiunea" când n-are legătură.
+        if (!motivServer && err?.message && err.message !== 'Sign failed' && err.message !== 'Confirm failed') {
+          motivServer = err.message;
+        }
         // Fallback: fișiere mici (≤4MB) pot merge prin funcție dacă presigned/CORS eșuează
         if (file.size <= 4 * 1024 * 1024) {
           try {
@@ -464,10 +475,20 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
-    // Feedback onest: nu declarăm succes dacă în realitate au eșuat fișiere.
+    // Feedback onest: nu declarăm succes dacă în realitate au eșuat fișiere,
+    // și spunem MOTIVUL REAL (nu „verifică conexiunea" când evenimentul e oprit).
     if (succeeded === 0) {
-      alert('Nu am putut încărca fișierele. Verifică conexiunea și încearcă din nou.');
-      setView('mediaChoice');
+      const eInactiv = /nu mai este activ|not active|inactive|expirat|expired|410/i.test(motivServer);
+      if (eInactiv) {
+        alert('Acest eveniment nu mai primește conținut. Încărcarea a fost oprită de organizator.');
+        loadEvent(); // reîmprospătăm statusul → landing-ul va afișa mesajul corect
+        setView('landing');
+      } else {
+        alert(motivServer
+          ? `Nu am putut încărca fișierele. ${motivServer}`
+          : 'Nu am putut încărca fișierele. Verifică conexiunea și încearcă din nou.');
+        setView('mediaChoice');
+      }
       return;
     }
     if (succeeded < filesToUpload.length) {
@@ -503,9 +524,22 @@ export default function GuestUploadPage({ params }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...wishForm, eventCode }),
       });
-      if (!res.ok) throw new Error('wish failed');
+      if (!res.ok) {
+        // Motivul real de la server (ex. evenimentul nu mai e activ), nu unul generic
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || 'wish failed');
+      }
       setView('wishSuccess');
-    } catch { alert('Eroare la trimitere. Încearcă din nou.'); }
+    } catch (err) {
+      const motiv = err?.message && err.message !== 'wish failed' ? err.message : '';
+      if (/nu mai este activ|not active|inactive/i.test(motiv)) {
+        alert('Acest eveniment nu mai primește urări.');
+        loadEvent();
+        setView('landing');
+      } else {
+        alert(motiv ? `Eroare la trimitere. ${motiv}` : 'Eroare la trimitere. Încearcă din nou.');
+      }
+    }
     setLoading(false);
   };
 
@@ -553,33 +587,46 @@ export default function GuestUploadPage({ params }) {
         )}
 
         <div className={styles.landingActions}>
-          {event?.uploadsPaused && !isDemo ? (
+          {/* Evenimentul e închis → nici upload, nici urare. Spunem de ce, din start. */}
+          {eventInactiv ? (
             <div className={styles.actionCardPrimary} style={{ cursor: 'default', opacity: 0.9 }}>
-              <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
+              <div className={styles.actionCardIcon}><Lock size={26} weight="light" /></div>
               <div className={styles.actionCardBody}>
-                <strong>Încărcările sunt momentan în pauză</strong>
-                <span>Revenim în scurt timp — încearcă puțin mai târziu. 💛</span>
+                <strong>Acest eveniment nu mai primește conținut</strong>
+                <span>Încărcarea pozelor și trimiterea urărilor au fost oprite. Contactează organizatorul pentru detalii.</span>
               </div>
             </div>
           ) : (
-            <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
-              <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
-              <div className={styles.actionCardBody}>
-                <strong>Trimite poze & videoclipuri</strong>
-                <span>Din galerie sau direct cu camera</span>
-              </div>
-              <span className={styles.actionCardArrow}>→</span>
-            </button>
-          )}
+            <>
+              {event?.uploadsPaused && !isDemo ? (
+                <div className={styles.actionCardPrimary} style={{ cursor: 'default', opacity: 0.9 }}>
+                  <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
+                  <div className={styles.actionCardBody}>
+                    <strong>Încărcările sunt momentan în pauză</strong>
+                    <span>Revenim în scurt timp — încearcă puțin mai târziu. 💛</span>
+                  </div>
+                </div>
+              ) : (
+                <button className={styles.actionCardPrimary} onClick={() => setView('mediaChoice')}>
+                  <div className={styles.actionCardIcon}><Camera size={26} weight="light" /></div>
+                  <div className={styles.actionCardBody}>
+                    <strong>Trimite poze & videoclipuri</strong>
+                    <span>Din galerie sau direct cu camera</span>
+                  </div>
+                  <span className={styles.actionCardArrow}>→</span>
+                </button>
+              )}
 
-          <button className={styles.actionCardSecondary} onClick={() => setView('wish')}>
-            <div className={styles.actionCardIcon}><Envelope size={26} weight="light" /></div>
-            <div className={styles.actionCardBody}>
-              <strong>Scrie o urare</strong>
-              <span>Un mesaj din inimă pentru miri</span>
-            </div>
-            <span className={styles.actionCardArrow}>→</span>
-          </button>
+              <button className={styles.actionCardSecondary} onClick={() => setView('wish')}>
+                <div className={styles.actionCardIcon}><Envelope size={26} weight="light" /></div>
+                <div className={styles.actionCardBody}>
+                  <strong>Scrie o urare</strong>
+                  <span>Un mesaj din inimă pentru miri</span>
+                </div>
+                <span className={styles.actionCardArrow}>→</span>
+              </button>
+            </>
+          )}
         </div>
 
         <p className={styles.landingFooter}>
