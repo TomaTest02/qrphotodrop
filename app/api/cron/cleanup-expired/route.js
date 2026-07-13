@@ -69,9 +69,11 @@ export async function GET(request) {
       }
     }
 
-    // Ștergem rândurile media + marcăm evenimentul ca expirat (păstrăm contul + urările)
+    // Ștergem tot conținutul personal (media + urări) + marcăm evenimentul expirat.
+    // Păstrăm doar contul organizatorului și rândul evenimentului (fără date de invitați).
     await admin.from('uploads').delete().eq('event_id', ev.id);
     await admin.from('archives').delete().eq('event_id', ev.id);
+    await admin.from('wishes').delete().eq('event_id', ev.id);
     await admin.from('events').update({ status: 'expired' }).eq('id', ev.id);
     processedEvents++;
   }

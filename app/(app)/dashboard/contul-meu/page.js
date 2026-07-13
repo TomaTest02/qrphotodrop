@@ -17,6 +17,9 @@ export default function ContulMeuPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [timeLeft, setTimeLeft] = useState(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -64,6 +67,26 @@ export default function ContulMeuPage() {
     setMessage(error ? 'Eroare la actualizare.' : 'Parola a fost actualizată cu succes!');
     if (!error) setNewPassword('');
     setLoading(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== 'STERGE') return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/account/delete', { method: 'POST' });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setMessage(d.error || 'Ștergerea contului a eșuat.');
+        setDeleting(false);
+        return;
+      }
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch {
+      setMessage('Eroare de conexiune.');
+      setDeleting(false);
+    }
   };
 
   const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
@@ -157,6 +180,52 @@ export default function ContulMeuPage() {
             {loading ? 'Se actualizează...' : 'Actualizează parola'}
           </button>
         </form>
+      </div>
+
+      {/* Zonă periculoasă — ștergere cont (GDPR) */}
+      <div className={`${styles.card} ${styles.pwCard}`} style={{ border: '1px solid #dc2626' }}>
+        <h2 className={styles.cardTitle} style={{ color: '#dc2626' }}>Șterge contul</h2>
+        <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '16px' }}>
+          Ștergerea contului este <strong>definitivă și ireversibilă</strong>. Se șterg contul tău,
+          evenimentul, toate pozele și clipurile din stocare și urările primite. Descarcă arhiva
+          înainte, dacă vrei să păstrezi amintirile.
+        </p>
+        {!showDelete ? (
+          <button
+            onClick={() => setShowDelete(true)}
+            style={{ padding: '10px 20px', background: '#fff', color: '#dc2626', border: '1px solid #dc2626', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}
+          >
+            Vreau să șterg contul
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '380px' }}>
+            <label className={styles.label}>Scrie <strong>STERGE</strong> ca să confirmi:</label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              className={styles.input}
+              placeholder="STERGE"
+              autoComplete="off"
+            />
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={confirmText !== 'STERGE' || deleting}
+                style={{ padding: '10px 20px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: (confirmText !== 'STERGE' || deleting) ? 'not-allowed' : 'pointer', opacity: (confirmText !== 'STERGE' || deleting) ? 0.6 : 1 }}
+              >
+                {deleting ? 'Se șterge...' : 'Șterge definitiv contul'}
+              </button>
+              <button
+                onClick={() => { setShowDelete(false); setConfirmText(''); }}
+                disabled={deleting}
+                style={{ padding: '10px 20px', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-cream-darker)', borderRadius: '10px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Anulează
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

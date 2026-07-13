@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { deleteByPrefix } from '@/lib/r2';
 
 export async function GET() {
   const supabase = await createClient();
@@ -54,10 +55,20 @@ export async function DELETE(request) {
   const { userId } = await request.json();
   const admin = createAdminClient();
 
-  // Delete from auth
+  // Întâi curățăm fișierele din R2 pentru toate evenimentele userului (altfel rămân orfane)
+  const { data: events } = await admin.from('events').select('id').eq('user_id', userId);
+  for (const ev of events || []) {
+    try {
+      await deleteByPrefix(`events/${ev.id}/`);
+    } catch (e) {
+      console.error('admin delete: R2 cleanup failed for event', ev.id, e.message);
+    }
+  }
+
+  // Delete from auth (cascade ON DELETE curăță users/events/uploads/wishes/archives)
   await admin.auth.admin.deleteUser(userId);
 
-  // Delete from users table
+  // Plasă de siguranță pentru rândul din users
   await admin.from('users').delete().eq('id', userId);
 
   return NextResponse.json({ success: true });
