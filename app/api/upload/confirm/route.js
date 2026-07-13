@@ -52,7 +52,7 @@ export async function POST(request) {
       await deleteObject(r2Key).catch((error) => {
         console.error('confirm: cleanup for inactive event failed', r2Key, error);
       });
-      return NextResponse.json({ error: 'Event is not active' }, { status: 410 });
+      return NextResponse.json({ error: 'Event is not active', code: 'EVENT_INACTIVE' }, { status: 410 });
     }
 
     // ── Securitate: mărimea REALĂ din R2, nu ce a declarat clientul ──
@@ -108,7 +108,7 @@ export async function POST(request) {
         console.error('confirm: R2 cleanup after finalize failed', r2Key, deleteError);
       });
       const responseError = uploadFinalizeError(error);
-      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
+      return NextResponse.json({ error: responseError.message, code: responseError.code }, { status: responseError.status });
     }
 
     return NextResponse.json({ upload });

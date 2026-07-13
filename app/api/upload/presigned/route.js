@@ -45,13 +45,13 @@ export async function POST(request) {
     }
 
     if (event.status !== 'active') {
-      return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
+      return NextResponse.json({ error: 'Event is not active', code: 'EVENT_INACTIVE' }, { status: 403 });
     }
 
     // Setări globale: pauză upload + limită configurabilă de mărime
     const settings = await getSettings(supabase);
     if (uploadsPaused(settings)) {
-      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză', code: 'UPLOADS_PAUSED' }, { status: 503 });
     }
     // Tipul e derivat EXCLUSIV din MIME (whitelisted mai sus), nu din client
     const isVideo = contentType.startsWith('video/');
@@ -73,7 +73,7 @@ export async function POST(request) {
     const totalUsed = uploadStats ? uploadStats.reduce((acc, curr) => acc + (curr.size_bytes || 0), 0) : 0;
     
     if (totalUsed + declaredSize > event.max_storage_bytes) {
-      return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
+      return NextResponse.json({ error: 'Storage limit exceeded for this event', code: 'STORAGE_FULL' }, { status: 403 });
     }
 
     // Generate unique key — folder + extensie derivate din MIME (nu din client)

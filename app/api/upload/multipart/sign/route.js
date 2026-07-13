@@ -35,7 +35,7 @@ export async function POST(request) {
       .eq('id', s.event_id)
       .single();
     if (event?.status !== 'active') {
-      return NextResponse.json({ error: 'Event is not active' }, { status: 410 });
+      return NextResponse.json({ error: 'Event is not active', code: 'EVENT_INACTIVE' }, { status: 410 });
     }
 
     // Validăm numerele bucăților față de totalParts din sesiune

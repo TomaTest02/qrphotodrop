@@ -54,12 +54,12 @@ export async function POST(request) {
       .single();
 
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    if (event.status !== 'active') return NextResponse.json({ error: 'Event not active' }, { status: 403 });
+    if (event.status !== 'active') return NextResponse.json({ error: 'Event not active', code: 'EVENT_INACTIVE' }, { status: 403 });
 
     // Setări globale: pauză upload + limită configurabilă de mărime
     const settings = await getSettings(supabase);
     if (uploadsPaused(settings)) {
-      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză', code: 'UPLOADS_PAUSED' }, { status: 503 });
     }
     if (file.size > maxBytesFor(settings, isVideo)) {
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
@@ -107,7 +107,7 @@ export async function POST(request) {
         console.error('direct: curățarea R2 după finalize eșuat a eșuat', r2Key, delErr.message);
       }
       const responseError = uploadFinalizeError(finalizeError);
-      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
+      return NextResponse.json({ error: responseError.message, code: responseError.code }, { status: responseError.status });
     }
 
     return NextResponse.json({ success: true, upload, publicUrl, r2Key });

@@ -8,6 +8,7 @@ import {
 } from '@phosphor-icons/react';
 import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './upload.module.css';
+import { classifyUploadError, errorFromResponse, UPLOAD_ERR, LEGACY_STORAGE_FULL } from '@/lib/uploadErrors';
 
 // Upload direct în R2 cu progres REAL. `fetch` nu raportează progresul upload-ului,
 // XMLHttpRequest da → invitatul vede procentul crescând (important la clipuri mari).
@@ -40,16 +41,21 @@ function putPart(url, blob, onProgress) {
   });
 }
 
+// Plafonul plin are tratament separat (ecran dedicat), nu e „eroare".
+const estePlin = (err) => err.code === UPLOAD_ERR.STORAGE_FULL || err.message === LEGACY_STORAGE_FULL;
+
 // Upload multipart complet. Întoarce 'ok' | 'storageFull'; aruncă la alte erori.
+// IMPORTANT: erorile aruncate poartă `status` + `code`, ca să poată fi clasificate
+// corect de apelant (înainte se pierdea motivul și userul vedea „verifică conexiunea").
 async function uploadMultipart(eventCode, file, fileType, onProgress) {
   const createRes = await fetch('/api/upload/multipart/create', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
   });
   if (!createRes.ok) {
-    const e = await createRes.json().catch(() => ({}));
-    if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
-    throw new Error(e.error || 'multipart create failed');
+    const err = await errorFromResponse(createRes);
+    if (estePlin(err)) return 'storageFull';
+    throw err;
   }
   const { sessionId, partSize, totalParts } = await createRes.json();
 
@@ -61,7 +67,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, partNumbers: need }),
     });
-    if (!res.ok) throw new Error('sign failed');
+    if (!res.ok) throw await errorFromResponse(res);
     Object.assign(urlCache, (await res.json()).urls);
   };
   const signOne = async (n) => {
@@ -69,7 +75,7 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId, partNumbers: [n] }),
     });
-    if (!res.ok) throw new Error('sign failed');
+    if (!res.ok) throw await errorFromResponse(res);
     const url = (await res.json()).urls[n];
     urlCache[n] = url;
     return url;
@@ -116,9 +122,9 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
       body: JSON.stringify({ sessionId, originalName: file.name }),
     });
     if (!completeRes.ok) {
-      const e = await completeRes.json().catch(() => ({}));
-      if (e.error === 'Storage limit exceeded for this event') return 'storageFull';
-      throw new Error(e.error || 'multipart complete failed');
+      const err = await errorFromResponse(completeRes);
+      if (estePlin(err)) return 'storageFull';
+      throw err;
     }
     return 'ok';
   } catch (err) {
@@ -261,10 +267,16 @@ export default function GuestUploadPage({ params }) {
     maxVideos: event.limits.maxVideos ?? 2,
   } : DEFAULT_LIMITS;
 
-  const loadEvent = useCallback(() => {
+  const loadEvent = useCallback((fresh = false) => {
     // Nu interogăm serverul când tab-ul e ascuns — economisim invocări (Vercel free).
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
-    fetch(`/api/events?code=${eventCode}`)
+    // `fresh`: /api/events e cache-uit la CDN (s-maxage=30), deci imediat după o
+    // suspendare ne-ar putea întoarce statusul VECHI. Un parametru unic + no-store
+    // ocolesc cache-ul și ne dau starea reală.
+    const url = fresh
+      ? `/api/events?code=${eventCode}&fresh=${Date.now()}`
+      : `/api/events?code=${eventCode}`;
+    fetch(url, fresh ? { cache: 'no-store' } : undefined)
       .then(r => r.json())
       .then(data => {
         if (data.event) setEvent(data.event);
@@ -272,6 +284,14 @@ export default function GuestUploadPage({ params }) {
       })
       .catch(() => {});
   }, [eventCode]);
+
+  // Evenimentul tocmai a fost refuzat de server ca inactiv.
+  // Actualizăm starea LOCALĂ imediat (nu ne bazăm pe /api/events, care poate fi
+  // încă în cache) și revalidăm în fundal, fără cache.
+  const marcheazaEvenimentInactiv = useCallback(() => {
+    setEvent((current) => (current ? { ...current, status: 'inactive' } : current));
+    loadEvent(true);
+  }, [loadEvent]);
 
   // Încărcare inițială (o singură dată)
   useEffect(() => {
@@ -389,10 +409,22 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
-    const STORAGE_FULL = 'Storage limit exceeded for this event';
     let succeeded = 0;
     let storageFull = false;
-    let motivServer = ''; // motivul REAL trimis de server (ex. eveniment inactiv)
+
+    // Prima eroare CLASIFICATĂ — după codul stabil trimis de server, NU după textul
+    // mesajului (fragil: se schimbă cu limba/formularea). Vezi lib/uploadErrors.js.
+    let primaEroare = null;
+    const retineEroarea = (err) => {
+      if (primaEroare) return;
+      primaEroare = classifyUploadError({
+        status: err?.status,
+        code: err?.code,
+        message: err?.message,
+        // fără status ⇒ fetch-ul însuși a aruncat ⇒ chiar e problemă de rețea
+        networkFailure: !err?.status,
+      });
+    };
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       setUploadCurrent(i + 1);
@@ -409,7 +441,10 @@ export default function GuestUploadPage({ params }) {
           if (res === 'storageFull') { storageFull = true; break; }
           succeeded++;
         } catch (err) {
+          // ÎNAINTE: eroarea era doar logată → motivul real (ex. eveniment suspendat)
+          // se pierdea, iar userul primea „verifică conexiunea". Acum o reținem.
           console.error('Multipart failed:', err);
+          retineEroarea(err);
         }
         setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
         continue;
@@ -423,9 +458,9 @@ export default function GuestUploadPage({ params }) {
           body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
         });
         if (!signRes.ok) {
-          const errData = await signRes.json().catch(() => ({}));
-          if (errData.error === STORAGE_FULL) { storageFull = true; break; }
-          throw new Error(errData.error || 'Sign failed');
+          const err = await errorFromResponse(signRes);
+          if (estePlin(err)) { storageFull = true; break; }
+          throw err;
         }
         const { uploadUrl, r2Key } = await signRes.json();
 
@@ -435,23 +470,29 @@ export default function GuestUploadPage({ params }) {
           setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
         });
 
-        // 3. Confirmăm — inserăm rândul cu metadate în baza de date
+        // 3. Confirmăm — inserăm rândul cu metadate în baza de date.
+        //    Dacă evenimentul e suspendat FIX în timpul transferului, aici primim
+        //    EVENT_INACTIVE — motiv care înainte se pierdea („Confirm failed").
         const confirmRes = await fetch('/api/upload/confirm', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ r2Key, eventCode, fileType, sizeBytes: file.size, originalName: file.name }),
         });
-        if (!confirmRes.ok) throw new Error('Confirm failed');
+        if (!confirmRes.ok) {
+          const err = await errorFromResponse(confirmRes);
+          if (estePlin(err)) { storageFull = true; break; }
+          throw err;
+        }
         succeeded++;
       } catch (err) {
         console.error('Upload presigned error:', err);
-        // Reținem motivul REAL de la server (ex. „Evenimentul nu mai este activ"),
-        // ca să nu-i spunem invitatului „verifică conexiunea" când n-are legătură.
-        if (!motivServer && err?.message && err.message !== 'Sign failed' && err.message !== 'Confirm failed') {
-          motivServer = err.message;
-        }
-        // Fallback: fișiere mici (≤4MB) pot merge prin funcție dacă presigned/CORS eșuează
-        if (file.size <= 4 * 1024 * 1024) {
+        retineEroarea(err);
+
+        // Fallback pe funcție doar dacă are rost. Dacă evenimentul e inactiv sau
+        // uploadurile sunt în pauză, reîncercarea ar eșua identic — nu insistăm.
+        const inutil = primaEroare
+          && (primaEroare.kind === UPLOAD_ERR.EVENT_INACTIVE || primaEroare.kind === UPLOAD_ERR.UPLOADS_PAUSED);
+        if (!inutil && file.size <= 4 * 1024 * 1024) {
           try {
             const fd = new FormData();
             fd.append('file', file);
@@ -461,10 +502,11 @@ export default function GuestUploadPage({ params }) {
             const directRes = await fetch('/api/upload/direct', { method: 'POST', body: fd });
             if (directRes.ok) { succeeded++; }
             else {
-              const e = await directRes.json().catch(() => ({}));
-              if (e.error === STORAGE_FULL) { storageFull = true; break; }
+              const err2 = await errorFromResponse(directRes);
+              if (estePlin(err2)) { storageFull = true; break; }
+              retineEroarea(err2);
             }
-          } catch (e2) { console.error('Upload fallback error:', e2); }
+          } catch (e2) { console.error('Upload fallback error:', e2); retineEroarea(e2); }
         }
       }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
@@ -475,18 +517,19 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
-    // Feedback onest: nu declarăm succes dacă în realitate au eșuat fișiere,
-    // și spunem MOTIVUL REAL (nu „verifică conexiunea" când evenimentul e oprit).
+    // Feedback onest: nu declarăm succes dacă au eșuat fișiere, și spunem MOTIVUL REAL
+    // (decis după codul de la server, nu după regex pe text).
     if (succeeded === 0) {
-      const eInactiv = /nu mai este activ|not active|inactive|expirat|expired|410/i.test(motivServer);
-      if (eInactiv) {
-        alert('Acest eveniment nu mai primește conținut. Încărcarea a fost oprită de organizator.');
-        loadEvent(); // reîmprospătăm statusul → landing-ul va afișa mesajul corect
+      const eroare = primaEroare || classifyUploadError({ networkFailure: true });
+
+      if (eroare.kind === UPLOAD_ERR.EVENT_INACTIVE) {
+        // Actualizăm statusul LOCAL imediat — nu ne bazăm pe /api/events (cache CDN),
+        // care ar putea încă întoarce „active" și ar reafișa butonul de upload.
+        marcheazaEvenimentInactiv();
+        alert(eroare.message);
         setView('landing');
       } else {
-        alert(motivServer
-          ? `Nu am putut încărca fișierele. ${motivServer}`
-          : 'Nu am putut încărca fișierele. Verifică conexiunea și încearcă din nou.');
+        alert(`Nu am putut încărca fișierele. ${eroare.message}`);
         setView('mediaChoice');
       }
       return;
@@ -524,20 +567,22 @@ export default function GuestUploadPage({ params }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...wishForm, eventCode }),
       });
-      if (!res.ok) {
-        // Motivul real de la server (ex. evenimentul nu mai e activ), nu unul generic
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.error || 'wish failed');
-      }
+      // Eroarea poartă status + code → clasificabilă la fel ca la upload
+      if (!res.ok) throw await errorFromResponse(res);
       setView('wishSuccess');
     } catch (err) {
-      const motiv = err?.message && err.message !== 'wish failed' ? err.message : '';
-      if (/nu mai este activ|not active|inactive/i.test(motiv)) {
+      const eroare = classifyUploadError({
+        status: err?.status,
+        code: err?.code,
+        message: err?.message,
+        networkFailure: !err?.status,
+      });
+      if (eroare.kind === UPLOAD_ERR.EVENT_INACTIVE) {
+        marcheazaEvenimentInactiv(); // status local imediat, apoi revalidare fără cache
         alert('Acest eveniment nu mai primește urări.');
-        loadEvent();
         setView('landing');
       } else {
-        alert(motiv ? `Eroare la trimitere. ${motiv}` : 'Eroare la trimitere. Încearcă din nou.');
+        alert(`Eroare la trimitere. ${eroare.message}`);
       }
     }
     setLoading(false);

@@ -39,7 +39,7 @@ export async function POST(request) {
     if (sessionExpired || ev?.status !== 'active') {
       await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
       await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
-      return NextResponse.json({ error: 'Sesiune expirată sau eveniment inactiv.' }, { status: 410 });
+      return NextResponse.json({ error: 'Sesiune expirată sau eveniment inactiv.', code: 'EVENT_INACTIVE' }, { status: 410 });
     }
 
     // ── Validăm bucățile ÎNAINTE de a asambla obiectul ──
@@ -102,7 +102,7 @@ export async function POST(request) {
       await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
       console.error('Multipart complete finalize error:', error);
       const responseError = uploadFinalizeError(error);
-      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
+      return NextResponse.json({ error: responseError.message, code: responseError.code }, { status: responseError.status });
     }
 
     // RPC-ul marchează sesiunea completed în aceeași tranzacție cu insertul uploadului.

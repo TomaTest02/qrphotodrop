@@ -37,12 +37,12 @@ export async function POST(request) {
       .single();
 
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    if (event.status !== 'active') return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
+    if (event.status !== 'active') return NextResponse.json({ error: 'Event is not active', code: 'EVENT_INACTIVE' }, { status: 403 });
 
     // Setări globale: pauză upload + limită configurabilă de mărime
     const settings = await getSettings(supabase);
     if (uploadsPaused(settings)) {
-      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
+      return NextResponse.json({ error: 'Încărcările sunt momentan în pauză', code: 'UPLOADS_PAUSED' }, { status: 503 });
     }
     // Tipul îl derivăm din MIME (NU din client)
     const isVideo = contentType.startsWith('video/');
@@ -80,7 +80,7 @@ export async function POST(request) {
     if (!sessionId) {
       // Nu mai e loc (incl. rezervările altor uploaduri în curs) → anulăm sesiunea R2
       await abortMultipartUpload(r2Key, uploadId).catch(() => {});
-      return NextResponse.json({ error: STORAGE_FULL }, { status: 403 });
+      return NextResponse.json({ error: STORAGE_FULL, code: 'STORAGE_FULL' }, { status: 403 });
     }
 
     // Clientul primește DOAR sessionId (neutru) — r2Key/uploadId rămân pe server

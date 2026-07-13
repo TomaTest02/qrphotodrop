@@ -38,7 +38,7 @@ export async function POST(request) {
     // Nu acceptăm urări noi pe evenimente expirate/inactive (altfel introducem date
     // personale după cleanup, care n-ar mai fi șterse — vezi retenția GDPR).
     if (event.status !== 'active') {
-      return NextResponse.json({ error: 'Evenimentul nu mai este activ.' }, { status: 403 });
+      return NextResponse.json({ error: 'Evenimentul nu mai este activ.', code: 'EVENT_INACTIVE' }, { status: 403 });
     }
 
     // RPC-ul blochează rândul evenimentului; cronul nu poate șterge urările și apoi
@@ -56,7 +56,7 @@ export async function POST(request) {
     if (error) {
       console.error('Wish insert error:', error);
       if (error.message?.includes('EVENT_NOT_ACTIVE')) {
-        return NextResponse.json({ error: 'Evenimentul nu mai este activ.' }, { status: 410 });
+        return NextResponse.json({ error: 'Evenimentul nu mai este activ.', code: 'EVENT_INACTIVE' }, { status: 410 });
       }
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
