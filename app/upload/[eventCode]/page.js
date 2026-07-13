@@ -8,7 +8,10 @@ import {
 } from '@phosphor-icons/react';
 import DemoNavBar from '@/components/marketing/DemoNavBar';
 import styles from './upload.module.css';
-import { classifyUploadError, errorFromResponse, UPLOAD_ERR, LEGACY_STORAGE_FULL } from '@/lib/uploadErrors';
+import {
+  classifyUploadError, errorFromResponse, alegeEroareaRelevanta, esteBlocanta,
+  UPLOAD_ERR, LEGACY_STORAGE_FULL,
+} from '@/lib/uploadErrors';
 
 // Upload direct în R2 cu progres REAL. `fetch` nu raportează progresul upload-ului,
 // XMLHttpRequest da → invitatul vede procentul crescând (important la clipuri mari).
@@ -412,18 +415,20 @@ export default function GuestUploadPage({ params }) {
     let succeeded = 0;
     let storageFull = false;
 
-    // Prima eroare CLASIFICATĂ — după codul stabil trimis de server, NU după textul
-    // mesajului (fragil: se schimbă cu limba/formularea). Vezi lib/uploadErrors.js.
-    let primaEroare = null;
+    // Eroarea cea mai RELEVANTĂ (nu prima!). „Prima câștigă" era greșit: dacă PUT-ul
+    // către R2 pică o dată (NETWORK) și abia apoi fallback-ul răspunde EVENT_INACTIVE,
+    // motivul adevărat era ignorat, iar userul primea „verifică conexiunea".
+    // Motivele definitive de la server bat rețeaua — vezi alegeEroareaRelevanta().
+    let eroareRelevanta = null;
     const retineEroarea = (err) => {
-      if (primaEroare) return;
-      primaEroare = classifyUploadError({
+      const clasificata = classifyUploadError({
         status: err?.status,
         code: err?.code,
         message: err?.message,
         // fără status ⇒ fetch-ul însuși a aruncat ⇒ chiar e problemă de rețea
         networkFailure: !err?.status,
       });
+      eroareRelevanta = alegeEroareaRelevanta(eroareRelevanta, clasificata);
     };
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
@@ -490,9 +495,7 @@ export default function GuestUploadPage({ params }) {
 
         // Fallback pe funcție doar dacă are rost. Dacă evenimentul e inactiv sau
         // uploadurile sunt în pauză, reîncercarea ar eșua identic — nu insistăm.
-        const inutil = primaEroare
-          && (primaEroare.kind === UPLOAD_ERR.EVENT_INACTIVE || primaEroare.kind === UPLOAD_ERR.UPLOADS_PAUSED);
-        if (!inutil && file.size <= 4 * 1024 * 1024) {
+        if (!esteBlocanta(eroareRelevanta) && file.size <= 4 * 1024 * 1024) {
           try {
             const fd = new FormData();
             fd.append('file', file);
@@ -517,15 +520,17 @@ export default function GuestUploadPage({ params }) {
       return;
     }
 
-    // Feedback onest: nu declarăm succes dacă au eșuat fișiere, și spunem MOTIVUL REAL
-    // (decis după codul de la server, nu după regex pe text).
-    if (succeeded === 0) {
-      const eroare = primaEroare || classifyUploadError({ networkFailure: true });
+    // Dacă evenimentul s-a închis, marcăm statusul LOCAL imediat — indiferent dacă au
+    // reușit sau nu fișiere. Nu ne bazăm pe /api/events (cache CDN 30s), care ar putea
+    // încă întoarce „active" și ar reafișa butonul de upload.
+    if (eroareRelevanta?.kind === UPLOAD_ERR.EVENT_INACTIVE) {
+      marcheazaEvenimentInactiv();
+    }
 
+    // Feedback onest: motivul REAL (decis după codul de la server), nu regex pe text.
+    if (succeeded === 0) {
+      const eroare = eroareRelevanta || classifyUploadError({ networkFailure: true });
       if (eroare.kind === UPLOAD_ERR.EVENT_INACTIVE) {
-        // Actualizăm statusul LOCAL imediat — nu ne bazăm pe /api/events (cache CDN),
-        // care ar putea încă întoarce „active" și ar reafișa butonul de upload.
-        marcheazaEvenimentInactiv();
         alert(eroare.message);
         setView('landing');
       } else {
@@ -534,8 +539,13 @@ export default function GuestUploadPage({ params }) {
       }
       return;
     }
+
+    // SUCCES PARȚIAL. Dacă restul au eșuat pentru că evenimentul s-a închis (sau
+    // uploadurile au fost oprite), NU-i spunem „încearcă din nou" — ar eșua identic.
     if (succeeded < filesToUpload.length) {
-      alert(`${succeeded} din ${filesToUpload.length} fișiere au fost încărcate. Pentru restul, încearcă din nou.`);
+      alert(esteBlocanta(eroareRelevanta)
+        ? `${succeeded} din ${filesToUpload.length} fișiere au fost încărcate. ${eroareRelevanta.message}`
+        : `${succeeded} din ${filesToUpload.length} fișiere au fost încărcate. Pentru restul, încearcă din nou.`);
     }
     setUploadTotal(succeeded);
     setView('uploadSuccess');

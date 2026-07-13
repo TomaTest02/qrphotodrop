@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "NODE_OPTIONS=--max-old-space-size=8192 eslint",
+    "lint": "eslint",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
