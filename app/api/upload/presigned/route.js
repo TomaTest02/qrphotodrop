@@ -6,10 +6,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
   try {
-    const { eventCode, contentType, sizeBytes = 0 } = await request.json();
+    const { eventCode, contentType, sizeBytes } = await request.json();
 
     if (!eventCode || !contentType) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+    if (!/^[a-zA-Z0-9]{6,12}$/.test(eventCode)) {
+      return NextResponse.json({ error: 'Invalid event code' }, { status: 400 });
+    }
+    const declaredSize = Number(sizeBytes);
+    if (!Number.isSafeInteger(declaredSize) || declaredSize <= 0) {
+      return NextResponse.json({ error: 'Invalid file size' }, { status: 400 });
     }
 
     // Security: whitelist MIME strict — blocăm SVG (poate executa JS) și orice non-media
@@ -23,12 +30,16 @@ export async function POST(request) {
 
     // Verify event exists and is active
     const supabase = createAdminClient();
-    const { data: event } = await supabase
+    const { data: event, error: eventError } = await supabase
       .from('events')
       .select('id, status, max_storage_bytes')
       .eq('event_code', eventCode)
       .single();
 
+    if (eventError && eventError.code !== 'PGRST116') {
+      console.error('presigned: event query failed', eventError);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -44,19 +55,24 @@ export async function POST(request) {
     }
     // Tipul e derivat EXCLUSIV din MIME (whitelisted mai sus), nu din client
     const isVideo = contentType.startsWith('video/');
-    if (Number(sizeBytes) > maxBytesFor(settings, isVideo)) {
+    if (declaredSize > maxBytesFor(settings, isVideo)) {
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
 
     // Check storage limits
-    const { data: uploadStats } = await supabase
+    const { data: uploadStats, error: usageError } = await supabase
       .from('uploads')
       .select('size_bytes')
       .eq('event_id', event.id);
 
+    if (usageError) {
+      console.error('presigned: usage query failed', usageError);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
+
     const totalUsed = uploadStats ? uploadStats.reduce((acc, curr) => acc + (curr.size_bytes || 0), 0) : 0;
     
-    if (totalUsed + sizeBytes > event.max_storage_bytes) {
+    if (totalUsed + declaredSize > event.max_storage_bytes) {
       return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
     }
 

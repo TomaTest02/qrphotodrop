@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, Fragment } from 'react';
+import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { QrCode, Lock, Sparkle, Heart, CheckCircle, ArrowRight, Check } from '@phosphor-icons/react';
@@ -21,7 +22,7 @@ const DESIGNS = [
 const BENEFITS = [
   { Icon: CheckCircle, title: 'Fără aplicație', desc: 'Totul din browser. Invitații nu descarcă și nu instalează nimic.' },
   { Icon: Sparkle, title: 'Calitate originală', desc: 'Fișierele se păstrează la rezoluție maximă, fără compresie.' },
-  { Icon: Lock, title: 'Album privat', desc: 'Amintirile ajung direct la tine, vizibile doar organizatorului.' },
+  { Icon: Lock, title: 'Galerie controlată', desc: 'Organizatorul decide dacă galeria este afișată invitaților.' },
   { Icon: Heart, title: 'Gata imediat', desc: 'Vezi pozele chiar în timpul evenimentului, nu peste luni.' },
 ];
 
@@ -148,10 +149,10 @@ export default function Prezentare() {
               fără aplicație și fără cont. Tu le primești pe toate, gata organizate.
             </p>
             <div className={styles.heroActions} data-hero-fade>
-              <a href="/upload/DEMO" className={styles.btnPrimary} data-magnetic>
+              <Link href="/upload/DEMO" className={styles.btnPrimary} data-magnetic>
                 Încearcă demo live <span className={styles.btnIcon} data-magnetic-inner><ArrowRight size={17} weight="bold" /></span>
-              </a>
-              <a href="/preturi" className={styles.btnOutline}>Vezi prețuri</a>
+              </Link>
+              <Link href="/preturi" className={styles.btnOutline}>Vezi prețuri</Link>
             </div>
             <div className={styles.trust} data-hero-fade>
               <span>Fără aplicație</span><span className={styles.trustDot} />
@@ -295,10 +296,10 @@ export default function Prezentare() {
           <h2 className={styles.ctaTitle}>Deschide un demo live în 10 secunde</h2>
           <p className={styles.ctaSubtitle}>Exact ce văd invitații tăi când scanează codul QR de pe masă.</p>
           <div className={styles.ctaActions}>
-            <a href="/upload/DEMO" className={styles.ctaBtnPrimary} data-magnetic>
+            <Link href="/upload/DEMO" className={styles.ctaBtnPrimary} data-magnetic>
               Deschide demo <span className={styles.btnIcon} data-magnetic-inner><ArrowRight size={17} weight="bold" /></span>
-            </a>
-            <a href="/contact" className={styles.ctaBtnOutline}>Contactează-ne</a>
+            </Link>
+            <Link href="/contact" className={styles.ctaBtnOutline}>Contactează-ne</Link>
           </div>
         </div>
       </section>

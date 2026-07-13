@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { r2Client, getPublicUrl, deleteObject, extForMime } from '@/lib/r2';
 import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
+import { finalizeUploadRecord, uploadFinalizeError } from '@/lib/uploads';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -48,7 +49,7 @@ export async function POST(request) {
     // Verificam evenimentul
     const { data: event } = await supabase
       .from('events')
-      .select('id, status, max_storage_bytes')
+      .select('id, status')
       .eq('event_code', sanitizedEventCode)
       .single();
 
@@ -64,22 +65,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
 
-    // Verificam storage
-    const { data: uploadStats, error: usageErr } = await supabase
-      .from('uploads')
-      .select('size_bytes')
-      .eq('event_id', event.id);
-    if (usageErr) {
-      console.error('direct: usage query error', usageErr);
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
-    }
-
-    const totalUsed = uploadStats ? uploadStats.reduce((acc, curr) => acc + (curr.size_bytes || 0), 0) : 0;
     const fileSize = file.size;
-
-    if (totalUsed + fileSize > event.max_storage_bytes) {
-      return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
-    }
 
     // Upload direct catre R2 de pe server (fara CORS issues)
     // Folder + extensie derivate din MIME (nu din client)
@@ -104,26 +90,27 @@ export async function POST(request) {
       .replace(/[^a-zA-Z0-9._\-\s]/g, '')
       .substring(0, 255);
 
-    // Salvam in baza de date; daca esueaza, NU lasam fisier orfan in R2
-    const { error: insErr } = await supabase.from('uploads').insert({
-      event_id: event.id,
-      file_type: isVideo ? 'video' : 'photo',
-      original_name: safeOriginalName,
-      r2_key: r2Key,
-      public_url: publicUrl,
-      size_bytes: fileSize,
+    // Finalizarea este atomică față de expirare/ștergere și include plafonul real.
+    const { upload, error: finalizeError } = await finalizeUploadRecord(supabase, {
+      eventId: event.id,
+      fileType: isVideo ? 'video' : 'photo',
+      originalName: safeOriginalName,
+      r2Key,
+      publicUrl,
+      sizeBytes: fileSize,
     });
-    if (insErr) {
-      console.error('direct: insert error, curățăm R2', insErr);
+    if (finalizeError) {
+      console.error('direct: finalize error, curățăm R2', finalizeError);
       try {
         await deleteObject(r2Key);
       } catch (delErr) {
-        console.error('direct: curățarea R2 după insert eșuat A EȘUAT (orfan)', r2Key, delErr.message);
+        console.error('direct: curățarea R2 după finalize eșuat a eșuat', r2Key, delErr.message);
       }
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      const responseError = uploadFinalizeError(finalizeError);
+      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
     }
 
-    return NextResponse.json({ success: true, publicUrl, r2Key });
+    return NextResponse.json({ success: true, upload, publicUrl, r2Key });
   } catch (err) {
     console.error('Upload error:', err);
     return NextResponse.json({ error: 'Server error: ' + err.message }, { status: 500 });

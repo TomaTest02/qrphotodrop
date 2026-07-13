@@ -121,7 +121,7 @@ export default function Mockup() {
 
               {/* Footer privat */}
               <p style={{ marginTop: '18px', fontSize: '10px', color: '#b0a79e', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <Lock size={11} weight="light" /> Pozele tale sunt private și accesibile doar mirilor
+                <Lock size={11} weight="light" /> Galeria invitaților este dezactivată
               </p>
             </div>
           </div>

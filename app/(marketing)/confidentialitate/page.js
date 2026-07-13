@@ -11,7 +11,7 @@ export default function ConfidentialitatePage() {
   return (
     <div className={styles.wrap}>
       <h1 className={styles.title}>Politica de Confidențialitate</h1>
-      <p className={styles.meta}>Ultima actualizare: 12 iulie 2026</p>
+      <p className={styles.meta}>Ultima actualizare: 13 iulie 2026</p>
 
       <div className={styles.disclaimer}>
         <p>
@@ -25,7 +25,7 @@ export default function ConfidentialitatePage() {
         <h2 className={styles.h2}>1. Operatorul datelor</h2>
         <p>
           Platforma QRPhotoDrop (qrphotodrop.com) este operată de echipa QRPhotoDrop
-          („Operatorul", „noi"). Pentru orice întrebare privind datele personale ne poți contacta
+          („Operatorul”, „noi”). Pentru orice întrebare privind datele personale ne poți contacta
           la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
         </p>
         <p>
@@ -51,7 +51,7 @@ export default function ConfidentialitatePage() {
           <li>urările lăsate: prenume, nume, email (opțional) și mesajul.</li>
         </ul>
         <p><strong>Din formularul de contact / cererile de printare:</strong> nume, email, telefon și mesajul transmis.</p>
-        <p><strong>Date tehnice:</strong> un cookie de sesiune necesar autentificării; adresa IP este folosită temporar, doar pentru prevenirea abuzurilor, și <strong>nu este stocată</strong> în baza de date. Folosim Vercel Analytics, o soluție de statistici <strong>fără cookie-uri</strong>. Nu folosim instrumente de urmărire publicitară (Google Analytics, Meta Pixel etc.).</p>
+        <p><strong>Date tehnice:</strong> unul sau mai multe cookie-uri persistente necesare autentificării, cu o durată maximă de 400 de zile și reîmprospătare automată a sesiunii; adresa IP este folosită temporar pentru prevenirea abuzurilor și <strong>nu este stocată</strong> în baza noastră de date. Modul demo păstrează local, în browser, conținutul introdus. Folosim Vercel Analytics, o soluție de statistici <strong>fără cookie-uri</strong>. Nu folosim instrumente de urmărire publicitară (Google Analytics, Meta Pixel etc.).</p>
       </section>
 
       <section className={styles.section}>
@@ -66,6 +66,11 @@ export default function ConfidentialitatePage() {
           Fotografiile invitaților sunt colectate la inițiativa și pe răspunderea organizatorului
           evenimentului, care are obligația de a informa persoanele implicate și, unde este cazul,
           de a obține consimțământul lor.
+        </p>
+        <p>
+          Organizatorul poate activa o galerie accesibilă invitaților prin codul sau linkul
+          evenimentului. Dacă galeria este dezactivată, platforma nu afișează conținutul în
+          paginile publice ale evenimentului.
         </p>
       </section>
 
@@ -101,7 +106,7 @@ export default function ConfidentialitatePage() {
 
       <section className={styles.section}>
         <h2 className={styles.h2}>7. Drepturile tale</h2>
-        <p>Conform GDPR, ai dreptul la: acces, rectificare, ștergere („dreptul de a fi uitat"), restricționarea prelucrării, opoziție și portabilitatea datelor.</p>
+        <p>Conform GDPR, ai dreptul la: acces, rectificare, ștergere („dreptul de a fi uitat”), restricționarea prelucrării, opoziție și portabilitatea datelor.</p>
         <p>
           Îți poți exercita drepturile trimițând un email la{' '}
           <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>. Ai, de asemenea,
@@ -122,8 +127,8 @@ export default function ConfidentialitatePage() {
       <section className={styles.section}>
         <h2 className={styles.h2}>9. Cookie-uri</h2>
         <p>
-          Folosim doar un cookie esențial de sesiune (pentru autentificare) și statistici fără
-          cookie-uri. Detalii în <a href="/cookies">Politica de Cookies</a>.
+          Folosim cookie-uri esențiale de autentificare și statistici fără cookie-uri. Modul demo
+          folosește stocarea locală a browserului. Detalii în <a href="/cookies">Politica de Cookies</a>.
         </p>
       </section>
 

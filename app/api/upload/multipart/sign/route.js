@@ -17,7 +17,7 @@ export async function POST(request) {
     const supabase = createAdminClient();
     const { data: s } = await supabase
       .from('multipart_sessions')
-      .select('r2_key, upload_id, total_parts, status, expires_at')
+      .select('event_id, r2_key, upload_id, total_parts, status, expires_at')
       .eq('id', sessionId)
       .single();
 
@@ -27,6 +27,15 @@ export async function POST(request) {
     }
     if (new Date(s.expires_at) < new Date()) {
       return NextResponse.json({ error: 'Session expired' }, { status: 410 });
+    }
+
+    const { data: event } = await supabase
+      .from('events')
+      .select('status')
+      .eq('id', s.event_id)
+      .single();
+    if (event?.status !== 'active') {
+      return NextResponse.json({ error: 'Event is not active' }, { status: 410 });
     }
 
     // Validăm numerele bucăților față de totalParts din sesiune
@@ -41,7 +50,16 @@ export async function POST(request) {
 
     // Marcăm sesiunea „uploading" la prima semnare
     if (s.status === 'pending') {
-      await supabase.from('multipart_sessions').update({ status: 'uploading' }).eq('id', sessionId);
+      const { data: updated, error: updateError } = await supabase
+        .from('multipart_sessions')
+        .update({ status: 'uploading' })
+        .eq('id', sessionId)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle();
+      if (updateError || !updated) {
+        return NextResponse.json({ error: 'Session is no longer active' }, { status: 409 });
+      }
     }
 
     return NextResponse.json({ urls });

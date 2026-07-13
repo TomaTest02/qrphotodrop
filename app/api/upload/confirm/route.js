@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPublicUrl, deleteObject, r2Client } from '@/lib/r2';
 import { getSettings, maxBytesFor } from '@/lib/settings';
+import { finalizeUploadRecord, uploadFinalizeError } from '@/lib/uploads';
 import { HeadObjectCommand } from '@aws-sdk/client-s3';
-
-const ALLOWED_FILE_TYPES = ['photo', 'video'];
 
 export async function POST(request) {
   try {
-    const { r2Key, eventCode, fileType, sizeBytes, originalName } = await request.json();
+    const { r2Key, eventCode, sizeBytes, originalName } = await request.json();
 
     if (!r2Key || !eventCode) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -19,13 +18,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid r2Key format' }, { status: 400 });
     }
 
-    // Validare fileType (whitelist)
-    if (fileType && !ALLOWED_FILE_TYPES.includes(fileType)) {
-      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
-    }
-
     // Validare de bază a mărimii DECLARATE (verificarea REALĂ se face mai jos, din R2)
-    if (sizeBytes !== undefined && (typeof sizeBytes !== 'number' || sizeBytes < 0)) {
+    if (sizeBytes !== undefined && (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0)) {
       return NextResponse.json({ error: 'Invalid file size' }, { status: 400 });
     }
 
@@ -39,7 +33,7 @@ export async function POST(request) {
     // Obținem event ID și verificăm că evenimentul este ACTIV
     const { data: event } = await supabase
       .from('events')
-      .select('id, status, max_storage_bytes')
+      .select('id, status')
       .eq('event_code', eventCode)
       .single();
 
@@ -47,13 +41,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    if (event.status !== 'active') {
-      return NextResponse.json({ error: 'Event is not active' }, { status: 403 });
-    }
-
     // Verificăm că r2Key aparține acestui eveniment (securitate suplimentară)
     if (!r2Key.startsWith(`events/${event.id}/`)) {
       return NextResponse.json({ error: 'r2Key does not belong to this event' }, { status: 403 });
+    }
+
+    if (event.status !== 'active') {
+      // URL-ul poate fi emis înainte de expirare, iar uploadul terminat după cleanup.
+      // Ștergem cheia validată ca aparținând evenimentului pentru a nu lăsa un orfan.
+      await deleteObject(r2Key).catch((error) => {
+        console.error('confirm: cleanup for inactive event failed', r2Key, error);
+      });
+      return NextResponse.json({ error: 'Event is not active' }, { status: 410 });
     }
 
     // ── Securitate: mărimea REALĂ din R2, nu ce a declarat clientul ──
@@ -69,6 +68,10 @@ export async function POST(request) {
     } catch {
       return NextResponse.json({ error: 'Object not found in storage' }, { status: 400 });
     }
+    if (!Number.isSafeInteger(actualSize) || actualSize <= 0) {
+      await deleteObject(r2Key).catch(() => {});
+      return NextResponse.json({ error: 'Invalid object size' }, { status: 400 });
+    }
 
     // Limită per fișier pe mărimea REALĂ, folosind limitele globale ACTUALE (nu valori fixe).
     // Kill-switch: `confirm` finalizează un fișier deja urcat în R2 — NU îl blocăm aici
@@ -82,14 +85,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
 
-    // Plafon de stocare per eveniment, pe mărimea reală
-    const { data: usageRows } = await supabase.from('uploads').select('size_bytes').eq('event_id', event.id);
-    const used = (usageRows || []).reduce((s, u) => s + (u.size_bytes || 0), 0);
-    if (used + actualSize > event.max_storage_bytes) {
-      await deleteObject(r2Key).catch(() => {});
-      return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
-    }
-
     const publicUrl = getPublicUrl(r2Key);
 
     // Sanitizare originalName
@@ -97,22 +92,26 @@ export async function POST(request) {
       .replace(/[^a-zA-Z0-9._\-\s]/g, '')
       .substring(0, 255);
 
-    // Insert upload record (cu mărimea REALĂ, nu cea declarată de client)
-    const { data, error } = await supabase.from('uploads').insert({
-      event_id: event.id,
-      r2_key: r2Key,
-      public_url: publicUrl,
-      file_type: isVideo ? 'video' : 'photo',
-      size_bytes: actualSize,
-      original_name: safeOriginalName,
-    }).select().single();
+    // RPC-ul blochează evenimentul și verifică atomic status + used + rezervări.
+    const { upload, error } = await finalizeUploadRecord(supabase, {
+      eventId: event.id,
+      r2Key,
+      publicUrl,
+      fileType: isVideo ? 'video' : 'photo',
+      sizeBytes: actualSize,
+      originalName: safeOriginalName,
+    });
 
     if (error) {
-      console.error('Upload confirm error:', error);
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      console.error('Upload confirm finalize error:', error);
+      await deleteObject(r2Key).catch((deleteError) => {
+        console.error('confirm: R2 cleanup after finalize failed', r2Key, deleteError);
+      });
+      const responseError = uploadFinalizeError(error);
+      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
     }
 
-    return NextResponse.json({ upload: data });
+    return NextResponse.json({ upload });
   } catch (err) {
     console.error('Confirm error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

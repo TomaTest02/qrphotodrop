@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { deleteByPrefix, abortMultipartUpload } from '@/lib/r2';
+import {
+  abortMultipartUpload,
+  deleteByPrefix,
+  isNoSuchUploadError,
+  prefixIsEmpty,
+} from '@/lib/r2';
+import { processDueStorageRechecks } from '@/lib/accountDeletion';
 import { getSettings, num } from '@/lib/settings';
 
 export const runtime = 'nodejs';
@@ -49,53 +55,96 @@ export async function GET(request) {
   const expired = (events || []).filter((ev) => isExpired(ev, tierMonths));
   let deletedFiles = 0;
   let processedEvents = 0;
-  const r2Errors = [];
+  const failedEvents = [];
 
   for (const ev of expired) {
-    const newlyExpired = ev.status !== 'expired';
-
-    // Reziduuri în DB (pentru evenimentele deja expirate sărim dacă nu e nimic de curățat)
-    const [{ data: up }, { data: ar }, { data: wi }, { data: sess }] = await Promise.all([
-      admin.from('uploads').select('id').eq('event_id', ev.id).limit(1),
-      admin.from('archives').select('id').eq('event_id', ev.id).limit(1),
-      admin.from('wishes').select('id').eq('event_id', ev.id).limit(1),
-      admin.from('multipart_sessions').select('id, r2_key, upload_id, status').eq('event_id', ev.id),
-    ]);
-    const hasResidual = up?.length || ar?.length || wi?.length || (sess?.length);
-    if (!newlyExpired && !hasResidual) continue; // deja curat
-
-    // Oprim sesiunile multipart active (altfel rămân bucăți incomplete în R2)
-    for (const s of sess || []) {
-      if (['pending', 'uploading'].includes(s.status) && s.r2_key && s.upload_id) {
-        await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
+    // Marcarea `expired` se face ÎNAINTE de R2. Update-ul serializează cu RPC-urile
+    // de finalizare, astfel încât după acest punct nu mai poate apărea conținut nou.
+    if (ev.status !== 'expired') {
+      const { error: expireError } = await admin
+        .from('events')
+        .update({ status: 'expired' })
+        .eq('id', ev.id);
+      if (expireError) {
+        console.error('Cleanup: event status update failed', ev.id, expireError);
+        failedEvents.push(ev.id);
+        continue;
       }
     }
 
-    // R2: ștergem TOT sub prefixe (media + arhive + orfani + multipart incomplet)
-    for (const prefix of [`events/${ev.id}/`, `archives/${ev.id}/`]) {
+    const { data: sessions, error: sessionsError } = await admin
+      .from('multipart_sessions')
+      .select('r2_key, upload_id')
+      .eq('event_id', ev.id)
+      .in('status', ['pending', 'uploading']);
+    if (sessionsError) {
+      console.error('Cleanup: multipart query failed', ev.id, sessionsError);
+      failedEvents.push(ev.id);
+      continue;
+    }
+
+    let cleanupFailed = false;
+    for (const session of sessions || []) {
+      try {
+        await abortMultipartUpload(session.r2_key, session.upload_id);
+      } catch (error) {
+        if (!isNoSuchUploadError(error)) {
+          console.error('Cleanup: multipart abort failed', ev.id, error);
+          cleanupFailed = true;
+          break;
+        }
+      }
+    }
+    if (cleanupFailed) {
+      failedEvents.push(ev.id);
+      continue;
+    }
+
+    // Scanăm prefixele și pentru evenimente deja expirate. Astfel prindem un obiect
+    // single-PUT urcat cu un URL emis înainte de expirare, dar confirmat mai târziu.
+    const prefixes = [`events/${ev.id}/`, `archives/${ev.id}/`];
+    for (const prefix of prefixes) {
       try {
         deletedFiles += await deleteByPrefix(prefix);
-      } catch (e) {
-        console.error('Cleanup: deleteByPrefix failed', prefix, e.message);
-        r2Errors.push(prefix);
+        if (!(await prefixIsEmpty(prefix))) throw new Error('prefix not empty after delete');
+      } catch (error) {
+        console.error('Cleanup: R2 cleanup failed', prefix, error);
+        cleanupFailed = true;
+        break;
       }
     }
+    if (cleanupFailed) {
+      failedEvents.push(ev.id);
+      continue;
+    }
 
-    // DB: ștergem tot conținutul personal (media + urări + arhive + sesiuni).
-    // Păstrăm doar contul organizatorului și rândul evenimentului, marcat `expired`.
-    await admin.from('uploads').delete().eq('event_id', ev.id);
-    await admin.from('archives').delete().eq('event_id', ev.id);
-    await admin.from('wishes').delete().eq('event_id', ev.id);
-    await admin.from('multipart_sessions').delete().eq('event_id', ev.id);
-    if (newlyExpired) await admin.from('events').update({ status: 'expired' }).eq('id', ev.id);
+    // DB se curăță într-o singură tranzacție și numai după confirmarea R2.
+    const { data: purged, error: purgeError } = await admin
+      .rpc('purge_expired_event_data', { p_event_id: ev.id });
+    if (purgeError || !purged) {
+      console.error('Cleanup: DB purge failed', ev.id, purgeError);
+      failedEvents.push(ev.id);
+      continue;
+    }
+
     processedEvents++;
   }
 
-  console.log(`Cleanup: ${processedEvents} evenimente curățate, ${deletedFiles} fișiere șterse.`);
+  let storageRechecks = { completed: 0, failed: 0 };
+  try {
+    storageRechecks = await processDueStorageRechecks(admin);
+  } catch (error) {
+    console.error('Cleanup: storage deletion jobs failed', error);
+    storageRechecks.failed = 1;
+  }
+
+  const ok = failedEvents.length === 0 && storageRechecks.failed === 0;
+  console.log(`Cleanup: ${processedEvents} evenimente curățate, ${deletedFiles} fișiere șterse, ${failedEvents.length + storageRechecks.failed} eșecuri.`);
   return NextResponse.json({
-    ok: true,
+    ok,
     processedEvents,
     deletedFiles,
-    r2Errors: r2Errors.length || undefined,
-  });
+    failedEvents: failedEvents.length,
+    storageRechecks,
+  }, { status: ok ? 200 : 500 });
 }

@@ -41,16 +41,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Evenimentul nu mai este activ.' }, { status: 403 });
     }
 
-    const { data, error } = await supabase.from('wishes').insert({
-      event_id: event.id,
-      first_name: firstName,
-      last_name: lastName || '',
-      email: email || null,
-      message,
-    }).select().single();
+    // RPC-ul blochează rândul evenimentului; cronul nu poate șterge urările și apoi
+    // să apară o urare nouă dintr-o cerere care verificase statusul mai devreme.
+    const { data, error } = await supabase
+      .rpc('insert_wish_if_event_active', {
+        p_event_id: event.id,
+        p_first_name: firstName,
+        p_last_name: lastName || '',
+        p_email: email || null,
+        p_message: message,
+      })
+      .single();
 
     if (error) {
       console.error('Wish insert error:', error);
+      if (error.message?.includes('EVENT_NOT_ACTIVE')) {
+        return NextResponse.json({ error: 'Evenimentul nu mai este activ.' }, { status: 410 });
+      }
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 

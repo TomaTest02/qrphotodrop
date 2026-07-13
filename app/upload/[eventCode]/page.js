@@ -588,7 +588,7 @@ export default function GuestUploadPage({ params }) {
           ) : (
             <Lock size={12} weight="light" /> 
           )}
-          {event?.is_gallery_public ? 'Album public activ' : 'Pozele tale sunt private și accesibile doar mirilor'}
+          {event?.is_gallery_public ? 'Album public activ' : 'Galeria invitaților este dezactivată'}
         </p>
 
         {event?.is_gallery_public && (
@@ -701,7 +701,7 @@ export default function GuestUploadPage({ params }) {
 
       <p className={styles.fileNote}>Maxim {lim.maxPhotos} de poze și {lim.maxVideos} clipuri odată · poze până la {sizeLabel(lim.maxPhotoBytes)} · clipuri până la {sizeLabel(lim.maxVideoBytes)}</p>
       <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '8px', lineHeight: 1.5, padding: '0 12px' }}>
-        Încarcă doar conținut pentru care ai acordul persoanelor din imagini. Prin încărcare accepți prelucrarea conform{' '}
+        Încarcă doar conținut pe care ai dreptul să îl distribui și informează persoanele din imagini. Detalii despre prelucrare în{' '}
         <a href="/confidentialitate" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Politicii de Confidențialitate</a>.
       </p>
     </PageShell>
@@ -888,7 +888,7 @@ export default function GuestUploadPage({ params }) {
         </div>
 
         <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center', lineHeight: 1.5, margin: '0 0 8px', padding: '0 12px' }}>
-          Prin trimitere accepți prelucrarea datelor conform{' '}
+          Datele din urare sunt transmise organizatorului evenimentului. Detalii în{' '}
           <a href="/confidentialitate" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Politicii de Confidențialitate</a>.
         </p>
 

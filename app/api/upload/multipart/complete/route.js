@@ -4,6 +4,7 @@ import {
   getPublicUrl, deleteObject, r2Client,
   listAllParts, completeMultipartUpload, abortMultipartUpload,
 } from '@/lib/r2';
+import { finalizeUploadRecord, uploadFinalizeError } from '@/lib/uploads';
 import { HeadObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'nodejs';
@@ -84,32 +85,28 @@ export async function POST(request) {
       .replace(/[^a-zA-Z0-9._\-\s]/g, '')
       .substring(0, 255);
 
-    const { data, error } = await supabase.from('uploads').insert({
-      event_id: s.event_id,
-      r2_key: s.r2_key,
-      public_url: publicUrl,
-      file_type: isVideo ? 'video' : 'photo',
-      size_bytes: actualSize,
-      original_name: safeOriginalName,
-    }).select().single();
+    const { upload, error } = await finalizeUploadRecord(supabase, {
+      eventId: s.event_id,
+      r2Key: s.r2_key,
+      publicUrl,
+      fileType: isVideo ? 'video' : 'photo',
+      sizeBytes: actualSize,
+      originalName: safeOriginalName,
+      multipartSessionId: s.id,
+    });
 
     if (error) {
-      // 23505 = unique_violation pe r2_key → rândul există deja (dublă finalizare) → idempotent
-      if (error.code === '23505') {
-        const { data: existing } = await supabase.from('uploads').select().eq('r2_key', s.r2_key).single();
-        await supabase.from('multipart_sessions').update({ status: 'completed' }).eq('id', s.id);
-        return NextResponse.json({ upload: existing });
-      }
-      // Altă eroare DB → nu lăsăm fișier orfan
-      await deleteObject(s.r2_key).catch(() => {});
+      await deleteObject(s.r2_key).catch((deleteError) => {
+        console.error('Multipart complete R2 cleanup failed:', s.r2_key, deleteError);
+      });
       await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
-      console.error('Multipart complete DB error:', error);
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      console.error('Multipart complete finalize error:', error);
+      const responseError = uploadFinalizeError(error);
+      return NextResponse.json({ error: responseError.message }, { status: responseError.status });
     }
 
-    // Sesiune finalizată → iese din „reserved", intră în „used" (rândul din uploads)
-    await supabase.from('multipart_sessions').update({ status: 'completed' }).eq('id', s.id);
-    return NextResponse.json({ upload: data });
+    // RPC-ul marchează sesiunea completed în aceeași tranzacție cu insertul uploadului.
+    return NextResponse.json({ upload });
   } catch (err) {
     console.error('Multipart complete error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

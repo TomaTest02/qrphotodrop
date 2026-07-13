@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { deleteByPrefix, prefixIsEmpty, abortMultipartUpload } from '@/lib/r2';
+import { cleanUserStorage, scheduleStorageRecheck } from '@/lib/accountDeletion';
 import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 
 export async function GET() {
@@ -63,33 +63,15 @@ export async function DELETE(request) {
   const block = guardAdminTarget({ actorId: user.id, targetId: userId, roster, destructive: true });
   if (block) return NextResponse.json({ error: block.error }, { status: block.status });
 
-  // Curățare R2 REZISTENTĂ la erori (la fel ca ștergerea self-service):
-  // abort multipart → ambele prefixe → confirmăm gol → abia apoi Auth/DB.
-  const { data: events } = await admin.from('events').select('id').eq('user_id', userId);
-  const eventIds = (events || []).map((e) => e.id);
-  const prefixes = eventIds.flatMap((id) => [`events/${id}/`, `archives/${id}/`]);
-
-  if (eventIds.length) {
-    const { data: sessions } = await admin
-      .from('multipart_sessions').select('r2_key, upload_id, status').in('event_id', eventIds);
-    for (const s of sessions || []) {
-      if (['pending', 'uploading'].includes(s.status) && s.r2_key && s.upload_id) {
-        await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
-      }
-    }
-  }
-
-  for (const prefix of prefixes) {
-    try {
-      await deleteByPrefix(prefix);
-    } catch (e) {
-      console.error('admin delete: R2 cleanup failed', prefix, e.message);
-      return NextResponse.json({ error: 'Curățarea fișierelor a eșuat. Reîncearcă.' }, { status: 500 });
-    }
-  }
-  for (const prefix of prefixes) {
-    const empty = await prefixIsEmpty(prefix).catch(() => false);
-    if (!empty) return NextResponse.json({ error: 'Curățarea fișierelor nu s-a confirmat.' }, { status: 500 });
+  try {
+    const eventIds = await cleanUserStorage(admin, userId, 'admin delete');
+    await scheduleStorageRecheck(admin, userId, eventIds);
+  } catch (error) {
+    console.error('admin delete: cleanup failed', error);
+    return NextResponse.json(
+      { error: 'Curățarea fișierelor a eșuat. Contul nu a fost șters; reîncearcă.' },
+      { status: 500 },
+    );
   }
 
   // Abia acum ștergem din Auth (cascade ON DELETE curăță users/events/uploads/wishes/archives)
