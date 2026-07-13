@@ -26,8 +26,7 @@ export default function ConfidentialitatePage() {
         <p>
           Platforma QRPhotoDrop (qrphotodrop.com) este operată de echipa QRPhotoDrop
           („Operatorul", „noi"). Pentru orice întrebare privind datele personale ne poți contacta
-          la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a> sau la
-          +40 (720) 726 619.
+          la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
         </p>
       </section>
 
@@ -143,7 +142,7 @@ export default function ConfidentialitatePage() {
         <div className={styles.contact}>
           <p>
             Pentru orice întrebare privind datele personale:{' '}
-            <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a> · +40 (720) 726 619.
+            <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
           </p>
         </div>
       </section>
