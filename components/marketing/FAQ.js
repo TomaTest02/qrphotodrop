@@ -13,7 +13,7 @@ const DEFAULT_QUESTIONS = [
   { q: 'Cât timp rămân stocate amintirile?', a: 'Stocarea este garantată 3 luni de la data evenimentului. În tot acest timp poți adăuga conținut sau descărca arhiva ori de câte ori dorești.' },
   { q: 'Există limită de invitați?', a: 'Nu. Oricine are acces la link sau la codul QR poate încărca, indiferent de numărul de persoane.' },
   { q: 'Cum descarc toate pozele?', a: 'Din dashboard-ul tău de organizator, apeși butonul „Generează arhiva" și primești un email cu link-ul de descărcare când aceasta este gata.' },
-  { q: 'Datele sunt sigure?', a: 'Absolut. Fiecare eveniment are un token unic securizat. Invitații nu pot vedea alte evenimente. Respectăm integral reglementările GDPR.' },
+  { q: 'Datele sunt sigure?', a: 'Da. Fiecare eveniment are un cod unic securizat, iar invitații nu pot vedea alte evenimente. Prelucrăm datele conform GDPR — detaliile sunt în Politica de Confidențialitate.' },
 ];
 
 export default function FAQ({ questions = DEFAULT_QUESTIONS }) {

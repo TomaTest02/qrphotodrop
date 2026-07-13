@@ -700,6 +700,10 @@ export default function GuestUploadPage({ params }) {
       </div>
 
       <p className={styles.fileNote}>Maxim {lim.maxPhotos} de poze și {lim.maxVideos} clipuri odată · poze până la {sizeLabel(lim.maxPhotoBytes)} · clipuri până la {sizeLabel(lim.maxVideoBytes)}</p>
+      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '8px', lineHeight: 1.5, padding: '0 12px' }}>
+        Încarcă doar conținut pentru care ai acordul persoanelor din imagini. Prin încărcare accepți prelucrarea conform{' '}
+        <a href="/confidentialitate" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Politicii de Confidențialitate</a>.
+      </p>
     </PageShell>
   );
 
