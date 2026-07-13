@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Next 16 permite implicit doar calitatea 75. Hero.js folosește 60 (intenționat,
+    // pt. performanță) → 6 warning-uri „quality 60 not configured". Le permitem explicit.
+    qualities: [60, 75],
     // Servim AVIF > WebP > JPEG — PageSpeed adore asta
     formats: ['image/avif', 'image/webp'],
     // Cache imagini optimizate timp de 1 an pe CDN
