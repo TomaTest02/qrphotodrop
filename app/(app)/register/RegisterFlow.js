@@ -252,6 +252,10 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
               și înțeleg că serviciul este furnizat „ca atare", pe propriul meu risc.
             </span>
           </label>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '0 0 4px', lineHeight: 1.5 }}>
+            Îți prelucrăm datele conform{' '}
+            <a href="/confidentialitate" target="_blank" rel="noopener noreferrer" className={styles.helpLink}>Politicii de Confidențialitate</a>.
+          </p>
           <button type="submit" className={styles.submitBtn} disabled={loading || !acceptedTerms}>
             {loading ? 'Se trimite cererea...' : 'Trimite cererea'}
           </button>

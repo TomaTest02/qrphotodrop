@@ -74,7 +74,9 @@ export async function POST(request) {
     // Kill-switch: `confirm` finalizează un fișier deja urcat în R2 — NU îl blocăm aici
     // (altfel ar rămâne orfan); kill-switch-ul oprește doar PORNIREA (presigned/create/direct).
     const settings = await getSettings(supabase);
-    const isVideo = fileType === 'video';
+    // Tipul e derivat din calea r2Key (folderul a fost setat server-side la presigned),
+    // NU din `fileType` trimis de client.
+    const isVideo = r2Key.includes('/videos/');
     if (actualSize > maxBytesFor(settings, isVideo)) {
       await deleteObject(r2Key).catch(() => {});
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
@@ -100,7 +102,7 @@ export async function POST(request) {
       event_id: event.id,
       r2_key: r2Key,
       public_url: publicUrl,
-      file_type: fileType || 'photo',
+      file_type: isVideo ? 'video' : 'photo',
       size_bytes: actualSize,
       original_name: safeOriginalName,
     }).select().single();

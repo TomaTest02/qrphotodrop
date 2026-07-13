@@ -28,6 +28,13 @@ export default function ConfidentialitatePage() {
           („Operatorul", „noi"). Pentru orice întrebare privind datele personale ne poți contacta
           la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
         </p>
+        <p>
+          <strong>Roluri:</strong> pentru datele contului de organizator, QRPhotoDrop este operatorul
+          de date. Pentru fotografiile, clipurile și datele invitaților colectate la un eveniment,
+          <strong> organizatorul evenimentului este operatorul de date</strong> (controller), iar
+          QRPhotoDrop acționează ca <strong>furnizor al platformei</strong> (persoană împuternicită),
+          prelucrând aceste date conform scopului serviciului.
+        </p>
       </section>
 
       <section className={styles.section}>

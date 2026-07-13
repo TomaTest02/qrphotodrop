@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { r2Client, getPublicUrl } from '@/lib/r2';
+import { r2Client, getPublicUrl, deleteObject, extForMime } from '@/lib/r2';
 import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
+
+export const runtime = 'nodejs';
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
     const eventCode = formData.get('eventCode');
-    const fileType = formData.get('fileType');
     const originalName = formData.get('originalName');
 
     if (!file || !eventCode) {
@@ -26,8 +27,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Tip de fișier nepermis' }, { status: 400 });
     }
 
-    // Tipul fișierului — limita reală de mărime e verificată mai jos, din setările globale
+    // Tipul fișierului derivat EXCLUSIV din MIME (whitelisted mai sus)
     const isVideo = file.type.startsWith('video/');
+
+    // Plafon STRICT pentru încărcarea directă: fișierul se citește integral în RAM,
+    // deci limităm dur (independent de setarea globală, care e pentru calea multipart).
+    const DIRECT_MAX_BYTES = 40 * 1024 * 1024; // 40 MB
+    if (file.size > DIRECT_MAX_BYTES) {
+      return NextResponse.json({ error: 'Fișier prea mare pentru încărcare directă.' }, { status: 413 });
+    }
 
     // Sanitizare event code (doar alfanumeric)
     const sanitizedEventCode = eventCode.replace(/[^a-zA-Z0-9]/g, '');
@@ -57,10 +65,14 @@ export async function POST(request) {
     }
 
     // Verificam storage
-    const { data: uploadStats } = await supabase
+    const { data: uploadStats, error: usageErr } = await supabase
       .from('uploads')
       .select('size_bytes')
       .eq('event_id', event.id);
+    if (usageErr) {
+      console.error('direct: usage query error', usageErr);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
 
     const totalUsed = uploadStats ? uploadStats.reduce((acc, curr) => acc + (curr.size_bytes || 0), 0) : 0;
     const fileSize = file.size;
@@ -70,9 +82,10 @@ export async function POST(request) {
     }
 
     // Upload direct catre R2 de pe server (fara CORS issues)
+    // Folder + extensie derivate din MIME (nu din client)
     const contentType = file.type;
-    const ext = contentType.split('/')[1] || 'bin';
-    const folder = fileType === 'video' ? 'videos' : 'photos';
+    const ext = extForMime(contentType);
+    const folder = isVideo ? 'videos' : 'photos';
     const r2Key = `events/${event.id}/${folder}/${uuidv4()}.${ext}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -91,15 +104,24 @@ export async function POST(request) {
       .replace(/[^a-zA-Z0-9._\-\s]/g, '')
       .substring(0, 255);
 
-    // Salvam in baza de date
-    await supabase.from('uploads').insert({
+    // Salvam in baza de date; daca esueaza, NU lasam fisier orfan in R2
+    const { error: insErr } = await supabase.from('uploads').insert({
       event_id: event.id,
-      file_type: fileType || (file.type.startsWith('video/') ? 'video' : 'photo'),
+      file_type: isVideo ? 'video' : 'photo',
       original_name: safeOriginalName,
       r2_key: r2Key,
       public_url: publicUrl,
       size_bytes: fileSize,
     });
+    if (insErr) {
+      console.error('direct: insert error, curățăm R2', insErr);
+      try {
+        await deleteObject(r2Key);
+      } catch (delErr) {
+        console.error('direct: curățarea R2 după insert eșuat A EȘUAT (orfan)', r2Key, delErr.message);
+      }
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, publicUrl, r2Key });
   } catch (err) {

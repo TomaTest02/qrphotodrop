@@ -123,7 +123,7 @@ export default function AdminSetariPage() {
       {/* Retenție */}
       <div style={card}>
         <div style={{ ...labelStyle, marginBottom: '4px' }}>Retenție fișiere (auto-ștergere)</div>
-        <div style={{ ...hintStyle, marginBottom: '16px' }}>Câte luni după data evenimentului se păstrează pozele/clipurile, per pachet. Contul și urările rămân.</div>
+        <div style={{ ...hintStyle, marginBottom: '16px' }}>Câte luni după data evenimentului se păstrează conținutul (poze, clipuri și urări), per pachet. La expirare se șterge tot conținutul; rămâne doar contul organizatorului.</div>
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
           {RETENTION_FIELDS.map((f) => (
             <div key={f.key}>

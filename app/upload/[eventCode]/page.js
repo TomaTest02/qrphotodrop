@@ -749,7 +749,7 @@ export default function GuestUploadPage({ params }) {
         Încarcă {files.length} {files.length === 1 ? 'fișier' : 'fișiere'}
       </button>
 
-      <p className={styles.privacyNote}><Lock size={12} weight="light" /> Fișierele sunt criptate și accesibile doar organizatorilor</p>
+      <p className={styles.privacyNote}><Lock size={12} weight="light" /> Fișierele sunt trimise printr-o conexiune securizată și gestionate de organizatorul evenimentului</p>
     </PageShell>
   );
 
@@ -886,6 +886,11 @@ export default function GuestUploadPage({ params }) {
           />
           <span className={styles.charHint}>{wishForm.message.length} caractere</span>
         </div>
+
+        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center', lineHeight: 1.5, margin: '0 0 8px', padding: '0 12px' }}>
+          Prin trimitere accepți prelucrarea datelor conform{' '}
+          <a href="/confidentialitate" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Politicii de Confidențialitate</a>.
+        </p>
 
         <button type="submit" className={styles.submitBtn} disabled={loading}>
           {loading ? (

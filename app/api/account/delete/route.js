@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { deleteByPrefix } from '@/lib/r2';
+import { deleteByPrefix, prefixIsEmpty, abortMultipartUpload } from '@/lib/r2';
 
 export const runtime = 'nodejs';
 
-// Ștergere cont self-service (GDPR — dreptul la ștergere).
-// Șterge întâi fișierele din R2, apoi contul auth (care cascadează în DB:
-// users → events → uploads/wishes/archives). Ordinea contează: dacă am șterge
-// întâi DB-ul, am pierde id-urile evenimentelor necesare pentru curățarea R2.
+// Ștergere cont self-service (GDPR — dreptul la ștergere), REZISTENTĂ la erori.
+// Ordinea e critică: curățăm R2 COMPLET și CONFIRMAT înainte de a atinge Auth/DB.
+// Dacă R2 eșuează, ne oprim și NU răspundem success — cheile rămân în DB pentru retry
+// (o reapelare reia curățarea), deci nu pierdem referințele.
 export async function POST() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -22,19 +22,43 @@ export async function POST() {
     return NextResponse.json({ error: 'Conturile de administrator nu pot fi șterse de aici.' }, { status: 403 });
   }
 
-  // 1. Fișierele din R2 pentru toate evenimentele userului
   const { data: events } = await admin.from('events').select('id').eq('user_id', user.id);
-  const r2Errors = [];
-  for (const ev of events || []) {
-    try {
-      await deleteByPrefix(`events/${ev.id}/`);
-    } catch (e) {
-      console.error('account delete: R2 cleanup failed for event', ev.id, e.message);
-      r2Errors.push(ev.id);
+  const eventIds = (events || []).map((e) => e.id);
+  const prefixes = eventIds.flatMap((id) => [`events/${id}/`, `archives/${id}/`]);
+
+  // 1. Oprim sesiunile multipart active (altfel rămân bucăți incomplete în R2)
+  if (eventIds.length) {
+    const { data: sessions } = await admin
+      .from('multipart_sessions')
+      .select('r2_key, upload_id, status')
+      .in('event_id', eventIds);
+    for (const s of sessions || []) {
+      if (['pending', 'uploading'].includes(s.status) && s.r2_key && s.upload_id) {
+        await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
+      }
     }
   }
 
-  // 2. Contul auth → cascade ON DELETE în Postgres (users/events/uploads/wishes/archives)
+  // 2. Ștergem TOT din R2 (media + arhive + orfani). La orice eroare → oprim, fără success.
+  for (const prefix of prefixes) {
+    try {
+      await deleteByPrefix(prefix);
+    } catch (e) {
+      console.error('account delete: R2 cleanup failed', prefix, e.message);
+      return NextResponse.json({ error: 'Curățarea fișierelor a eșuat. Te rugăm reîncearcă.' }, { status: 500 });
+    }
+  }
+
+  // 3. Confirmăm că prefixele sunt goale ÎNAINTE de a șterge contul
+  for (const prefix of prefixes) {
+    const empty = await prefixIsEmpty(prefix).catch(() => false);
+    if (!empty) {
+      console.error('account delete: prefix not empty after cleanup', prefix);
+      return NextResponse.json({ error: 'Curățarea fișierelor nu s-a confirmat. Te rugăm reîncearcă.' }, { status: 500 });
+    }
+  }
+
+  // 4. Abia acum ștergem contul auth → cascade ON DELETE în Postgres
   const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
   if (delErr) {
     console.error('account delete: auth deleteUser failed', delErr.message);
@@ -43,6 +67,6 @@ export async function POST() {
   // plasă de siguranță dacă rândul public.users nu a fost prins de cascade
   await admin.from('users').delete().eq('id', user.id);
 
-  console.log(`[account] user ${user.id} și-a șters contul (R2 errors: ${r2Errors.length})`);
+  console.log(`[account] user ${user.id} și-a șters contul (R2 confirmat curat).`);
   return NextResponse.json({ success: true });
 }

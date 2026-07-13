@@ -16,7 +16,7 @@ export async function POST(request) {
     const supabase = createAdminClient();
     const { data: s } = await supabase
       .from('multipart_sessions')
-      .select('id, event_id, r2_key, upload_id, expected_size_bytes, part_size_bytes, total_parts, status')
+      .select('id, event_id, r2_key, upload_id, expected_size_bytes, part_size_bytes, total_parts, status, expires_at')
       .eq('id', sessionId)
       .single();
 
@@ -29,6 +29,16 @@ export async function POST(request) {
     }
     if (!['pending', 'uploading'].includes(s.status)) {
       return NextResponse.json({ error: 'Session not active' }, { status: 409 });
+    }
+
+    // Retenție: nu finaliza dacă sesiunea a expirat sau evenimentul nu mai e activ
+    // (altfel s-ar introduce media nouă după cleanup, care n-ar mai fi ștearsă).
+    const sessionExpired = s.expires_at && new Date(s.expires_at).getTime() < Date.now();
+    const { data: ev } = await supabase.from('events').select('status').eq('id', s.event_id).single();
+    if (sessionExpired || ev?.status !== 'active') {
+      await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
+      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      return NextResponse.json({ error: 'Sesiune expirată sau eveniment inactiv.' }, { status: 410 });
     }
 
     // ── Validăm bucățile ÎNAINTE de a asambla obiectul ──

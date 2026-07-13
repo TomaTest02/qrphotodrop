@@ -27,12 +27,18 @@ export async function POST(request) {
     // Get event
     const { data: event } = await supabase
       .from('events')
-      .select('id')
+      .select('id, status')
       .eq('event_code', eventCode)
       .single();
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    // Nu acceptăm urări noi pe evenimente expirate/inactive (altfel introducem date
+    // personale după cleanup, care n-ar mai fi șterse — vezi retenția GDPR).
+    if (event.status !== 'active') {
+      return NextResponse.json({ error: 'Evenimentul nu mai este activ.' }, { status: 403 });
     }
 
     const { data, error } = await supabase.from('wishes').insert({

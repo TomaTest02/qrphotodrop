@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { deleteByPrefix } from '@/lib/r2';
+import { deleteByPrefix, prefixIsEmpty, abortMultipartUpload } from '@/lib/r2';
 import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 
 export async function GET() {
@@ -63,17 +63,36 @@ export async function DELETE(request) {
   const block = guardAdminTarget({ actorId: user.id, targetId: userId, roster, destructive: true });
   if (block) return NextResponse.json({ error: block.error }, { status: block.status });
 
-  // Întâi curățăm fișierele din R2 pentru toate evenimentele userului (altfel rămân orfane)
+  // Curățare R2 REZISTENTĂ la erori (la fel ca ștergerea self-service):
+  // abort multipart → ambele prefixe → confirmăm gol → abia apoi Auth/DB.
   const { data: events } = await admin.from('events').select('id').eq('user_id', userId);
-  for (const ev of events || []) {
-    try {
-      await deleteByPrefix(`events/${ev.id}/`);
-    } catch (e) {
-      console.error('admin delete: R2 cleanup failed for event', ev.id, e.message);
+  const eventIds = (events || []).map((e) => e.id);
+  const prefixes = eventIds.flatMap((id) => [`events/${id}/`, `archives/${id}/`]);
+
+  if (eventIds.length) {
+    const { data: sessions } = await admin
+      .from('multipart_sessions').select('r2_key, upload_id, status').in('event_id', eventIds);
+    for (const s of sessions || []) {
+      if (['pending', 'uploading'].includes(s.status) && s.r2_key && s.upload_id) {
+        await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
+      }
     }
   }
 
-  // Delete from auth (cascade ON DELETE curăță users/events/uploads/wishes/archives)
+  for (const prefix of prefixes) {
+    try {
+      await deleteByPrefix(prefix);
+    } catch (e) {
+      console.error('admin delete: R2 cleanup failed', prefix, e.message);
+      return NextResponse.json({ error: 'Curățarea fișierelor a eșuat. Reîncearcă.' }, { status: 500 });
+    }
+  }
+  for (const prefix of prefixes) {
+    const empty = await prefixIsEmpty(prefix).catch(() => false);
+    if (!empty) return NextResponse.json({ error: 'Curățarea fișierelor nu s-a confirmat.' }, { status: 500 });
+  }
+
+  // Abia acum ștergem din Auth (cascade ON DELETE curăță users/events/uploads/wishes/archives)
   const { error: authErr } = await admin.auth.admin.deleteUser(userId);
   if (authErr) {
     console.error('admin delete: deleteUser failed', authErr.message);

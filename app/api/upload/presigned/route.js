@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { getPresignedUploadUrl } from '@/lib/r2';
+import { getPresignedUploadUrl, extForMime } from '@/lib/r2';
 import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
   try {
-    const { eventCode, contentType, fileType, sizeBytes = 0 } = await request.json();
+    const { eventCode, contentType, sizeBytes = 0 } = await request.json();
 
     if (!eventCode || !contentType) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -42,7 +42,8 @@ export async function POST(request) {
     if (uploadsPaused(settings)) {
       return NextResponse.json({ error: 'Încărcările sunt momentan în pauză' }, { status: 503 });
     }
-    const isVideo = fileType === 'video' || contentType.startsWith('video/');
+    // Tipul e derivat EXCLUSIV din MIME (whitelisted mai sus), nu din client
+    const isVideo = contentType.startsWith('video/');
     if (Number(sizeBytes) > maxBytesFor(settings, isVideo)) {
       return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
@@ -59,9 +60,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Storage limit exceeded for this event' }, { status: 403 });
     }
 
-    // Generate unique key
-    const ext = contentType.split('/')[1] || 'bin';
-    const folder = fileType === 'video' ? 'videos' : 'photos';
+    // Generate unique key — folder + extensie derivate din MIME (nu din client)
+    const ext = extForMime(contentType);
+    const folder = isVideo ? 'videos' : 'photos';
     const r2Key = `events/${event.id}/${folder}/${uuidv4()}.${ext}`;
 
     // Get presigned URL

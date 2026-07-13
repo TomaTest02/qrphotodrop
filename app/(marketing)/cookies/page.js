@@ -33,9 +33,11 @@ export default function CookiesPage() {
         <h2 className={styles.h2}>2. Ce cookie-uri folosim</h2>
         <ul>
           <li>
-            <strong>Cookie de sesiune (esențial):</strong> setat la autentificare pentru a-ți menține
-            sesiunea de organizator. Fără el nu te poți loga. Nu necesită consimțământ, fiind strict
-            necesar funcționării serviciului.
+            <strong>Cookie de autentificare (esențial):</strong> setat de Supabase la logare pentru a-ți
+            menține sesiunea de organizator. Este un cookie <strong>persistent</strong> (nu se șterge la
+            închiderea browserului): rămâne pe dispozitiv până la deconectare sau până la expirarea
+            token-ului, fiind reîmprospătat automat cât timp ești activ. Fără el nu te poți loga, deci
+            nu necesită consimțământ (strict necesar).
           </li>
         </ul>
         <p>
