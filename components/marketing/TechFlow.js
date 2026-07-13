@@ -45,7 +45,7 @@ const STEPS = [
     num: '05',
     title: 'Centralizarea Live și Arhiva ZIP',
     short: 'Management facil și descărcare rapidă.',
-    desc: 'Toate fotografiile, videoclipurile și mesajele de felicitare sosesc instant în dashboard-ul tău, organizate separat în două tab-uri. Oricând dorești, generezi arhiva ZIP direct pe email-ul tău pentru a descărca toate amintirile la rezoluție maximă.',
+    desc: 'Toate fotografiile, videoclipurile și mesajele de felicitare sosesc instant în dashboard-ul tău, organizate separat în două tab-uri. Oricând dorești, apeși „Descarcă tot" și primești o arhivă ZIP cu toate amintirile la rezoluție maximă — descărcarea începe direct în browser.',
     badge: 'Pasul 5 — Centralizare'
   }
 ];
@@ -476,10 +476,10 @@ export default function TechFlow({ type = 'nunta' }) {
                       <div className={styles.dashboardZipBar}>
                         <span className={styles.zipIconSymbol}>📦</span>
                         <div style={{ textAlign: 'left', flex: 1 }}>
-                          <span className={styles.zipTitleText}>Generează Arhiva cu amintiri</span>
-                          <span className={styles.zipDescText}>Vei primi un email când arhiva ZIP este gata.</span>
+                          <span className={styles.zipTitleText}>Descarcă toate amintirile</span>
+                          <span className={styles.zipDescText}>Arhiva ZIP se descarcă direct în browser.</span>
                         </div>
-                        <button type="button" className={styles.zipActionBtnMock}>Generează ZIP</button>
+                        <button type="button" className={styles.zipActionBtnMock}>Descarcă tot</button>
                       </div>
 
                     </div>

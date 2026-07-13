@@ -90,21 +90,16 @@ export async function PUT(request, { params }) {
       if (!ALLOWED_STATUS.includes(status)) {
         return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
       }
-      const { error: stErr } = await admin.from('users').update({ status }).eq('id', id);
+      // ATOMIC: userul ȘI evenimentul se schimbă în ACEEAȘI tranzacție (RPC).
+      // Înainte erau două update-uri separate → dacă al doilea eșua, userul apărea
+      // suspendat dar evenimentul rămânea activ, iar invitații puteau încărca.
+      // La suspendare se opresc doar evenimentele ACTIVE; la reactivare repornesc
+      // DOAR cele oprite din cauza suspendării. Evenimentele `expired` nu se ating.
+      const { error: stErr } = await admin.rpc('set_user_status', {
+        p_user_id: id,
+        p_status: status,
+      });
       if (stErr) throw stErr;
-
-      // Suspendarea trebuie să oprească și UPLOAD-urile invitaților, nu doar dashboardul.
-      // Evenimentul devine 'inactive' → RPC-urile de upload/urare îl resping.
-      // Reactivarea îl repune 'active'. NU atingem NICIODATĂ evenimentele 'expired'.
-      if (status === 'suspended') {
-        const { error: evErr } = await admin.from('events')
-          .update({ status: 'inactive' }).eq('user_id', id).eq('status', 'active');
-        if (evErr) throw evErr;
-      } else if (status === 'active') {
-        const { error: evErr } = await admin.from('events')
-          .update({ status: 'active' }).eq('user_id', id).eq('status', 'inactive');
-        if (evErr) throw evErr;
-      }
     }
 
     // 2. Update password if provided

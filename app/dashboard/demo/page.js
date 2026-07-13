@@ -265,17 +265,17 @@ export default function OrganizerDemoDashboard() {
                   </button>
                   {archiveState === 'idle' && (
                     <button onClick={handleGenerateArchive} className={styles.archiveBtn}>
-                      <Archive size={15} weight="light" /> Generează arhiva
+                      <Archive size={15} weight="light" /> Descarcă tot
                     </button>
                   )}
                   {archiveState === 'generating' && (
                     <button disabled className={styles.archiveBtn} style={{ background: '#b58c77', cursor: 'wait' }}>
-                      <Spinner size={15} weight="light" style={{ animation: 'spin 1s linear infinite' }} /> Se generează...
+                      <Spinner size={15} weight="light" style={{ animation: 'spin 1s linear infinite' }} /> Se pregătește arhiva...
                     </button>
                   )}
                   {archiveState === 'ready' && (
                     <button disabled className={styles.archiveBtn} style={{ background: '#10b981' }}>
-                      <Check size={15} weight="light" /> Gata (Vezi email)
+                      <Check size={15} weight="light" /> Arhivă descărcată
                     </button>
                   )}
                 </div>
@@ -284,12 +284,12 @@ export default function OrganizerDemoDashboard() {
               {/* Archive generating message banner */}
               {archiveState === 'generating' && (
                 <div className={styles.archiveBannerPending}>
-                  <WarningCircle size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva este în curs de generare, durează câteva minute. Va fi trimis un email când este gata. Recomandăm descărcarea arhivei printr-o conexiune Wi-Fi!
+                  <WarningCircle size={15} weight="light" style={{ flexShrink: 0 }} /> Se pregătește arhiva ZIP cu toate pozele și clipurile. Descărcarea începe automat în browser. Recomandăm o conexiune Wi-Fi!
                 </div>
               )}
               {archiveState === 'ready' && (
                 <div className={styles.archiveBannerSuccess}>
-                  <Check size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva a fost trimisă cu succes la <strong>demo@qrphotodrop.com</strong>! Verifică email-ul pentru link-ul de descărcare securizat.
+                  <Check size={15} weight="light" style={{ flexShrink: 0 }} /> Arhiva ZIP a fost descărcată! O găsești în folderul <strong>Descărcări</strong> al dispozitivului tău.
                 </div>
               )}
 
