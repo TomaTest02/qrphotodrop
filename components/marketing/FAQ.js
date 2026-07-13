@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 const DEFAULT_QUESTIONS = [
   { q: 'Cum funcționează QRPhotoDrop?', a: 'Alegi pachetul potrivit evenimentului tău, primești un cod QR unic. Invitații îl scanează cu camera telefonului și încarcă poze, clipuri și urări direct din browser, fără cont și fără aplicație.' },
   { q: 'Ce tip de fișiere pot încărca invitații?', a: 'Fotografii (JPG, PNG, HEIC) și clipuri video de până la 1.5 GB fiecare. Toate se păstrează la calitatea originală — fără compresie.' },
-  { q: 'Cât timp rămân stocate amintirile?', a: 'Stocarea este garantată 3 luni de la data evenimentului. În tot acest timp poți adăuga conținut sau descărca arhiva ori de câte ori dorești.' },
+  { q: 'Cât timp rămân stocate amintirile?', a: 'Între 1 și 3 luni de la data evenimentului, în funcție de pachetul ales. În tot acest timp poți adăuga conținut sau descărca arhiva ori de câte ori dorești.' },
   { q: 'Există limită de invitați?', a: 'Nu. Oricine are acces la link sau la codul QR poate încărca, indiferent de numărul de persoane.' },
   { q: 'Cum descarc toate pozele?', a: 'Din dashboard-ul tău de organizator, apeși butonul „Generează arhiva" și primești un email cu link-ul de descărcare când aceasta este gata.' },
   { q: 'Datele sunt sigure?', a: 'Da. Fiecare eveniment are un cod unic securizat, iar invitații nu pot vedea alte evenimente. Prelucrăm datele conform GDPR — detaliile sunt în Politica de Confidențialitate.' },

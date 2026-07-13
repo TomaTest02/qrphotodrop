@@ -7,13 +7,14 @@ import styles from './Stats.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Doar afirmații ADEVĂRATE și verificabile. (Cifrele inventate — „10.000+ evenimente",
-// „2M+ poze", „99.9% uptime" — au fost scoase: erau publicitate înșelătoare.)
+// Cifre REALE, verificabile — caracteristici ale produsului, nu statistici de trafic.
+// (Cele inventate — „10.000+ evenimente", „2M+ poze", „99.9% uptime" — au fost scoase:
+// erau publicitate înșelătoare. Nu le repune fără date reale care să le susțină.)
 const stats = [
-  { number: '0 secunde', label: 'Timp Instalare', desc: 'Funcționează instant în browser, fără cont sau aplicație.' },
-  { number: 'Fără cont', label: 'Pentru Invitați', desc: 'Scanează codul QR și încarcă direct. Nimic de instalat.' },
-  { number: 'Calitate originală', label: 'Zero Compresie', desc: 'Pozele și clipurile se păstrează exact cum au fost făcute.' },
-  { number: '1.5 GB', label: 'Per Clip Video', desc: 'Chiar și filmările lungi, la calitate maximă.' }
+  { number: '0', label: 'Aplicații de Instalat', desc: 'Invitații scanează codul QR și încarcă direct din browser.' },
+  { number: '1.5 GB', label: 'Per Clip Video', desc: 'Chiar și filmările lungi, la calitate maximă.' },
+  { number: '100%', label: 'Calitate Originală', desc: 'Zero compresie — pozele rămân exact cum au fost făcute.' },
+  { number: 'Până la 3 luni', label: 'Stocare Inclusă', desc: 'În funcție de pachet — timp suficient să descarci arhiva completă.' }
 ];
 
 export default function Stats() {

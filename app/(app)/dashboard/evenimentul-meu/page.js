@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { createClient } from '@/lib/supabase/client';
+import { createZipNamer } from '@/lib/zipNames';
 import { Check, Package, X, Printer, Sparkle, Pencil, DownloadSimple, CaretLeft, CaretRight, MapPin, Calendar, PencilSimple, ArrowUp, Copy, Clock, CloudArrowUp, WhatsappLogo } from '@phosphor-icons/react';
 import styles from './dashboard.module.css';
 import pricingStyles from '@/components/marketing/PricingSection.module.css';
@@ -391,46 +392,46 @@ export default function EvenimentulMeuPage() {
         return;
       }
 
-      // Două sau mai multe → ZIP
+      // Două sau mai multe → ZIP.
+      // Nume unice, case-insensitive (JSZip suprascrie duplicatele) — vezi lib/zipNames.js.
       const zip = new JSZip();
-      const usedNames = new Set();
+      const uniqueName = createZipNamer();
       const failed = [];
-
-      // CRITIC: doi invitați pot avea poze cu ACELAȘI nume (ex. IMG_1234.jpg de pe
-      // telefoane diferite). JSZip SUPRASCRIE fișierele cu nume identic → se pierdeau
-      // poze în tăcere. Generăm nume unic: „IMG_1234.jpg" → „IMG_1234 (2).jpg".
-      const uniqueName = (raw, id) => {
-        const base = (raw || `fisier_${id}`).trim() || `fisier_${id}`;
-        if (!usedNames.has(base)) { usedNames.add(base); return base; }
-        const dot = base.lastIndexOf('.');
-        const stem = dot > 0 ? base.slice(0, dot) : base;
-        const ext = dot > 0 ? base.slice(dot) : '';
-        let n = 2;
-        while (usedNames.has(`${stem} (${n})${ext}`)) n++;
-        const candidate = `${stem} (${n})${ext}`;
-        usedNames.add(candidate);
-        return candidate;
-      };
+      let incluse = 0;
 
       for (let i = 0; i < toDownload.length; i++) {
         const item = toDownload[i];
         try {
           const blob = await fetchFile(item);
           zip.file(uniqueName(item.original_name, item.id), blob);
+          incluse++;
         } catch (e) {
           console.error(`Eroare la descărcarea fișierului ${item.id}:`, e);
           failed.push(item.original_name || `fisier_${item.id}`);
         }
         setDownloadProgress(Math.round(((i + 1) / toDownload.length) * 100));
       }
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, `Eveniment_${event?.event_code || 'QRPhotoDrop'}.zip`);
 
-      // Nu mai ascundem eșecurile — userul trebuie să știe ce NU e în arhivă
+      const asteptate = toDownload.length;
+
+      // NU salvăm o arhivă INCOMPLETĂ fără acordul explicit al userului
       if (failed.length) {
         const lista = failed.slice(0, 10).join('\n');
         const rest = failed.length > 10 ? `\n…și încă ${failed.length - 10}` : '';
-        alert(`Atenție: ${failed.length} fișier(e) NU au putut fi descărcate și nu sunt în arhivă:\n\n${lista}${rest}\n\nÎncearcă din nou pentru ele.`);
+        const salveazaOricum = window.confirm(
+          `ATENȚIE — ARHIVĂ INCOMPLETĂ\n\n`
+          + `Așteptate: ${asteptate}\nIncluse: ${incluse}\nLipsesc: ${failed.length}\n\n`
+          + `Fișiere care NU vor fi în arhivă:\n${lista}${rest}\n\n`
+          + `Salvezi totuși arhiva incompletă?\n(Anulează = nu se salvează nimic, poți reîncerca)`
+        );
+        if (!salveazaOricum) return;
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `Eveniment_${event?.event_code || 'QRPhotoDrop'}.zip`);
+
+      if (!failed.length) {
+        alert(`Arhivă completă ✅\n\nAșteptate: ${asteptate}\nIncluse: ${incluse}`);
       }
     } catch (error) {
       console.error('Eroare la descărcare:', error);
