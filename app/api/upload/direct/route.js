@@ -26,18 +26,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Tip de fișier nepermis' }, { status: 400 });
     }
 
-    // Limitam dimensiunea fisierelor in functie de tip:
-    // Poze: max 150MB (iPhone 15 Pro Max ProRAW = ~75MB, HEIC normal = 5-15MB)
-    // Video: max 2GB (4K 60fps 1min = ~400MB, 5min = ~2GB)
+    // Tipul fișierului — limita reală de mărime e verificată mai jos, din setările globale
     const isVideo = file.type.startsWith('video/');
-    const MAX_PHOTO_SIZE = 150 * 1024 * 1024;   // 150MB
-    const MAX_VIDEO_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
-
-    const maxAllowed = isVideo ? MAX_VIDEO_SIZE : MAX_PHOTO_SIZE;
-    if (file.size > maxAllowed) {
-      const limitLabel = isVideo ? '2GB' : '150MB';
-      return NextResponse.json({ error: `Fișierul depășește limita de ${limitLabel}` }, { status: 400 });
-    }
 
     // Sanitizare event code (doar alfanumeric)
     const sanitizedEventCode = eventCode.replace(/[^a-zA-Z0-9]/g, '');

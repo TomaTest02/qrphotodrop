@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 
 export async function GET(request, { params }) {
   try {
@@ -59,6 +60,14 @@ export async function PUT(request, { params }) {
 
     const { phone, newPassword, eventData, status, payment, referredBy } = body;
 
+    // Protecție admin: nu poți modifica alt administrator decât dacă ești owner/manager;
+    // proprietarul e intangibil pentru alții; suspendarea sau resetarea parolei unui
+    // admin sunt acțiuni destructive (fără auto-acțiune / fără proprietar / minim 1 admin).
+    const destructive = status === 'suspended' || !!(newPassword && newPassword.length >= 6);
+    const roster = await getAdminRoster(admin);
+    const block = guardAdminTarget({ actorId: user.id, targetId: id, roster, destructive });
+    if (block) return NextResponse.json({ error: block.error }, { status: block.status });
+
     // 1. Update phone in public.users
     if (phone !== undefined) {
       await admin.from('users').update({ phone }).eq('id', id);
@@ -81,7 +90,8 @@ export async function PUT(request, { params }) {
       if (!ALLOWED_STATUS.includes(status)) {
         return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
       }
-      await admin.from('users').update({ status }).eq('id', id);
+      const { error: stErr } = await admin.from('users').update({ status }).eq('id', id);
+      if (stErr) throw stErr;
     }
 
     // 2. Update password if provided

@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminRoster, guardAdminTarget, MANAGERS_KEY } from '@/lib/adminRoles';
 
-// Cheile din app_settings (fără coloană nouă în DB)
-const MANAGERS_KEY = 'admin_managers'; // CSV de user id-uri (în afară de proprietar)
-const OWNER_KEY = 'owner_user_id';     // opțional; altfel = cel mai vechi admin
-const NON_ADMIN_ROLE = 'organizer';    // rolul la retragerea dreptului
+const NON_ADMIN_ROLE = 'organizer'; // rolul la retragerea dreptului
 
 // Verifică sesiunea + rolul admin. Întoarce { admin, meId } sau { error }.
 async function requireAdmin() {
@@ -18,46 +16,23 @@ async function requireAdmin() {
   return { admin, meId: user.id };
 }
 
-// Starea curentă: lista de admini + cine e proprietar + cine e manager.
-async function roster(admin) {
-  const { data: admins } = await admin
-    .from('users')
-    .select('id, email, status, created_at')
-    .eq('role', 'admin')
-    .order('created_at', { ascending: true });
-
-  const { data: settings } = await admin
-    .from('app_settings')
-    .select('key, value')
-    .in('key', [MANAGERS_KEY, OWNER_KEY]);
-
-  const map = {};
-  (settings || []).forEach((s) => { map[s.key] = s.value; });
-
-  const list = admins || [];
-  const ownerId = map[OWNER_KEY] || (list[0]?.id ?? null); // proprietar = setat sau cel mai vechi admin
-  const managerIds = new Set((map[MANAGERS_KEY] || '').split(',').map((x) => x.trim()).filter(Boolean));
-  if (ownerId) managerIds.add(ownerId);
-
-  return { list, ownerId, managerIds };
-}
-
 // Salvează setul de manageri (fără proprietar — el e mereu manager implicit).
 async function saveManagers(admin, managerIds, ownerId) {
   const value = [...managerIds].filter((id) => id !== ownerId).join(',');
-  await admin.from('app_settings').upsert(
+  const { error } = await admin.from('app_settings').upsert(
     { key: MANAGERS_KEY, value, updated_at: new Date().toISOString() },
     { onConflict: 'key' }
   );
+  return error;
 }
 
 // Payload comun (folosit la GET și după fiecare mutație).
 async function payload(admin, meId) {
-  const { list, ownerId, managerIds } = await roster(admin);
+  const { admins, ownerId, managerIds } = await getAdminRoster(admin);
   return {
     meId,
     canManage: managerIds.has(meId),
-    admins: list.map((a) => ({
+    admins: admins.map((a) => ({
       id: a.id,
       email: a.email,
       status: a.status,
@@ -79,7 +54,8 @@ export async function POST(request) {
   if (error) return error;
 
   const { action, email, userId, value } = await request.json().catch(() => ({}));
-  const { list, ownerId, managerIds } = await roster(admin);
+  const roster = await getAdminRoster(admin);
+  const { admins, ownerId, managerIds } = roster;
 
   // Doar managerii (proprietar + desemnați) pot gestiona adminii
   if (!managerIds.has(meId)) {
@@ -93,19 +69,25 @@ export async function POST(request) {
     if (!target) return NextResponse.json({ error: 'Nu există un cont cu acest email.' }, { status: 404 });
     if (target.status !== 'active') return NextResponse.json({ error: 'Contul nu este activ — nu poate fi făcut admin.' }, { status: 400 });
     if (target.role === 'admin') return NextResponse.json({ error: 'Acest cont este deja administrator.' }, { status: 409 });
-    await admin.from('users').update({ role: 'admin' }).eq('id', target.id);
+    const { error: upErr } = await admin.from('users').update({ role: 'admin' }).eq('id', target.id);
+    if (upErr) { console.error('grant admin error:', upErr); return NextResponse.json({ error: 'Eroare la salvare.' }, { status: 500 }); }
     console.log(`[admins] ${meId} a făcut admin pe ${target.id}`);
     return NextResponse.json(await payload(admin, meId));
   }
 
   if (action === 'revoke') {
     if (!userId) return NextResponse.json({ error: 'userId lipsă.' }, { status: 400 });
-    if (userId === ownerId) return NextResponse.json({ error: 'Proprietarul nu poate fi retras.' }, { status: 403 });
-    if (userId === meId) return NextResponse.json({ error: 'Nu te poți retrage pe tine însuți.' }, { status: 400 });
-    if (list.length <= 1) return NextResponse.json({ error: 'Trebuie să rămână cel puțin un administrator.' }, { status: 400 });
-    await admin.from('users').update({ role: NON_ADMIN_ROLE }).eq('id', userId);
+    // Gardă comună: proprietar intangibil, fără auto-demitere, minim 1 admin
+    const block = guardAdminTarget({ actorId: meId, targetId: userId, roster, destructive: true });
+    if (block) return NextResponse.json({ error: block.error }, { status: block.status });
+    const { error: upErr } = await admin.from('users').update({ role: NON_ADMIN_ROLE }).eq('id', userId);
+    if (upErr) { console.error('revoke admin error:', upErr); return NextResponse.json({ error: 'Eroare la salvare.' }, { status: 500 }); }
     // curățăm și din manageri dacă era
-    if (managerIds.has(userId)) { managerIds.delete(userId); await saveManagers(admin, managerIds, ownerId); }
+    if (managerIds.has(userId)) {
+      managerIds.delete(userId);
+      const mErr = await saveManagers(admin, managerIds, ownerId);
+      if (mErr) { console.error('revoke manager cleanup error:', mErr); return NextResponse.json({ error: 'Eroare la salvare.' }, { status: 500 }); }
+    }
     console.log(`[admins] ${meId} a retras adminul lui ${userId}`);
     return NextResponse.json(await payload(admin, meId));
   }
@@ -113,9 +95,10 @@ export async function POST(request) {
   if (action === 'setManager') {
     if (!userId) return NextResponse.json({ error: 'userId lipsă.' }, { status: 400 });
     if (userId === ownerId) return NextResponse.json({ error: 'Proprietarul este deja manager permanent.' }, { status: 400 });
-    if (!list.some((a) => a.id === userId)) return NextResponse.json({ error: 'Utilizatorul nu este administrator.' }, { status: 400 });
+    if (!admins.some((a) => a.id === userId)) return NextResponse.json({ error: 'Utilizatorul nu este administrator.' }, { status: 400 });
     if (value) managerIds.add(userId); else managerIds.delete(userId);
-    await saveManagers(admin, managerIds, ownerId);
+    const mErr = await saveManagers(admin, managerIds, ownerId);
+    if (mErr) { console.error('setManager error:', mErr); return NextResponse.json({ error: 'Eroare la salvare.' }, { status: 500 }); }
     console.log(`[admins] ${meId} a setat manager=${!!value} pentru ${userId}`);
     return NextResponse.json(await payload(admin, meId));
   }

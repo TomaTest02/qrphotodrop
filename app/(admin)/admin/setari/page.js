@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 
 // Etichete + descrieri pentru câmpurile numerice
 const NUM_FIELDS = [
-  { key: 'max_photo_mb', label: 'Mărime max / poză (MB)', hint: 'Peste această valoare, poza e respinsă.' },
-  { key: 'max_video_mb', label: 'Mărime max / clip video (MB)', hint: '1536 MB = 1.5 GB. Clipurile mari folosesc upload multipart.' },
-  { key: 'max_photos_per_upload', label: 'Max poze / o încărcare', hint: 'Câte poze poate trimite un invitat odată.' },
-  { key: 'max_videos_per_upload', label: 'Max clipuri / o încărcare', hint: 'Câte clipuri poate trimite un invitat odată.' },
+  { key: 'max_photo_mb', label: 'Mărime max / poză (MB)', hint: 'Verificată pe server (mărimea reală din R2). Peste valoare, poza e respinsă.' },
+  { key: 'max_video_mb', label: 'Mărime max / clip video (MB)', hint: 'Verificată pe server. 1536 MB = 1.5 GB. Clipurile mari folosesc multipart.' },
+  { key: 'max_photos_per_upload', label: 'Max poze / o încărcare', hint: 'Doar ghidaj în interfață (UX) — nu e impus pe server.' },
+  { key: 'max_videos_per_upload', label: 'Max clipuri / o încărcare', hint: 'Doar ghidaj în interfață (UX) — nu e impus pe server.' },
 ];
 const RETENTION_FIELDS = [
   { key: 'retention_months_intim', label: 'Intim (luni)' },
@@ -108,7 +108,7 @@ export default function AdminSetariPage() {
       {/* Limite upload */}
       <div style={card}>
         <div style={{ ...labelStyle, marginBottom: '4px' }}>Limite upload</div>
-        <div style={{ ...hintStyle, marginBottom: '16px' }}>Se aplică la toate paginile de încărcare (verificate și pe server).</div>
+        <div style={{ ...hintStyle, marginBottom: '16px' }}>Limitele de <strong>mărime</strong> sunt impuse pe server (mărimea reală din R2). Limitele de <strong>număr</strong> sunt doar ghidaj în interfață.</div>
         {NUM_FIELDS.map((f) => (
           <div key={f.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', padding: '10px 0', borderTop: '1px solid var(--color-cream)' }}>
             <div>
@@ -136,13 +136,13 @@ export default function AdminSetariPage() {
 
       {/* Alertă stocare */}
       <div style={{ ...card, borderColor: storageOver ? '#d97706' : 'var(--color-cream-darker)', background: storageOver ? '#fffbeb' : '#fff' }}>
-        <div style={{ ...labelStyle, marginBottom: '4px' }}>Alertă stocare R2</div>
-        <div style={{ ...hintStyle, marginBottom: '16px' }}>Când stocarea totală depășește pragul, apare o avertizare în dashboard-ul admin.</div>
+        <div style={{ ...labelStyle, marginBottom: '4px' }}>Alertă stocare (înregistrată în DB)</div>
+        <div style={{ ...hintStyle, marginBottom: '16px' }}>Suma mărimilor din tabelul <code>uploads</code>, nu dimensiunea reală a bucketului R2 (poate exclude fișiere orfane sau multipart incomplet). Când depășește pragul, apare o avertizare în dashboard-ul admin.</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: '15px', color: 'var(--color-text)' }}>Prag alertă (GB)</div>
             <div style={hintStyle}>
-              Folosit acum: <strong style={{ color: storageOver ? '#b45309' : '#166534' }}>{storageUsedGb} GB</strong>
+              Înregistrat în DB acum: <strong style={{ color: storageOver ? '#b45309' : '#166534' }}>{storageUsedGb} GB</strong>
               {storageOver ? ' — prag depășit ⚠️' : ' ✓'}
             </div>
           </div>

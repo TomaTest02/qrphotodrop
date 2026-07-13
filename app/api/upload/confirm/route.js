@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPublicUrl, deleteObject, r2Client } from '@/lib/r2';
+import { getSettings, maxBytesFor } from '@/lib/settings';
 import { HeadObjectCommand } from '@aws-sdk/client-s3';
 
 const ALLOWED_FILE_TYPES = ['photo', 'video'];
@@ -23,8 +24,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
 
-    // Validare sizeBytes (nu acceptăm valori negative sau excesiv de mari)
-    if (sizeBytes !== undefined && (sizeBytes < 0 || sizeBytes > 2 * 1024 * 1024 * 1024)) {
+    // Validare de bază a mărimii DECLARATE (verificarea REALĂ se face mai jos, din R2)
+    if (sizeBytes !== undefined && (typeof sizeBytes !== 'number' || sizeBytes < 0)) {
       return NextResponse.json({ error: 'Invalid file size' }, { status: 400 });
     }
 
@@ -69,12 +70,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Object not found in storage' }, { status: 400 });
     }
 
-    // Limită per fișier (poză 150MB / video 2GB), pe mărimea reală
+    // Limită per fișier pe mărimea REALĂ, folosind limitele globale ACTUALE (nu valori fixe).
+    // Kill-switch: `confirm` finalizează un fișier deja urcat în R2 — NU îl blocăm aici
+    // (altfel ar rămâne orfan); kill-switch-ul oprește doar PORNIREA (presigned/create/direct).
+    const settings = await getSettings(supabase);
     const isVideo = fileType === 'video';
-    const MAX_SIZE = isVideo ? 2 * 1024 * 1024 * 1024 : 150 * 1024 * 1024;
-    if (actualSize > MAX_SIZE) {
+    if (actualSize > maxBytesFor(settings, isVideo)) {
       await deleteObject(r2Key).catch(() => {});
-      return NextResponse.json({ error: 'Fișierul depășește limita' }, { status: 413 });
+      return NextResponse.json({ error: 'Fișierul depășește limita permisă' }, { status: 413 });
     }
 
     // Plafon de stocare per eveniment, pe mărimea reală

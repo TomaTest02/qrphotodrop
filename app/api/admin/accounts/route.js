@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { deleteByPrefix } from '@/lib/r2';
+import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 
 export async function GET() {
   const supabase = await createClient();
@@ -53,7 +54,14 @@ export async function DELETE(request) {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { userId } = await request.json();
+  if (!userId) return NextResponse.json({ error: 'userId lipsă' }, { status: 400 });
   const admin = createAdminClient();
+
+  // Protecție admin: proprietarul intangibil, fără auto-ștergere, minim 1 admin.
+  // (Dacă ținta e un cont obișnuit, garda permite — munca normală de admin.)
+  const roster = await getAdminRoster(admin);
+  const block = guardAdminTarget({ actorId: user.id, targetId: userId, roster, destructive: true });
+  if (block) return NextResponse.json({ error: block.error }, { status: block.status });
 
   // Întâi curățăm fișierele din R2 pentru toate evenimentele userului (altfel rămân orfane)
   const { data: events } = await admin.from('events').select('id').eq('user_id', userId);
@@ -66,7 +74,11 @@ export async function DELETE(request) {
   }
 
   // Delete from auth (cascade ON DELETE curăță users/events/uploads/wishes/archives)
-  await admin.auth.admin.deleteUser(userId);
+  const { error: authErr } = await admin.auth.admin.deleteUser(userId);
+  if (authErr) {
+    console.error('admin delete: deleteUser failed', authErr.message);
+    return NextResponse.json({ error: 'Ștergerea contului a eșuat.' }, { status: 500 });
+  }
 
   // Plasă de siguranță pentru rândul din users
   await admin.from('users').delete().eq('id', userId);

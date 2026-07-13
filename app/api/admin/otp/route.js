@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request) {
@@ -13,7 +14,14 @@ export async function POST(request) {
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { userId } = await request.json();
+    if (!userId) return NextResponse.json({ error: 'userId lipsă' }, { status: 400 });
     const admin = createAdminClient();
+
+    // Protecție admin: nu reseta parola altui admin decât dacă ești owner/manager;
+    // proprietarul nu poate primi reset de la altcineva (acțiune destructivă).
+    const roster = await getAdminRoster(admin);
+    const block = guardAdminTarget({ actorId: user.id, targetId: userId, roster, destructive: true });
+    if (block) return NextResponse.json({ error: block.error }, { status: block.status });
 
     // Get user
     const { data: targetUser } = await admin.from('users').select('email').eq('id', userId).single();

@@ -100,7 +100,7 @@ export default async function AdminDashboard() {
     { label: 'Cereri noi (pending)', value: pending, icon: '🔔' },
     { label: 'Neplătite', value: unpaidActive, icon: '⚠️' },
     { label: 'Expiră ≤30 zile', value: expiringSoon.length, icon: '⏳' },
-    { label: 'Stocare folosită', value: `${(storageTotal / GB).toFixed(1)} GB`, icon: '☁️' },
+    { label: 'Stocare (în DB)', value: `${(storageTotal / GB).toFixed(1)} GB`, icon: '☁️' },
     { label: 'Total fișiere', value: totalPhotos + totalVideos, icon: '📸' },
   ];
 
@@ -110,8 +110,8 @@ export default async function AdminDashboard() {
 
       {storageOver && (
         <div style={{ background: '#fffbeb', border: '1px solid #d97706', color: '#92400e', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', fontSize: '14px', fontWeight: 600 }}>
-          ⚠️ Stocare R2: <strong>{storageTotalGb.toFixed(1)} GB</strong> — a depășit pragul de alertă de {storageAlertGb} GB.
-          {' '}Verifică <a href="/admin/setari" style={{ color: '#92400e', textDecoration: 'underline' }}>setările de retenție</a> pentru a reduce costul.
+          ⚠️ Stocare înregistrată în DB: <strong>{storageTotalGb.toFixed(1)} GB</strong> — a depășit pragul de alertă de {storageAlertGb} GB.
+          {' '}(Sumă din <code>uploads</code>, nu bucketul real.) Verifică <a href="/admin/setari" style={{ color: '#92400e', textDecoration: 'underline' }}>setările de retenție</a> pentru a reduce costul.
         </div>
       )}
 
