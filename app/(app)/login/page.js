@@ -16,6 +16,9 @@ async function routeUser(supabase, userId) {
   if (profile?.status === 'pending') {
     await supabase.auth.signOut();
     window.location.href = '/pending';
+  } else if (profile?.status === 'suspended') {
+    await supabase.auth.signOut();
+    window.location.href = '/pending?suspended=1';
   } else if (profile?.must_change_password) {
     window.location.href = '/first-login';
   } else if (profile?.role === 'admin') {

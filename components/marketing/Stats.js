@@ -7,11 +7,13 @@ import styles from './Stats.module.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Doar afirmații ADEVĂRATE și verificabile. (Cifrele inventate — „10.000+ evenimente",
+// „2M+ poze", „99.9% uptime" — au fost scoase: erau publicitate înșelătoare.)
 const stats = [
-  { number: '10,000+', label: 'Evenimente', desc: 'Nunți, botezuri și petreceri memorabile.' },
-  { number: '2M+', label: 'Poze Descărcate', desc: 'Amintiri prețioase salvate la calitate originală.' },
-  { number: '99.9%', label: 'Uptime Server', desc: 'Acces rapid și garantat în orice moment.' },
-  { number: '0 secunde', label: 'Timp Instalare', desc: 'Funcționează instant în browser, fără cont sau aplicație.' }
+  { number: '0 secunde', label: 'Timp Instalare', desc: 'Funcționează instant în browser, fără cont sau aplicație.' },
+  { number: 'Fără cont', label: 'Pentru Invitați', desc: 'Scanează codul QR și încarcă direct. Nimic de instalat.' },
+  { number: 'Calitate originală', label: 'Zero Compresie', desc: 'Pozele și clipurile se păstrează exact cum au fost făcute.' },
+  { number: '1.5 GB', label: 'Per Clip Video', desc: 'Chiar și filmările lungi, la calitate maximă.' }
 ];
 
 export default function Stats() {

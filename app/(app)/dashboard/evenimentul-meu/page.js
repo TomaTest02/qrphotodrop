@@ -393,18 +393,45 @@ export default function EvenimentulMeuPage() {
 
       // Două sau mai multe → ZIP
       const zip = new JSZip();
+      const usedNames = new Set();
+      const failed = [];
+
+      // CRITIC: doi invitați pot avea poze cu ACELAȘI nume (ex. IMG_1234.jpg de pe
+      // telefoane diferite). JSZip SUPRASCRIE fișierele cu nume identic → se pierdeau
+      // poze în tăcere. Generăm nume unic: „IMG_1234.jpg" → „IMG_1234 (2).jpg".
+      const uniqueName = (raw, id) => {
+        const base = (raw || `fisier_${id}`).trim() || `fisier_${id}`;
+        if (!usedNames.has(base)) { usedNames.add(base); return base; }
+        const dot = base.lastIndexOf('.');
+        const stem = dot > 0 ? base.slice(0, dot) : base;
+        const ext = dot > 0 ? base.slice(dot) : '';
+        let n = 2;
+        while (usedNames.has(`${stem} (${n})${ext}`)) n++;
+        const candidate = `${stem} (${n})${ext}`;
+        usedNames.add(candidate);
+        return candidate;
+      };
+
       for (let i = 0; i < toDownload.length; i++) {
         const item = toDownload[i];
         try {
           const blob = await fetchFile(item);
-          zip.file(item.original_name || `fisier_${item.id}`, blob);
+          zip.file(uniqueName(item.original_name, item.id), blob);
         } catch (e) {
           console.error(`Eroare la descărcarea fișierului ${item.id}:`, e);
+          failed.push(item.original_name || `fisier_${item.id}`);
         }
         setDownloadProgress(Math.round(((i + 1) / toDownload.length) * 100));
       }
       const zipBlob = await zip.generateAsync({ type: 'blob' });
       saveAs(zipBlob, `Eveniment_${event?.event_code || 'QRPhotoDrop'}.zip`);
+
+      // Nu mai ascundem eșecurile — userul trebuie să știe ce NU e în arhivă
+      if (failed.length) {
+        const lista = failed.slice(0, 10).join('\n');
+        const rest = failed.length > 10 ? `\n…și încă ${failed.length - 10}` : '';
+        alert(`Atenție: ${failed.length} fișier(e) NU au putut fi descărcate și nu sunt în arhivă:\n\n${lista}${rest}\n\nÎncearcă din nou pentru ele.`);
+      }
     } catch (error) {
       console.error('Eroare la descărcare:', error);
       alert('Eroare la descărcare. Încearcă din nou.');

@@ -4,7 +4,6 @@ import HowItWorks from '@/components/marketing/HowItWorks';
 import Mockup from '@/components/marketing/Mockup';
 import EventTypes from '@/components/marketing/EventTypes';
 import Features from '@/components/marketing/Features';
-import Testimonials from '@/components/marketing/Testimonials';
 import PricingSection from '@/components/marketing/PricingSection';
 import FAQ from '@/components/marketing/FAQ';
 import CTABanner from '@/components/marketing/CTABanner';
@@ -98,7 +97,9 @@ export default function HomePage() {
       <Mockup />
       <EventTypes />
       <Features />
-      <Testimonials />
+      {/* Testimonialele erau FICTIVE (persoane și citate inventate) → scoase, era
+          publicitate înșelătoare. Repune <Testimonials /> DOAR cu recenzii reale,
+          cu acordul clienților. Componenta a rămas în components/marketing/. */}
       <PricingSection />
       <FAQ />
       <CTABanner />

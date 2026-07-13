@@ -133,13 +133,18 @@ export async function proxy(request) {
     // Verificăm rolul de admin din tabelul users
     const { data: profile } = await supabase
       .from('users')
-      .select('role')
+      .select('role, status')
       .eq('id', user.id)
       .single();
 
     if (profile?.role !== 'admin') {
       // User logat dar nu admin — îl trimitem la dashboard-ul lui
       return redirectWithCookies(new URL('/dashboard/evenimentul-meu', request.url));
+    }
+
+    // Nici adminii suspendați nu au acces
+    if (profile?.status === 'suspended') {
+      return redirectWithCookies(new URL('/pending?suspended=1', request.url));
     }
 
     return response;
@@ -162,6 +167,11 @@ export async function proxy(request) {
 
     if (profile?.status === 'pending') {
       return redirectWithCookies(new URL('/pending', request.url));
+    }
+
+    // Conturile SUSPENDATE nu au voie în dashboard (înainte treceau — gaură de acces)
+    if (profile?.status === 'suspended') {
+      return redirectWithCookies(new URL('/pending?suspended=1', request.url));
     }
 
     // Adminul logat care accesează /dashboard — îl trimitem la /admin

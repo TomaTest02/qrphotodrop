@@ -92,6 +92,19 @@ export async function PUT(request, { params }) {
       }
       const { error: stErr } = await admin.from('users').update({ status }).eq('id', id);
       if (stErr) throw stErr;
+
+      // Suspendarea trebuie să oprească și UPLOAD-urile invitaților, nu doar dashboardul.
+      // Evenimentul devine 'inactive' → RPC-urile de upload/urare îl resping.
+      // Reactivarea îl repune 'active'. NU atingem NICIODATĂ evenimentele 'expired'.
+      if (status === 'suspended') {
+        const { error: evErr } = await admin.from('events')
+          .update({ status: 'inactive' }).eq('user_id', id).eq('status', 'active');
+        if (evErr) throw evErr;
+      } else if (status === 'active') {
+        const { error: evErr } = await admin.from('events')
+          .update({ status: 'active' }).eq('user_id', id).eq('status', 'inactive');
+        if (evErr) throw evErr;
+      }
     }
 
     // 2. Update password if provided
