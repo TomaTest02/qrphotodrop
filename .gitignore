@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Copii manuale ale migrarilor, pentru lipit in Supabase SQL Editor.
+# Sursa de adevar ramane supabase/migrations/ — astea NU se commit.
+supabase/RULEAZA_ACUM*.sql

@@ -57,13 +57,18 @@ export async function POST(request) {
     const tier = STORAGE_LIMITS[packageTier] ? packageTier : 'intim';
     const safMaxStorageBytes = STORAGE_LIMITS[tier] * 1024 * 1024 * 1024;
 
-    // Verificam ca userul nu are deja un eveniment activ (un cont = un eveniment)
-    const { data: existingEvent } = await createAdminClient()
+    // Verificam ca userul nu are deja un eveniment (un cont = un eveniment).
+    // maybeSingle(): 0 randuri e un caz NORMAL aici, nu o eroare.
+    const { data: existingEvent, error: existingErr } = await createAdminClient()
       .from('events')
       .select('id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
+    if (existingErr) {
+      console.error('events/create: existing check failed:', existingErr);
+      return NextResponse.json({ error: 'Eroare la verificare' }, { status: 500 });
+    }
     if (existingEvent) {
       return NextResponse.json({ error: 'Ai deja un eveniment activ' }, { status: 409 });
     }
@@ -94,8 +99,16 @@ export async function POST(request) {
       .single();
 
     if (insertError) {
+      // 23505 = unique_violation. DB e apararea FINALA impotriva a doua cereri
+      // concurente care trec amandoua de verificarea de mai sus: indexul
+      // events_user_id_unique lasa sa treaca doar una, a doua primeste 409.
+      const dubluEveniment = insertError.code === '23505'
+        && /events_user_id_unique|user_id/i.test(`${insertError.message} ${insertError.details || ''}`);
+      if (dubluEveniment) {
+        return NextResponse.json({ error: 'Ai deja un eveniment activ' }, { status: 409 });
+      }
       console.error('DB insert error:', insertError);
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Eroare la crearea evenimentului' }, { status: 500 });
     }
 
     return NextResponse.json({ event }, { status: 201 });
