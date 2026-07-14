@@ -48,11 +48,11 @@ export async function POST(request) {
     }
     // Tipul îl derivăm din MIME (NU din client)
     const isVideo = contentType.startsWith('video/');
-    if (size > maxBytesFor(settings, isVideo)) return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    if (size > maxBytesFor(settings, isVideo)) return NextResponse.json({ error: 'Fișierul depășește limita permisă.' }, { status: 413 });
 
     const partSize = R2_PART_SIZE;
     const totalParts = Math.max(1, Math.ceil(size / partSize));
-    if (totalParts > 10000) return NextResponse.json({ error: 'File too large' }, { status: 413 });
+    if (totalParts > 10000) return NextResponse.json({ error: 'Fișierul depășește limita permisă.' }, { status: 413 });
 
     const ext = extForMime(contentType);
     const folder = isVideo ? 'videos' : 'photos';
