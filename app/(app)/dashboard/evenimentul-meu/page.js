@@ -367,11 +367,11 @@ export default function EvenimentulMeuPage() {
     setDownloadLoading(true);
     setDownloadProgress(0);
 
-    // Proxy-ul rezolvă server-side upload.id → r2_key și verifică ownership-ul.
-    // Nu depindem de public_url-urile vechi, care pot indica un domeniu R2 retras.
+    // Fișierele pentru ZIP vin direct din CDN/R2; Vercel nu transportă gigabytes.
     const fetchFile = async (item) => {
-      const r = await fetch(`/api/proxy?id=${encodeURIComponent(item.id)}`);
-      if (!r.ok) throw new Error('proxy ' + r.status);
+      const url = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('cdn ' + r.status);
       return await r.blob();
     };
 
@@ -379,9 +379,13 @@ export default function EvenimentulMeuPage() {
       // Un singur fișier → descărcare directă, FĂRĂ ZIP
       if (toDownload.length === 1) {
         const item = toDownload[0];
-        const blob = await fetchFile(item);
+        const link = document.createElement('a');
+        link.href = `/api/proxy?id=${encodeURIComponent(item.id)}&download=1`;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
         setDownloadProgress(100);
-        saveAs(blob, item.original_name || `fisier_${item.id}`);
         return;
       }
 
@@ -743,7 +747,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '14px', fontWeight: 700 }}>✓</span>}
                   </button>
                   <img
-                    src={`/api/proxy?id=${encodeURIComponent(photo.id)}`}
+                    src={photo.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photo.r2_key}`}
                     alt={photo.original_name}
                     className={styles.masonryImg}
                     loading="lazy"
@@ -818,7 +822,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(video.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <video
-                    src={`/api/proxy?id=${encodeURIComponent(video.id)}#t=0.5`}
+                    src={(video.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${video.r2_key}`) + '#t=0.5'}
                     className={styles.photoImg}
                     controls
                     playsInline
@@ -965,7 +969,7 @@ export default function EvenimentulMeuPage() {
           )}
           <img
             className={styles.lbImg}
-            src={`/api/proxy?id=${encodeURIComponent(photos[lightbox].id)}`}
+            src={photos[lightbox].public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photos[lightbox].r2_key}`}
             alt={photos[lightbox].original_name}
             onClick={(e) => e.stopPropagation()}
           />
