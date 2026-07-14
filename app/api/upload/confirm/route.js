@@ -77,7 +77,8 @@ export async function POST(request) {
     // Limită per fișier pe mărimea REALĂ, folosind limitele globale ACTUALE (nu valori fixe).
     // Kill-switch: `confirm` finalizează un fișier deja urcat în R2 — NU îl blocăm aici
     // (altfel ar rămâne orfan); kill-switch-ul oprește doar PORNIREA (presigned/create/direct).
-    const settings = await getSettings(supabase);
+    // Limitele sunt setări operaționale private, citite doar server-side.
+    const settings = await getSettings();
     // Tipul e derivat din calea r2Key (folderul a fost setat server-side la presigned),
     // NU din `fileType` trimis de client.
     const isVideo = r2Key.includes('/videos/');

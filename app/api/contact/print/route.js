@@ -15,7 +15,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Trebuie să fii autentificat pentru a trimite o cerere de printare.' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Date invalide.' }, { status: 400 });
+    }
     const design = cleanSingleLine(body?.design, 50);
     const cardText = cleanMultiline(body?.cardText, 500);
 
@@ -75,14 +78,19 @@ Text Personalizat: "${cardText}"
     }
 
     if (process.env.RESEND_API_KEY) {
-      await sendContactForm({
-        firstName: 'Cerere',
-        lastName: 'Printare',
-        email: email,
-        phone: phone || '',
-        eventType: 'Comandă Printare',
-        message: message,
-      });
+      try {
+        await sendContactForm({
+          firstName: 'Cerere',
+          lastName: 'Printare',
+          email: email,
+          phone: phone || '',
+          eventType: 'Comandă Printare',
+          message: message,
+        });
+      } catch (mailError) {
+        // Cererea este deja salvată și rămâne vizibilă în admin; evităm duplicatele la retry.
+        console.error('Print request email skipped:', mailError?.message);
+      }
     }
 
     return NextResponse.json({ success: true });

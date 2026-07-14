@@ -15,7 +15,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { userId } = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Date invalide' }, { status: 400 });
+    }
+    const { userId } = body;
     if (typeof userId !== 'string' || !/^[0-9a-f-]{36}$/i.test(userId)) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
@@ -27,12 +31,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
     if (!targetUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (targetUser.status !== 'pending') {
+      return NextResponse.json({ error: 'Doar conturile în așteptare pot fi aprobate.' }, { status: 409 });
+    }
 
     // Creăm automat evenimentul din comanda făcută la înregistrare (dacă există și
     // nu are deja un eveniment). Evenimentul se creează ÎNAINTE de activarea contului,
     // ca un insert eșuat să nu lase contul activ fără QR/eveniment.
     const { data: existingEvent, error: existingError } = await admin.from('events').select('id').eq('user_id', userId).maybeSingle();
     if (existingError) return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    if (!existingEvent && !targetUser.requested_package_tier) {
+      return NextResponse.json({ error: 'Contul nu are detaliile necesare pentru crearea evenimentului.' }, { status: 400 });
+    }
     let createdEventId = null;
     if (!existingEvent && targetUser.requested_package_tier) {
       const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
@@ -57,14 +67,23 @@ export async function POST(request) {
       createdEventId = createdEvent.id;
     }
 
-    const { error: activationError } = await admin.from('users').update({ status: 'active' }).eq('id', userId);
-    if (activationError) {
+    const { data: activatedUser, error: activationError } = await admin
+      .from('users')
+      .update({ status: 'active' })
+      .eq('id', userId)
+      .eq('status', 'pending')
+      .select('id')
+      .maybeSingle();
+    if (activationError || !activatedUser) {
       if (createdEventId) {
         const { error: rollbackError } = await admin.from('events').delete().eq('id', createdEventId);
         if (rollbackError) console.error('Approve event rollback error:', createdEventId, rollbackError);
       }
-      console.error('Approve activation error:', activationError);
-      return NextResponse.json({ error: 'Contul nu a putut fi activat.' }, { status: 500 });
+      if (activationError) console.error('Approve activation error:', activationError);
+      return NextResponse.json(
+        { error: activationError ? 'Contul nu a putut fi activat.' : 'Starea contului s-a schimbat; reîncarcă pagina.' },
+        { status: activationError ? 500 : 409 },
+      );
     }
 
     // Try to send notification email (graceful — won't crash if Resend not configured)

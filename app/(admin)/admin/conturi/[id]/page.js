@@ -132,9 +132,25 @@ export default function AdminContPage({ params }) {
   const setStatus = (status) => putAccount({ status }, 'Status actualizat!');
   const approve = async () => {
     setSaving(true);
-    await fetch('/api/admin/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: id }) });
-    await loadAccount();
-    setSaving(false);
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: id }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setMessage(`Eroare: ${result.error || 'Contul nu a putut fi aprobat.'}`);
+        return;
+      }
+      setMessage('Cont aprobat cu succes!');
+      await loadAccount();
+    } catch {
+      setMessage('Eroare de conexiune la aprobarea contului.');
+    } finally {
+      setSaving(false);
+    }
   };
   const sendOTP = async () => {
     await fetch('/api/admin/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: id }) });

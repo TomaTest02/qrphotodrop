@@ -43,8 +43,19 @@ export default function FirstLoginPage() {
 
     // Update must_change_password
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('users').update({ must_change_password: false }).eq('id', user.id);
+    if (!user) {
+      setError('Sesiunea a expirat. Autentifică-te din nou cu parola nouă.');
+      setLoading(false);
+      return;
+    }
+    const { error: profileError } = await supabase
+      .from('users')
+      .update({ must_change_password: false })
+      .eq('id', user.id);
+    if (profileError) {
+      setError('Parola a fost schimbată, dar profilul nu a putut fi actualizat. Contactează suportul.');
+      setLoading(false);
+      return;
     }
 
     setLoading(false);

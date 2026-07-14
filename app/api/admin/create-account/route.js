@@ -22,7 +22,7 @@ export async function POST(request) {
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254
         || typeof password !== 'string' || password.length < 8 || password.length > 128) {
-      return NextResponse.json({ error: 'Email valid și parolă de 12–128 caractere obligatorii.' }, { status: 400 });
+      return NextResponse.json({ error: 'Email valid și parolă de 8–128 caractere obligatorii.' }, { status: 400 });
     }
     if (!ALLOWED_TYPES.includes(eventType)) return NextResponse.json({ error: 'Tip eveniment invalid' }, { status: 400 });
     if (!ALLOWED_TIERS.includes(packageTier)) return NextResponse.json({ error: 'Nivel pachet invalid' }, { status: 400 });

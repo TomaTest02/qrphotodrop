@@ -367,19 +367,12 @@ export default function EvenimentulMeuPage() {
     setDownloadLoading(true);
     setDownloadProgress(0);
 
-    // Aducem fișierul DIRECT de pe CDN (rapid, fără dublul drum prin Vercel).
-    // CORS e setat pe bucket. Fallback pe proxy doar dacă fetch-ul direct pică.
+    // Proxy-ul rezolvă server-side upload.id → r2_key și verifică ownership-ul.
+    // Nu depindem de public_url-urile vechi, care pot indica un domeniu R2 retras.
     const fetchFile = async (item) => {
-      const url = item.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${item.r2_key}`;
-      try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error('direct ' + r.status);
-        return await r.blob();
-      } catch {
-        const r = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
-        if (!r.ok) throw new Error('proxy ' + r.status);
-        return await r.blob();
-      }
+      const r = await fetch(`/api/proxy?id=${encodeURIComponent(item.id)}`);
+      if (!r.ok) throw new Error('proxy ' + r.status);
+      return await r.blob();
     };
 
     try {
@@ -750,7 +743,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(photo.id) && <span style={{ color: 'white', fontSize: '14px', fontWeight: 700 }}>✓</span>}
                   </button>
                   <img
-                    src={photo.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photo.r2_key}`}
+                    src={`/api/proxy?id=${encodeURIComponent(photo.id)}`}
                     alt={photo.original_name}
                     className={styles.masonryImg}
                     loading="lazy"
@@ -825,7 +818,7 @@ export default function EvenimentulMeuPage() {
                     {selectedIds.has(video.id) && <span style={{ color: 'white', fontSize: '13px', fontWeight: 700 }}>✓</span>}
                   </div>
                   <video
-                    src={(video.public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${video.r2_key}`) + '#t=0.5'}
+                    src={`/api/proxy?id=${encodeURIComponent(video.id)}#t=0.5`}
                     className={styles.photoImg}
                     controls
                     playsInline
@@ -972,13 +965,13 @@ export default function EvenimentulMeuPage() {
           )}
           <img
             className={styles.lbImg}
-            src={photos[lightbox].public_url || `${process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL}/${photos[lightbox].r2_key}`}
+            src={`/api/proxy?id=${encodeURIComponent(photos[lightbox].id)}`}
             alt={photos[lightbox].original_name}
             onClick={(e) => e.stopPropagation()}
           />
           <div className={styles.lbBar} onClick={(e) => e.stopPropagation()}>
             <span>{lightbox + 1} / {photos.length}</span>
-            <a className={styles.lbDownload} href={`/api/proxy?url=${encodeURIComponent(photos[lightbox].public_url || '')}`} download={photos[lightbox].original_name || 'poza.jpg'}>
+            <a className={styles.lbDownload} href={`/api/proxy?id=${encodeURIComponent(photos[lightbox].id)}&download=1`} download={photos[lightbox].original_name || 'poza.jpg'}>
               <DownloadSimple size={16} weight="bold" /> Descarcă
             </a>
           </div>
@@ -1038,7 +1031,7 @@ export default function EvenimentulMeuPage() {
                 style={{ resize: 'vertical', fontFamily: 'var(--font-sans)' }}
               />
               <div className={styles.editLocked} style={{ fontStyle: 'italic' }}>
-                Previzualizare: „{(waMessage || '').trim() || 'mesajul tău'}\n{uploadUrl}"
+                Previzualizare: „{(waMessage || '').trim() || 'mesajul tău'}\n{uploadUrl}&rdquo;
               </div>
               <div className={styles.modalActions}>
                 <button type="button" className={styles.modalCancelBtn} onClick={() => { setWaMessage(defaultWaMessage()); }}>Revino la textul implicit</button>
@@ -1089,6 +1082,44 @@ function EmptyGallery({ uploadUrl, onCopy, copied }) {
   );
 }
 
+const TIER_STORAGE = { intim: 75, complet: 150, vis: 200 };
+const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
+const tierFeatures = (tier) => [
+  'Album Digital & QR unic',
+  'Catalog & Design QR',
+  'Poze, urări și clipuri video (max. 1.5 GB)',
+  `${TIER_STORAGE[tier]} GB stocare`,
+  `Disponibil ${TIER_DURATION[tier]} după eveniment`,
+];
+const PACKAGES = {
+  nunta: [
+    { key: 'intim',   name: 'Basic',    price: 27900, guests: 100, storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 39900, guests: 250, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 64900, guests: 500, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 500 invitați', features: tierFeatures('vis') },
+  ],
+  botez: [
+    { key: 'intim',   name: 'Basic',    price: 27900, guests: 50,  storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 39900, guests: 150, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 64900, guests: 300, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
+  ],
+  aniversare: [
+    { key: 'intim',   name: 'Basic',    price: 27900, guests: 50,  storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 39900, guests: 150, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 64900, guests: 300, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
+  ],
+  corporate: [
+    { key: 'intim',   name: 'Basic',    price: 27900, guests: 100, storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
+    { key: 'complet', name: 'Standard', price: 39900, guests: 300, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: tierFeatures('complet') },
+    { key: 'vis',     name: 'Premium',  price: 64900, guests: 600, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 600 invitați', features: tierFeatures('vis') },
+  ],
+};
+const TABS = [
+  { key: 'nunta', label: 'Nuntă' },
+  { key: 'botez', label: 'Botez' },
+  { key: 'aniversare', label: 'Aniversare' },
+  { key: 'corporate', label: 'Corporate' },
+];
+
 function EventSetupForm({ onCreated }) {
   const [step, setStep] = useState(1);
   const [eventType, setEventType] = useState('nunta');
@@ -1124,47 +1155,6 @@ function EventSetupForm({ onCreated }) {
     }
     setPlan();
   }, [eventType]);
-
-  // Stocare și disponibilitate per nivel (identice pentru toate tipurile)
-  const TIER_STORAGE = { intim: 75, complet: 150, vis: 200 };
-  const TIER_DURATION = { intim: '1 lună', complet: '2 luni', vis: '3 luni' };
-  const tierFeatures = (tier) => [
-    'Album Digital & QR unic',
-    'Catalog & Design QR',
-    'Poze, urări și clipuri video (max. 1.5 GB)',
-    `${TIER_STORAGE[tier]} GB stocare`,
-    `Disponibil ${TIER_DURATION[tier]} după eveniment`,
-  ];
-
-  const PACKAGES = {
-    nunta: [
-      { key: 'intim',   name: 'Basic',    price: 27900, guests: 100, storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
-      { key: 'complet', name: 'Standard', price: 39900, guests: 250, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 250 invitați', popular: true, features: tierFeatures('complet') },
-      { key: 'vis',     name: 'Premium',  price: 64900, guests: 500, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 500 invitați', features: tierFeatures('vis') },
-    ],
-    botez: [
-      { key: 'intim',   name: 'Basic',    price: 27900, guests: 50,  storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
-      { key: 'complet', name: 'Standard', price: 39900, guests: 150, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
-      { key: 'vis',     name: 'Premium',  price: 64900, guests: 300, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
-    ],
-    aniversare: [
-      { key: 'intim',   name: 'Basic',    price: 27900, guests: 50,  storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 50 invitați',  features: tierFeatures('intim') },
-      { key: 'complet', name: 'Standard', price: 39900, guests: 150, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 150 invitați', popular: true, features: tierFeatures('complet') },
-      { key: 'vis',     name: 'Premium',  price: 64900, guests: 300, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 300 invitați', features: tierFeatures('vis') },
-    ],
-    corporate: [
-      { key: 'intim',   name: 'Basic',    price: 27900, guests: 100, storageGB: TIER_STORAGE.intim,   subLabel: 'ideal pentru evenimente până în 100 invitați', features: tierFeatures('intim') },
-      { key: 'complet', name: 'Standard', price: 39900, guests: 300, storageGB: TIER_STORAGE.complet, subLabel: 'ideal pentru evenimente până în 300 invitați', popular: true, features: tierFeatures('complet') },
-      { key: 'vis',     name: 'Premium',  price: 64900, guests: 600, storageGB: TIER_STORAGE.vis,     subLabel: 'ideal pentru evenimente până în 600 invitați', features: tierFeatures('vis') },
-    ],
-  };
-
-  const TABS = [
-    { key: 'nunta', label: 'Nuntă' },
-    { key: 'botez', label: 'Botez' },
-    { key: 'aniversare', label: 'Aniversare' },
-    { key: 'corporate', label: 'Corporate' },
-  ];
 
   const plans = PACKAGES[eventType];
 

@@ -24,7 +24,8 @@ export async function GET(request) {
   }
 
   // Setări globale (un singur query): galerie publică, pauză upload, limite.
-  const settings = await getSettings(supabase);
+  // Setările operaționale sunt private; ruta le citește server-side cu service_role.
+  const settings = await getSettings();
   const galleryEnabled = settings.public_gallery_enabled === 'true';
   const showGallery = isPublicGalleryAvailable(event, galleryEnabled);
   // Reflectăm starea EFECTIVĂ (pagina de upload oprește polling-ul + ascunde galeria dacă e off)

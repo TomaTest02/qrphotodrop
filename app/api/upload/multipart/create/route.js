@@ -41,7 +41,8 @@ export async function POST(request) {
     if (event.status !== 'active') return NextResponse.json({ error: 'Event is not active', code: 'EVENT_INACTIVE' }, { status: 403 });
 
     // Setări globale: pauză upload + limită configurabilă de mărime
-    const settings = await getSettings(supabase);
+    // uploads_paused și limitele de mărime nu sunt expuse rolului public.
+    const settings = await getSettings();
     if (uploadsPaused(settings)) {
       return NextResponse.json({ error: 'Încărcările sunt momentan în pauză', code: 'UPLOADS_PAUSED' }, { status: 503 });
     }
