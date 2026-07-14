@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { generateEventCode } from '@/lib/securityGuards';
 
 export async function POST(request) {
   try {
@@ -27,14 +28,13 @@ export async function POST(request) {
     // nu are deja un eveniment). Pachetul + data fixate la signup → QR + retenție.
     const { data: existingEvent } = await admin.from('events').select('id').eq('user_id', userId).maybeSingle();
     if (!existingEvent && targetUser.requested_package_tier) {
-      const { randomBytes } = await import('node:crypto');
       const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
       const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
       const tier = targetUser.requested_package_tier;
       const evType = ALLOWED_TYPES.includes(targetUser.requested_event_type) ? targetUser.requested_event_type : 'nunta';
       await admin.from('events').insert({
         user_id: userId,
-        event_code: randomBytes(4).toString('hex').toUpperCase(),
+        event_code: generateEventCode(),
         event_name: targetUser.requested_event_name || 'Eveniment',
         event_type: evType,
         event_date: targetUser.requested_event_date || new Date().toISOString(),

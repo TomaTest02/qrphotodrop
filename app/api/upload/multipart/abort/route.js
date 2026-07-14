@@ -19,25 +19,46 @@ export async function POST(request) {
       .single();
 
     if (!s) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
-    // Dacă e deja finalizată, nu o anulăm
-    if (s.status === 'completed') return NextResponse.json({ success: true });
+    // Tranziția DB este claim-ul atomic. Astfel un abort întârziat nu mai poate
+    // suprascrie `completed`, iar complete nu mai acceptă sesiunea după claim.
+    if (['completed', 'aborted'].includes(s.status)) return NextResponse.json({ success: true });
+    if (!['pending', 'uploading', 'failed'].includes(s.status)) {
+      return NextResponse.json({ error: 'Session not active' }, { status: 409 });
+    }
+
+    const { data: claimed, error: claimError } = await supabase
+      .from('multipart_sessions')
+      .update({ status: 'aborted' })
+      .eq('id', s.id)
+      .eq('status', s.status)
+      .select('id')
+      .maybeSingle();
+    if (claimError) {
+      console.error('Multipart abort DB claim error:', claimError);
+      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    }
+    if (!claimed) {
+      const { data: fresh, error: freshError } = await supabase
+        .from('multipart_sessions').select('status').eq('id', s.id).maybeSingle();
+      if (freshError) return NextResponse.json({ error: 'Database error' }, { status: 500 });
+      if (fresh && ['completed', 'aborted'].includes(fresh.status)) {
+        return NextResponse.json({ success: true });
+      }
+      return NextResponse.json({ error: 'Session changed state' }, { status: 409 });
+    }
 
     try {
       await abortMultipartUpload(s.r2_key, s.upload_id);
     } catch (error) {
       if (!isNoSuchUploadError(error)) {
         console.error('Multipart abort R2 error:', error);
+        // Păstrăm sesiunea reîncercabilă și rezervarea activă până la un abort reușit.
+        await supabase.from('multipart_sessions')
+          .update({ status: s.status })
+          .eq('id', s.id)
+          .eq('status', 'aborted');
         return NextResponse.json({ error: 'Storage error' }, { status: 502 });
       }
-    }
-
-    const { error: updateError } = await supabase
-      .from('multipart_sessions')
-      .update({ status: 'aborted' })
-      .eq('id', s.id);
-    if (updateError) {
-      console.error('Multipart abort DB error:', updateError);
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

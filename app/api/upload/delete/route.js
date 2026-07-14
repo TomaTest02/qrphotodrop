@@ -18,7 +18,8 @@ export async function DELETE(request) {
     }
 
     // Limita de siguranta: max 500 fisiere per request
-    if (uploadIds.length > 500) {
+    const uniqueIds = [...new Set(uploadIds)];
+    if (uniqueIds.length > 500 || uniqueIds.some((id) => typeof id !== 'string')) {
       return NextResponse.json({ error: 'Prea multe fișiere per request' }, { status: 400 });
     }
 
@@ -28,54 +29,64 @@ export async function DELETE(request) {
     const { data: uploads, error: fetchError } = await admin
       .from('uploads')
       .select('id, r2_key, event_id')
-      .in('id', uploadIds);
+      .in('id', uniqueIds);
 
     if (fetchError || !uploads) {
       return NextResponse.json({ error: 'Eroare la citirea uploadurilor' }, { status: 500 });
     }
 
-    // Verificam proprietatea: toate uploadurile trebuie sa fie din evenimentul userului
-    const { data: userEvent } = await admin
-      .from('events')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!userEvent) {
-      return NextResponse.json({ error: 'Nu ai un eveniment activ' }, { status: 403 });
+    if (uploads.length !== uniqueIds.length) {
+      return NextResponse.json({ error: 'Unul sau mai multe fișiere nu există' }, { status: 404 });
     }
 
-    const unauthorized = uploads.filter(u => u.event_id !== userEvent.id);
-    if (unauthorized.length > 0) {
+    // Verificăm proprietatea pentru fiecare eveniment, fără presupunerea „un user = un singur rând".
+    const eventIds = [...new Set(uploads.map((upload) => upload.event_id))];
+    const { data: userEvents, error: eventsError } = await admin
+      .from('events')
+      .select('id')
+      .in('id', eventIds)
+      .eq('user_id', user.id);
+
+    if (eventsError) {
+      return NextResponse.json({ error: 'Eroare la verificarea proprietății' }, { status: 500 });
+    }
+    const ownedIds = new Set((userEvents || []).map((event) => event.id));
+    if (eventIds.some((id) => !ownedIds.has(id))) {
       return NextResponse.json({ error: 'Nu ai permisiunea să ștergi aceste fișiere' }, { status: 403 });
     }
 
-    // Stergem din R2
-    const r2Errors = [];
+    // Ștergem rândul DB NUMAI după ce obiectul lui a fost șters din R2. La eșec,
+    // rândul rămâne vizibil și operația poate fi reîncercată fără obiecte orfane.
+    const deletedIds = [];
+    const failedIds = [];
     for (const upload of uploads) {
       try {
         await deleteObject(upload.r2_key);
+        deletedIds.push(upload.id);
       } catch (err) {
         console.error(`Failed to delete R2 object ${upload.r2_key}:`, err.message);
-        r2Errors.push(upload.r2_key);
+        failedIds.push(upload.id);
       }
     }
 
-    // Stergem din baza de date (chiar daca R2 a esuat partial)
-    const { error: deleteError } = await admin
-      .from('uploads')
-      .delete()
-      .in('id', uploadIds);
-
-    if (deleteError) {
-      return NextResponse.json({ error: 'Eroare la ștergerea din baza de date' }, { status: 500 });
+    if (deletedIds.length) {
+      const { error: deleteError } = await admin
+        .from('uploads')
+        .delete()
+        .in('id', deletedIds);
+      if (deleteError) {
+        return NextResponse.json({ error: 'Eroare la ștergerea din baza de date' }, { status: 500 });
+      }
     }
 
+    const complete = failedIds.length === 0;
     return NextResponse.json({
-      success: true,
-      deleted: uploads.length,
-      r2Errors: r2Errors.length > 0 ? r2Errors : undefined,
-    });
+      success: complete,
+      deleted: deletedIds.length,
+      deletedIds,
+      failedIds,
+      error: complete ? undefined : 'Unele fișiere nu au putut fi șterse din stocare. Reîncearcă.',
+    }, { status: complete ? 200 : 502 });
   } catch (err) {
     console.error('Delete error:', err);
     return NextResponse.json({ error: 'Eroare neașteptată' }, { status: 500 });

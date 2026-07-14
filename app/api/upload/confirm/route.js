@@ -4,6 +4,7 @@ import { getPublicUrl, deleteObject, r2Client } from '@/lib/r2';
 import { getSettings, maxBytesFor } from '@/lib/settings';
 import { finalizeUploadRecord, uploadFinalizeError } from '@/lib/uploads';
 import { HeadObjectCommand } from '@aws-sdk/client-s3';
+import { isValidEventCode } from '@/lib/securityGuards';
 
 export async function POST(request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request) {
     }
 
     // Sanitizare event code
-    if (!/^[a-zA-Z0-9]{6,12}$/.test(eventCode)) {
+    if (!isValidEventCode(eventCode)) {
       return NextResponse.json({ error: 'Invalid event code' }, { status: 400 });
     }
 

@@ -9,6 +9,14 @@ import { HeadObjectCommand } from '@aws-sdk/client-s3';
 
 export const runtime = 'nodejs';
 
+async function markFailedIfActive(supabase, sessionId) {
+  const { error } = await supabase.from('multipart_sessions')
+    .update({ status: 'failed' })
+    .eq('id', sessionId)
+    .in('status', ['pending', 'uploading']);
+  if (error) console.error('Multipart complete: failed status update error', sessionId, error);
+}
+
 export async function POST(request) {
   try {
     const { sessionId, originalName } = await request.json();
@@ -38,7 +46,7 @@ export async function POST(request) {
     const { data: ev } = await supabase.from('events').select('status').eq('id', s.event_id).single();
     if (sessionExpired || ev?.status !== 'active') {
       await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
-      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      await markFailedIfActive(supabase, s.id);
       return NextResponse.json({ error: 'Sesiune expirată sau eveniment inactiv.', code: 'EVENT_INACTIVE' }, { status: 410 });
     }
 
@@ -52,7 +60,7 @@ export async function POST(request) {
       totalSize === Number(s.expected_size_bytes);                        // mărimea exactă
     if (!valid) {
       await abortMultipartUpload(s.r2_key, s.upload_id).catch(() => {});
-      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      await markFailedIfActive(supabase, s.id);
       return NextResponse.json({ error: 'Upload incomplet — reîncearcă' }, { status: 400 });
     }
 
@@ -70,12 +78,15 @@ export async function POST(request) {
       }));
       actualSize = Number(head.ContentLength || 0);
     } catch {
-      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      await deleteObject(s.r2_key).catch((error) => {
+        console.error('Multipart complete cleanup after Head failure:', s.r2_key, error);
+      });
+      await markFailedIfActive(supabase, s.id);
       return NextResponse.json({ error: 'Object not found after complete' }, { status: 400 });
     }
     if (actualSize !== Number(s.expected_size_bytes)) {
       await deleteObject(s.r2_key).catch(() => {});
-      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      await markFailedIfActive(supabase, s.id);
       return NextResponse.json({ error: 'Upload incomplet — reîncearcă' }, { status: 400 });
     }
 
@@ -99,7 +110,7 @@ export async function POST(request) {
       await deleteObject(s.r2_key).catch((deleteError) => {
         console.error('Multipart complete R2 cleanup failed:', s.r2_key, deleteError);
       });
-      await supabase.from('multipart_sessions').update({ status: 'failed' }).eq('id', s.id);
+      await markFailedIfActive(supabase, s.id);
       console.error('Multipart complete finalize error:', error);
       const responseError = uploadFinalizeError(error);
       return NextResponse.json({ error: responseError.message, code: responseError.code }, { status: responseError.status });

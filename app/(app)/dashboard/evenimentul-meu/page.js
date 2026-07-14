@@ -346,13 +346,13 @@ export default function EvenimentulMeuPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uploadIds: Array.from(selectedIds) }),
       });
-      if (res.ok) {
-        setUploads(prev => prev.filter(u => !selectedIds.has(u.id)));
-        setSelectedIds(new Set());
-      } else {
-        const err = await res.json();
-        alert('Eroare: ' + err.error);
+      const result = await res.json();
+      const deletedIds = new Set(result.deletedIds || []);
+      if (deletedIds.size) {
+        setUploads(prev => prev.filter(u => !deletedIds.has(u.id)));
+        setSelectedIds(prev => new Set([...prev].filter(id => !deletedIds.has(id))));
       }
+      if (!res.ok) alert('Eroare: ' + (result.error || 'Ștergerea nu a putut fi finalizată.'));
     } catch { alert('Eroare la ștergere.'); }
     setDeleteLoading(false);
   };
@@ -1331,4 +1331,3 @@ function EventSetupForm({ onCreated }) {
     </div>
   );
 }
-

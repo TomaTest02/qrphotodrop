@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
   images: {
     // Next 16 permite implicit doar calitatea 75. Hero.js folosește 60 (intenționat,
     // pt. performanță) → 6 warning-uri „quality 60 not configured". Le permitem explicit.
@@ -20,13 +21,6 @@ const nextConfig = {
     ],
   },
 
-  // Permitem upload-uri mari (iPhone ProRAW + videoclipuri 4K)
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2gb',
-    },
-  },
-
   // Cache headers pentru assets statice și API-uri publice
   async headers() {
     const securityHeaders = [
@@ -35,6 +29,7 @@ const nextConfig = {
       { key: 'X-Frame-Options', value: 'SAMEORIGIN' }, // Blocks iframe clickjacking, but allows SAMEORIGIN for Sanity Studio
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
     ];
 
     return [

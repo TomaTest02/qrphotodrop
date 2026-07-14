@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { generateEventCode } from '@/lib/securityGuards';
 
 const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
 const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
@@ -52,10 +53,9 @@ export async function POST(request) {
     await admin.from('users').update(userUpdate).eq('id', newUserId);
 
     // 3. Creăm evenimentul cu pachet + dată + cod QR + stocare
-    const { randomBytes } = await import('node:crypto');
     await admin.from('events').insert({
       user_id: newUserId,
-      event_code: randomBytes(4).toString('hex').toUpperCase(),
+      event_code: generateEventCode(),
       event_name: eventName.trim(),
       event_type: eventType,
       event_date: eventDate,

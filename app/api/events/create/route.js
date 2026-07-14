@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { generateEventCode } from '@/lib/securityGuards';
 
 export async function POST(request) {
   try {
@@ -73,9 +74,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Ai deja un eveniment activ' }, { status: 409 });
     }
 
-    // Generam event_code sigur cu crypto
-    const { randomBytes } = await import('crypto');
-    const eventCode = randomBytes(4).toString('hex').toUpperCase();
+    const eventCode = generateEventCode();
 
     // Folosim admin client (service_role) care ocoleste RLS
     const adminSupabase = createAdminClient();

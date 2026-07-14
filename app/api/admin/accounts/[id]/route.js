@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { generateEventCode } from '@/lib/securityGuards';
 import { getAdminRoster, guardAdminTarget } from '@/lib/adminRoles';
 
 export async function GET(request, { params }) {
@@ -154,14 +155,13 @@ export async function PUT(request, { params }) {
           await admin.from('events').update(updatePayload).eq('user_id', id);
         } else {
           // Creăm evenimentul cu toate câmpurile obligatorii (event_code, event_type, status, stocare)
-          const { randomBytes } = await import('crypto');
           const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
           const tier = updatePayload.package_tier || 'complet';
           const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
           const evType = ALLOWED_TYPES.includes(updatePayload.event_type) ? updatePayload.event_type : 'nunta';
           await admin.from('events').insert({
             user_id: id,
-            event_code: randomBytes(4).toString('hex').toUpperCase(),
+            event_code: generateEventCode(),
             event_name: updatePayload.event_name || 'Eveniment',
             event_type: evType,
             event_date: updatePayload.event_date || new Date().toISOString(),

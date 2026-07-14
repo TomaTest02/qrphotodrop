@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isValidEventCode } from '@/lib/securityGuards';
 
 export async function POST(request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request) {
     }
 
     // Sanitizare event code
-    if (!/^[a-zA-Z0-9]{6,12}$/.test(eventCode)) {
+    if (!isValidEventCode(eventCode)) {
       return NextResponse.json({ error: 'Event code invalid' }, { status: 400 });
     }
 

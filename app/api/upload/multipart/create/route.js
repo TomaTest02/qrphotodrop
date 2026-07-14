@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createMultipartUpload, abortMultipartUpload, R2_PART_SIZE, extForMime } from '@/lib/r2';
 import { getSettings, uploadsPaused, maxBytesFor } from '@/lib/settings';
 import { v4 as uuidv4 } from 'uuid';
+import { isValidEventCode } from '@/lib/securityGuards';
 
 export const runtime = 'nodejs';
 
@@ -17,7 +18,7 @@ export async function POST(request) {
   try {
     const { eventCode, contentType, sizeBytes } = await request.json();
 
-    if (!eventCode || !contentType) {
+    if (!isValidEventCode(eventCode) || !contentType) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
     if (!ALLOWED_MIME.includes(contentType)) {

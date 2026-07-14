@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { isPublicGalleryAvailable, isValidEventCode } from '@/lib/securityGuards';
 
 // Returnează pozele unui eveniment pentru proiecția live / slideshow (TV).
 //
@@ -12,14 +13,14 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  if (!code || !/^[a-zA-Z0-9]{6,12}$/.test(code)) {
+  if (!isValidEventCode(code)) {
     return NextResponse.json({ error: 'Cod invalid' }, { status: 400 });
   }
 
   const supabase = createAdminClient();
   const { data: event } = await supabase
     .from('events')
-    .select('id, event_name, event_date, is_gallery_public, user_id')
+    .select('id, event_name, event_date, status, is_gallery_public, user_id')
     .eq('event_code', code)
     .single();
 
@@ -28,7 +29,7 @@ export async function GET(request) {
   // Flag global admin: dacă galeria publică e dezactivată global, calea publică e oprită
   const { data: setting } = await supabase.from('app_settings').select('value').eq('key', 'public_gallery_enabled').maybeSingle();
   const galleryEnabled = setting ? setting.value === 'true' : true;
-  const publicOk = !!event.is_gallery_public && galleryEnabled;
+  const publicOk = isPublicGalleryAvailable(event, galleryEnabled);
 
   // Dacă NU e public, permitem doar organizatorului autentificat care deține evenimentul.
   let ownerOk = false;

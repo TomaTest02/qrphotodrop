@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getSettings, num, uploadsPaused } from '@/lib/settings';
+import { isPublicGalleryAvailable, isValidEventCode } from '@/lib/securityGuards';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
 
-  if (!code) {
-    return NextResponse.json({ error: 'Missing event code' }, { status: 400 });
+  if (!isValidEventCode(code)) {
+    return NextResponse.json({ error: 'Invalid event code' }, { status: 400 });
   }
 
   const supabase = createAdminClient();
@@ -25,7 +26,7 @@ export async function GET(request) {
   // Setări globale (un singur query): galerie publică, pauză upload, limite.
   const settings = await getSettings(supabase);
   const galleryEnabled = settings.public_gallery_enabled === 'true';
-  const showGallery = !!event.is_gallery_public && galleryEnabled;
+  const showGallery = isPublicGalleryAvailable(event, galleryEnabled);
   // Reflectăm starea EFECTIVĂ (pagina de upload oprește polling-ul + ascunde galeria dacă e off)
   event.is_gallery_public = showGallery;
 
@@ -54,6 +55,6 @@ export async function GET(request) {
   // Date publice după cod → cache la CDN-ul Vercel: request-urile concurente ale
   // invitaților sunt servite din cache, nu generează invocare + query per invitat.
   return NextResponse.json({ event, photos }, {
-    headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' },
+    headers: { 'Cache-Control': showGallery ? 'public, s-maxage=30, stale-while-revalidate=60' : 'private, no-store' },
   });
 }

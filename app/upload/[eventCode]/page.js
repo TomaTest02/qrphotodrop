@@ -13,22 +13,7 @@ import {
   UPLOAD_ERR, LEGACY_STORAGE_FULL,
 } from '@/lib/uploadErrors';
 
-// Upload direct în R2 cu progres REAL. `fetch` nu raportează progresul upload-ului,
-// XMLHttpRequest da → invitatul vede procentul crescând (important la clipuri mari).
-function putWithProgress(url, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', url);
-    xhr.setRequestHeader('Content-Type', file.type);
-    xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
-    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error('R2 PUT ' + xhr.status)));
-    xhr.onerror = () => reject(new Error('R2 PUT network error'));
-    xhr.send(file);
-  });
-}
-
-// ─── Upload multipart (fișiere mari) ─────────────────────────────────────────
-const MULTIPART_THRESHOLD = 32 * 1024 * 1024; // peste 32MB → multipart
+// ─── Upload multipart pentru TOATE fișierele ─────────────────────────────────
 const MULTIPART_CONCURRENCY = 3;              // bucăți în paralel
 const SIGN_BATCH = 8;                         // câte URL-uri cerem odată
 
@@ -450,80 +435,16 @@ export default function GuestUploadPage({ params }) {
       const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
       const onFrac = (frac) => setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
 
-      // Fișiere mari → upload MULTIPART (bucăți paralele, retry, fără expirare).
-      // NU cad pe single-PUT dacă eșuează — n-are rost să reîncărcăm 1.5GB dintr-o
-      // bucată (fragil). La eșec: rămâne necontat, iar userul reîncearcă.
-      if (file.size > MULTIPART_THRESHOLD) {
-        try {
-          const res = await uploadMultipart(eventCode, file, fileType, onFrac);
-          if (res === 'storageFull') { storageFull = true; break; }
-          succeeded++;
-        } catch (err) {
-          // ÎNAINTE: eroarea era doar logată → motivul real (ex. eveniment suspendat)
-          // se pierdea, iar userul primea „verifică conexiunea". Acum o reținem.
-          console.error('Multipart failed:', err);
-          retineEroarea(err);
-        }
-        setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
-        continue;
-      }
-
+      // Și pozele mici folosesc multipart: rezervarea DB este atomică, iar o sesiune
+      // abandonată poate fi anulată de cron. Single-PUT-ul vechi permitea încărcarea
+      // unui obiect mai mare decât dimensiunea declarată și ocolirea confirmării.
       try {
-        // 1. Cerem un URL presemnat — funcția Vercel doar SEMNEAZĂ, fișierul NU trece prin ea
-        const signRes = await fetch('/api/upload/presigned', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventCode, contentType: file.type, fileType, sizeBytes: file.size }),
-        });
-        if (!signRes.ok) {
-          const err = await errorFromResponse(signRes);
-          if (estePlin(err)) { storageFull = true; break; }
-          throw err;
-        }
-        const { uploadUrl, r2Key } = await signRes.json();
-
-        // 2. Încărcăm fișierul DIRECT în R2 (browser → R2), fără limita de 4.5MB a Vercel.
-        //    Progres real per fișier → bară care se mișcă (nu pare blocat la clipuri mari).
-        await putWithProgress(uploadUrl, file, (frac) => {
-          setUploadProgress(Math.round(((i + frac) / filesToUpload.length) * 100));
-        });
-
-        // 3. Confirmăm — inserăm rândul cu metadate în baza de date.
-        //    Dacă evenimentul e suspendat FIX în timpul transferului, aici primim
-        //    EVENT_INACTIVE — motiv care înainte se pierdea („Confirm failed").
-        const confirmRes = await fetch('/api/upload/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ r2Key, eventCode, fileType, sizeBytes: file.size, originalName: file.name }),
-        });
-        if (!confirmRes.ok) {
-          const err = await errorFromResponse(confirmRes);
-          if (estePlin(err)) { storageFull = true; break; }
-          throw err;
-        }
+        const res = await uploadMultipart(eventCode, file, fileType, onFrac);
+        if (res === 'storageFull') { storageFull = true; break; }
         succeeded++;
       } catch (err) {
-        console.error('Upload presigned error:', err);
+        console.error('Multipart failed:', err);
         retineEroarea(err);
-
-        // Fallback pe funcție doar dacă are rost. Dacă evenimentul e inactiv sau
-        // uploadurile sunt în pauză, reîncercarea ar eșua identic — nu insistăm.
-        if (!esteBlocanta(eroareRelevanta) && file.size <= 4 * 1024 * 1024) {
-          try {
-            const fd = new FormData();
-            fd.append('file', file);
-            fd.append('eventCode', eventCode);
-            fd.append('fileType', fileType);
-            fd.append('originalName', file.name);
-            const directRes = await fetch('/api/upload/direct', { method: 'POST', body: fd });
-            if (directRes.ok) { succeeded++; }
-            else {
-              const err2 = await errorFromResponse(directRes);
-              if (estePlin(err2)) { storageFull = true; break; }
-              retineEroarea(err2);
-            }
-          } catch (e2) { console.error('Upload fallback error:', e2); retineEroarea(e2); }
-        }
       }
       setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
     }
