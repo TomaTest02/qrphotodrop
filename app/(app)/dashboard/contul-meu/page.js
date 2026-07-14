@@ -64,7 +64,7 @@ export default function ContulMeuPage() {
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    if (newPassword.length < 12) { setMessage('Parola trebuie să aibă minim 12 caractere.'); return; }
+    if (newPassword.length < 8) { setMessage('Parola trebuie să aibă minim 8 caractere.'); return; }
     setLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -180,9 +180,9 @@ export default function ContulMeuPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className={styles.input}
-              minLength={12}
+              minLength={8}
               maxLength={128}
-              placeholder="Minim 12 caractere"
+              placeholder="Minim 8 caractere"
               required
             />
           </div>

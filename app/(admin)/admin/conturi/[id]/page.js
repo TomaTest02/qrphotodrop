@@ -229,7 +229,7 @@ export default function AdminContPage({ params }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ ...label, color: '#991b1b' }}>Forțează parolă nouă</label>
-            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} minLength={12} maxLength={128} placeholder="Lasă gol pentru a nu modifica (min. 12)" style={{ ...input, border: '1px solid #fca5a5' }} />
+            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} minLength={8} maxLength={128} placeholder="Lasă gol pentru a nu modifica (min. 8)" style={{ ...input, border: '1px solid #fca5a5' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={label}>Recomandat de (wedding planner)</label>

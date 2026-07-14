@@ -67,7 +67,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Telefon invalid' }, { status: 400 });
     }
     if (newPassword !== undefined && newPassword !== ''
-        && (typeof newPassword !== 'string' || newPassword.length < 12 || newPassword.length > 128)) {
+        && (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128)) {
       return NextResponse.json({ error: 'Parola trebuie să aibă 12–128 caractere.' }, { status: 400 });
     }
     if (status !== undefined && !['pending', 'active', 'suspended'].includes(status)) {

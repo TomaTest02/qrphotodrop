@@ -82,7 +82,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
     if (!plan) { setError('Alege un pachet.'); setStep(1); return; }
     if (!eventDate) { setError('Completează data evenimentului.'); return; }
     if (password !== confirmPassword) { setError('Parolele nu se potrivesc.'); return; }
-    if (password.length < 12) { setError('Parola trebuie să aibă minim 12 caractere.'); return; }
+    if (password.length < 8) { setError('Parola trebuie să aibă minim 8 caractere.'); return; }
     if (!acceptedTerms) { setError('Trebuie să accepți Termenii și Condițiile pentru a continua.'); return; }
 
     setLoading(true);
@@ -226,11 +226,11 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Parolă</label>
-            <input className={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={12} maxLength={128} />
+            <input className={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} maxLength={128} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Confirmă parola</label>
-            <input className={styles.input} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={12} maxLength={128} />
+            <input className={styles.input} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} maxLength={128} />
           </div>
           {!referrerSlug && (
             <div className={styles.field}>

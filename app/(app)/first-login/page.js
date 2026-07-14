@@ -15,8 +15,8 @@ export default function FirstLoginPage() {
     e.preventDefault();
     setError('');
 
-    if (newPassword.length < 12) {
-      setError('Parola trebuie să aibă minim 12 caractere.');
+    if (newPassword.length < 8) {
+      setError('Parola trebuie să aibă minim 8 caractere.');
       return;
     }
     if (!/\d/.test(newPassword)) {
@@ -85,9 +85,9 @@ export default function FirstLoginPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className={styles.input}
-              minLength={12}
+              minLength={8}
               maxLength={128}
-              placeholder="Min. 12 caractere, cel puțin o cifră"
+              placeholder="Min. 8 caractere, cel puțin o cifră"
             />
           </div>
           <div className={styles.formGroup}>
@@ -100,7 +100,7 @@ export default function FirstLoginPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={styles.input}
-              minLength={12}
+              minLength={8}
               maxLength={128}
             />
           </div>
