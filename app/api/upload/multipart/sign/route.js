@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPresignedPartUrl } from '@/lib/r2';
+import { classifyResignOutcome } from '@/lib/multipartSession';
 
 export const runtime = 'nodejs';
 
@@ -63,22 +64,21 @@ export async function POST(request) {
         console.error('Multipart sign: status update error', updateError);
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
       }
+      // Update-ul n-a prins 'pending' → alt worker a făcut deja tranziția SAU sesiunea
+      // a fost anulată. Recitim și decidem (NU facem update necondiționat la 'uploading',
+      // ca să nu reactivăm accidental o sesiune deja aborted/failed).
+      let fresh = null, freshError = null;
       if (!updated) {
-        // Update-ul n-a prins 'pending' → alt worker a făcut deja tranziția SAU sesiunea
-        // a fost anulată. Recitim și decidem (NU facem update necondiționat la 'uploading',
-        // ca să nu reactivăm accidental o sesiune deja aborted/failed).
-        const { data: fresh } = await supabase
+        ({ data: fresh, error: freshError } = await supabase
           .from('multipart_sessions')
           .select('status, expires_at')
           .eq('id', sessionId)
-          .single();
-        const activa = fresh
-          && fresh.status === 'uploading'
-          && new Date(fresh.expires_at) >= new Date();
-        if (!activa) {
-          return NextResponse.json({ error: 'Session is no longer active' }, { status: 409 });
-        }
-        // e 'uploading' → cursă normală câștigată de alt worker; continuăm și întoarcem URL-urile
+          .single());
+      }
+      const outcome = classifyResignOutcome({ won: !!updated, freshError, fresh });
+      if (!outcome.ok) {
+        if (outcome.status === 500) console.error('Multipart sign: session re-read failed', freshError);
+        return NextResponse.json({ error: outcome.error }, { status: outcome.status });
       }
     }
 
