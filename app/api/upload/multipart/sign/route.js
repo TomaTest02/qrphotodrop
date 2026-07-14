@@ -48,7 +48,9 @@ export async function POST(request) {
     const urls = {};
     await Promise.all(nums.map(async (n) => { urls[n] = await getPresignedPartUrl(s.r2_key, s.upload_id, n); }));
 
-    // Marcăm sesiunea „uploading" la prima semnare
+    // Marcăm sesiunea „uploading" la prima semnare — IDEMPOTENT la cei 3 workeri paraleli.
+    // Cursa: toți citesc 'pending', primul face pending→uploading, ceilalți nu mai prind
+    // rândul cu .eq('status','pending'). ASTA NU E O EROARE — altul a câștigat cursa.
     if (s.status === 'pending') {
       const { data: updated, error: updateError } = await supabase
         .from('multipart_sessions')
@@ -57,8 +59,26 @@ export async function POST(request) {
         .eq('status', 'pending')
         .select('id')
         .maybeSingle();
-      if (updateError || !updated) {
-        return NextResponse.json({ error: 'Session is no longer active' }, { status: 409 });
+      if (updateError) {
+        console.error('Multipart sign: status update error', updateError);
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+      }
+      if (!updated) {
+        // Update-ul n-a prins 'pending' → alt worker a făcut deja tranziția SAU sesiunea
+        // a fost anulată. Recitim și decidem (NU facem update necondiționat la 'uploading',
+        // ca să nu reactivăm accidental o sesiune deja aborted/failed).
+        const { data: fresh } = await supabase
+          .from('multipart_sessions')
+          .select('status, expires_at')
+          .eq('id', sessionId)
+          .single();
+        const activa = fresh
+          && fresh.status === 'uploading'
+          && new Date(fresh.expires_at) >= new Date();
+        if (!activa) {
+          return NextResponse.json({ error: 'Session is no longer active' }, { status: 409 });
+        }
+        // e 'uploading' → cursă normală câștigată de alt worker; continuăm și întoarcem URL-urile
       }
     }
 

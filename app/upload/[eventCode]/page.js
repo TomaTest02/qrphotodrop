@@ -63,15 +63,28 @@ async function uploadMultipart(eventCode, file, fileType, onProgress) {
   const { sessionId, partSize, totalParts } = await createRes.json();
 
   const urlCache = {};
+  const inflight = {}; // partNumber -> Promise de semnare în curs (dedup între workeri)
+  // Cei 3 workeri pornesc de la bucăți apropiate → ferestrele lor de semnare se suprapun.
+  // Deduplicăm: nu cerem o bucată deja în cache sau deja în curs de semnare; pentru cele
+  // în curs așteptăm promisiunea existentă. (Serverul e oricum sigur la cereri concurente.)
   const signParts = async (nums) => {
-    const need = nums.filter((n) => !urlCache[n]);
-    if (!need.length) return;
-    const res = await fetch('/api/upload/multipart/sign', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, partNumbers: need }),
-    });
-    if (!res.ok) throw await errorFromResponse(res);
-    Object.assign(urlCache, (await res.json()).urls);
+    const need = nums.filter((n) => !urlCache[n] && !inflight[n]);
+    const wait = nums.filter((n) => inflight[n]).map((n) => inflight[n]);
+    if (need.length) {
+      const p = (async () => {
+        const res = await fetch('/api/upload/multipart/sign', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, partNumbers: need }),
+        });
+        if (!res.ok) throw await errorFromResponse(res);
+        Object.assign(urlCache, (await res.json()).urls);
+      })();
+      need.forEach((n) => { inflight[n] = p; });
+      // eliberăm din inflight indiferent de rezultat (retry-ul le poate re-cere)
+      p.finally(() => need.forEach((n) => { if (inflight[n] === p) delete inflight[n]; })).catch(() => {});
+      wait.push(p);
+    }
+    await Promise.all(wait);
   };
   const signOne = async (n) => {
     const res = await fetch('/api/upload/multipart/sign', {
