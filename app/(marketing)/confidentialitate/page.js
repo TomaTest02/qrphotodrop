@@ -24,9 +24,10 @@ export default function ConfidentialitatePage() {
       <section className={styles.section}>
         <h2 className={styles.h2}>1. Operatorul datelor</h2>
         <p>
-          Platforma QRPhotoDrop (qrphotodrop.com) este operată de echipa QRPhotoDrop
-          („Operatorul”, „noi”). Pentru orice întrebare privind datele personale ne poți contacta
-          la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
+          Platforma QRPhotoDrop (qrphotodrop.com) este deținută și operată de{' '}
+          <strong>CYBERNOVA SYSTEMS S.R.L.</strong> (CIF 52112503, Reg. com. J2025049555001),
+          denumită în continuare „Operatorul" sau „noi". Pentru orice întrebare privind datele
+          personale ne poți contacta la <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
         </p>
         <p>
           <strong>Roluri:</strong> pentru datele contului de organizator, QRPhotoDrop este operatorul

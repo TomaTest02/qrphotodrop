@@ -44,7 +44,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.bottom}>
-          <span>© {new Date().getFullYear()} QRPhotoDrop</span>
+          <span>© {new Date().getFullYear()} QRPhotoDrop · Made by CYBERNOVA SYSTEMS S.R.L.</span>
           <span>+40 (720) 726 619 · qrphotodrop@gmail.com</span>
         </div>
       </div>

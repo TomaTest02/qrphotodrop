@@ -28,9 +28,10 @@ export default function TermeniPage() {
         <h2 className={styles.h2}>1. Cine suntem</h2>
         <p>
           Platforma QRPhotoDrop (denumită în continuare „Platforma", „Serviciul" sau
-          „QRPhotoDrop"), disponibilă la adresa qrphotodrop.com, este operată de echipa
-          QRPhotoDrop (denumită în continuare „Operatorul", „noi"), care poate fi
-          contactată la qrphotodrop@gmail.com.
+          „QRPhotoDrop"), disponibilă la adresa qrphotodrop.com, este deținută și operată de{' '}
+          <strong>CYBERNOVA SYSTEMS S.R.L.</strong> (CIF 52112503, Reg. com. J2025049555001),
+          denumită în continuare „Operatorul" sau „noi". Ne poți contacta la{' '}
+          <a href="mailto:qrphotodrop@gmail.com">qrphotodrop@gmail.com</a>.
         </p>
         <p>
           Acești Termeni și Condiții („Termenii") reglementează relația dintre Operator și
