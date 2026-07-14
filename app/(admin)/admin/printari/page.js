@@ -1,39 +1,27 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import styles from '../conturi/conturi.module.css';
+import { requireActiveAdminPage } from '@/lib/pageAuth';
 
 export const dynamic = 'force-dynamic';
 
 async function markAsResolved(id) {
   'use server';
 
-  // Verificare autentificare și rol admin
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
+  const { admin } = await requireActiveAdminPage();
+  if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Invalid request');
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') throw new Error('Forbidden');
-
-  // Actualizare status
-  const adminSupabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-  await adminSupabase
+  const { error } = await admin
     .from('contact_messages')
     .update({ event_type: 'Comandă Printare (Rezolvată)' })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('event_type', 'Comandă Printare');
+  if (error) throw new Error('Database error');
 
   revalidatePath('/admin/printari');
 }
 
 export default async function PrintariPage() {
-  const supabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+  const { admin: supabase } = await requireActiveAdminPage();
 
   // Obținem toate cererile de printare din tabela contact_messages
   const { data: requests } = await supabase

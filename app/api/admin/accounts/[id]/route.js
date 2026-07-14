@@ -10,10 +10,11 @@ export async function GET(request, { params }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { data: profile } = await supabase.from('users').select('role, status').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || profile.status !== 'active') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { id } = await params;
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     const admin = createAdminClient();
 
     const { data: userData, error: userError } = await admin.from('users').select('*').eq('id', id).single();
@@ -52,45 +53,61 @@ export async function PUT(request, { params }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { data: profile } = await supabase.from('users').select('role, status').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || profile.status !== 'active') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { id } = await params;
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     const admin = createAdminClient();
     const body = await request.json();
 
     const { phone, newPassword, eventData, status, payment, referredBy } = body;
 
+    if (phone !== undefined && (typeof phone !== 'string' || phone.length > 40)) {
+      return NextResponse.json({ error: 'Telefon invalid' }, { status: 400 });
+    }
+    if (newPassword !== undefined && newPassword !== ''
+        && (typeof newPassword !== 'string' || newPassword.length < 12 || newPassword.length > 128)) {
+      return NextResponse.json({ error: 'Parola trebuie să aibă 12–128 caractere.' }, { status: 400 });
+    }
+    if (status !== undefined && !['pending', 'active', 'suspended'].includes(status)) {
+      return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
+    }
+    if (payment !== undefined && (typeof payment !== 'object' || payment === null || Array.isArray(payment))) {
+      return NextResponse.json({ error: 'Date plată invalide' }, { status: 400 });
+    }
+
     // Protecție admin: nu poți modifica alt administrator decât dacă ești owner/manager;
     // proprietarul e intangibil pentru alții; suspendarea sau resetarea parolei unui
     // admin sunt acțiuni destructive (fără auto-acțiune / fără proprietar / minim 1 admin).
-    const destructive = status === 'suspended' || !!(newPassword && newPassword.length >= 6);
+    const destructive = status === 'suspended' || !!newPassword;
     const roster = await getAdminRoster(admin);
     const block = guardAdminTarget({ actorId: user.id, targetId: id, roster, destructive });
     if (block) return NextResponse.json({ error: block.error }, { status: block.status });
 
     // 1. Update phone in public.users
     if (phone !== undefined) {
-      await admin.from('users').update({ phone }).eq('id', id);
+      const { error } = await admin.from('users').update({ phone }).eq('id', id);
+      if (error) throw new Error('PHONE_UPDATE_FAILED');
     }
 
     // 1a. Atribuire wedding planner (referredBy = id planner sau '' / null pentru a scoate)
     if (referredBy !== undefined) {
       let refId = null;
       if (referredBy) {
+        if (typeof referredBy !== 'string' || !/^[0-9a-f-]{36}$/i.test(referredBy)) {
+          return NextResponse.json({ error: 'Planner invalid' }, { status: 400 });
+        }
         const { data: planner } = await admin.from('wedding_planners').select('id').eq('id', referredBy).maybeSingle();
         if (!planner) return NextResponse.json({ error: 'Planner inexistent' }, { status: 400 });
         refId = planner.id;
       }
-      await admin.from('users').update({ referred_by: refId }).eq('id', id);
+      const { error } = await admin.from('users').update({ referred_by: refId }).eq('id', id);
+      if (error) throw new Error('PLANNER_UPDATE_FAILED');
     }
 
     // 1b. Update status (active / suspended / pending)
     if (status !== undefined) {
-      const ALLOWED_STATUS = ['pending', 'active', 'suspended'];
-      if (!ALLOWED_STATUS.includes(status)) {
-        return NextResponse.json({ error: 'Status invalid' }, { status: 400 });
-      }
       // ATOMIC: userul ȘI evenimentul se schimbă în ACEEAȘI tranzacție (RPC).
       // Înainte erau două update-uri separate → dacă al doilea eșua, userul apărea
       // suspendat dar evenimentul rămânea activ, iar invitații puteau încărca.
@@ -104,7 +121,7 @@ export async function PUT(request, { params }) {
     }
 
     // 2. Update password if provided
-    if (newPassword && newPassword.length >= 6) {
+    if (newPassword) {
       const { error: passError } = await admin.auth.admin.updateUserById(id, { password: newPassword });
       if (passError) throw passError;
     }
@@ -114,8 +131,8 @@ export async function PUT(request, { params }) {
       const ALLOWED_PAYMENT = ['unpaid', 'partial', 'paid'];
       const payPayload = {};
       if (payment.amount_paid !== undefined) {
-        const amt = Number.parseInt(payment.amount_paid, 10);
-        if (Number.isNaN(amt) || amt < 0) return NextResponse.json({ error: 'Sumă invalidă' }, { status: 400 });
+        const amt = Number(payment.amount_paid);
+        if (!Number.isSafeInteger(amt) || amt < 0) return NextResponse.json({ error: 'Sumă invalidă' }, { status: 400 });
         payPayload.amount_paid = amt;
       }
       if (payment.payment_status !== undefined) {
@@ -126,16 +143,48 @@ export async function PUT(request, { params }) {
         payPayload.paid_at = payment.payment_status === 'paid' ? new Date().toISOString() : null;
       }
       if (Object.keys(payPayload).length > 0) {
-        await admin.from('events').update(payPayload).eq('user_id', id);
+        const { error } = await admin.from('events').update(payPayload).eq('user_id', id);
+        if (error) throw new Error('PAYMENT_UPDATE_FAILED');
       }
     }
 
     // 3. Update event if provided
     if (eventData) {
+      if (typeof eventData !== 'object' || Array.isArray(eventData)) {
+        return NextResponse.json({ error: 'Date eveniment invalide' }, { status: 400 });
+      }
       const { event_name, event_type, event_date, couple_names, location, package_tier, package_type, expires_at } = eventData;
 
+      const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
+      const STORAGE_BY_TIER = { intim: 75, complet: 150, vis: 200 };
+      if (event_name !== undefined && (typeof event_name !== 'string' || !event_name.trim() || event_name.length > 200)) {
+        return NextResponse.json({ error: 'Nume eveniment invalid' }, { status: 400 });
+      }
+      if (event_type !== undefined && !ALLOWED_TYPES.includes(event_type)) {
+        return NextResponse.json({ error: 'Tip eveniment invalid' }, { status: 400 });
+      }
+      if (package_type !== undefined && !ALLOWED_TYPES.includes(package_type)) {
+        return NextResponse.json({ error: 'Tip pachet invalid' }, { status: 400 });
+      }
+      if (package_tier !== undefined && !STORAGE_BY_TIER[package_tier]) {
+        return NextResponse.json({ error: 'Nivel pachet invalid' }, { status: 400 });
+      }
+      if (event_date !== undefined && (typeof event_date !== 'string' || Number.isNaN(Date.parse(event_date)))) {
+        return NextResponse.json({ error: 'Dată eveniment invalidă' }, { status: 400 });
+      }
+      if (expires_at !== undefined && expires_at !== null && expires_at !== ''
+          && (typeof expires_at !== 'string' || Number.isNaN(Date.parse(expires_at)))) {
+        return NextResponse.json({ error: 'Dată expirare invalidă' }, { status: 400 });
+      }
+      if (couple_names !== undefined && (typeof couple_names !== 'string' || couple_names.length > 200)) {
+        return NextResponse.json({ error: 'Nume cuplu invalid' }, { status: 400 });
+      }
+      if (location !== undefined && (typeof location !== 'string' || location.length > 300)) {
+        return NextResponse.json({ error: 'Locație invalidă' }, { status: 400 });
+      }
+
       const updatePayload = {};
-      if (event_name !== undefined) updatePayload.event_name = event_name;
+      if (event_name !== undefined) updatePayload.event_name = event_name.trim();
       if (event_type !== undefined) updatePayload.event_type = event_type;
       if (event_date !== undefined) updatePayload.event_date = event_date;
       if (couple_names !== undefined) updatePayload.couple_names = couple_names;
@@ -143,23 +192,22 @@ export async function PUT(request, { params }) {
       if (package_tier !== undefined) {
         updatePayload.package_tier = package_tier;
         // Recalculăm stocarea conform nivelului ales (Basic/Standard/Premium = 75/150/200 GB)
-        const STORAGE_BY_TIER = { intim: 75, complet: 150, vis: 200 };
-        updatePayload.max_storage_bytes = (STORAGE_BY_TIER[package_tier] || 75) * 1024 * 1024 * 1024;
+        updatePayload.max_storage_bytes = STORAGE_BY_TIER[package_tier] * 1024 * 1024 * 1024;
       }
       if (package_type !== undefined) updatePayload.package_type = package_type;
       if (expires_at !== undefined) updatePayload.expires_at = expires_at || null;
 
       if (Object.keys(updatePayload).length > 0) {
-        const { data: existingEvent } = await admin.from('events').select('id').eq('user_id', id).single();
+        const { data: existingEvent, error: existingError } = await admin.from('events').select('id').eq('user_id', id).maybeSingle();
+        if (existingError) throw new Error('EVENT_LOOKUP_FAILED');
         if (existingEvent) {
-          await admin.from('events').update(updatePayload).eq('user_id', id);
+          const { error } = await admin.from('events').update(updatePayload).eq('user_id', id);
+          if (error) throw new Error('EVENT_UPDATE_FAILED');
         } else {
           // Creăm evenimentul cu toate câmpurile obligatorii (event_code, event_type, status, stocare)
-          const STORAGE_LIMITS = { intim: 75, complet: 150, vis: 200 };
           const tier = updatePayload.package_tier || 'complet';
-          const ALLOWED_TYPES = ['nunta', 'botez', 'aniversare', 'corporate'];
           const evType = ALLOWED_TYPES.includes(updatePayload.event_type) ? updatePayload.event_type : 'nunta';
-          await admin.from('events').insert({
+          const { error } = await admin.from('events').insert({
             user_id: id,
             event_code: generateEventCode(),
             event_name: updatePayload.event_name || 'Eveniment',
@@ -168,11 +216,12 @@ export async function PUT(request, { params }) {
             couple_names: updatePayload.couple_names || null,
             location: updatePayload.location || null,
             status: 'active',
-            max_storage_bytes: (STORAGE_LIMITS[tier] || 75) * 1024 * 1024 * 1024,
+            max_storage_bytes: STORAGE_BY_TIER[tier] * 1024 * 1024 * 1024,
             package_type: updatePayload.package_type || evType,
             package_tier: tier,
             expires_at: updatePayload.expires_at || null,
           });
+          if (error) throw new Error('EVENT_INSERT_FAILED');
         }
       }
     }
@@ -180,6 +229,6 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Error updating account:', err);
-    return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

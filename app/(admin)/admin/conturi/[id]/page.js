@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
+import Link from 'next/link';
 import styles from '../conturi.module.css';
 
 const TIER_LABEL = { intim: 'Basic', complet: 'Standard', vis: 'Premium' };
@@ -41,12 +42,7 @@ export default function AdminContPage({ params }) {
   });
   const [payment, setPayment] = useState({ amount_paid: 0, payment_status: 'unpaid' });
 
-  useEffect(() => { loadAccount(); }, [id]);
-  useEffect(() => {
-    fetch('/api/admin/planners').then((r) => r.ok ? r.json() : { planners: [] }).then((d) => setPlanners(d.planners || [])).catch(() => {});
-  }, []);
-
-  async function loadAccount() {
+  const loadAccount = useCallback(async () => {
     try {
       const res = await fetch(`/api/admin/accounts/${id}`);
       if (res.ok) {
@@ -77,7 +73,16 @@ export default function AdminContPage({ params }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    // Datele provin din API; actualizările de stare au loc după răspunsul asincron.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadAccount();
+  }, [loadAccount]);
+  useEffect(() => {
+    fetch('/api/admin/planners').then((r) => r.ok ? r.json() : { planners: [] }).then((d) => setPlanners(d.planners || [])).catch(() => {});
+  }, []);
 
   const handleChange = (e) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
 
@@ -154,7 +159,7 @@ export default function AdminContPage({ params }) {
   return (
     <div className={styles.container}>
       <div className={styles.header} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }}>
-        <a href="/admin/conturi" style={{ color: 'var(--color-violet)', textDecoration: 'none', fontWeight: 600 }}>← Înapoi la conturi</a>
+        <Link href="/admin/conturi" style={{ color: 'var(--color-violet)', textDecoration: 'none', fontWeight: 600 }}>← Înapoi la conturi</Link>
         <h1 className={styles.title} style={{ marginTop: '6px' }}>{user?.email}</h1>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span className={user?.status === 'active' ? styles.statusActive : user?.status === 'pending' ? styles.statusPending : styles.statusError}>{user?.status || 'pending'}</span>
@@ -224,7 +229,7 @@ export default function AdminContPage({ params }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={{ ...label, color: '#991b1b' }}>Forțează parolă nouă</label>
-            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Lasă gol pentru a nu modifica" style={{ ...input, border: '1px solid #fca5a5' }} />
+            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} minLength={12} maxLength={128} placeholder="Lasă gol pentru a nu modifica (min. 12)" style={{ ...input, border: '1px solid #fca5a5' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <label style={label}>Recomandat de (wedding planner)</label>
@@ -234,10 +239,10 @@ export default function AdminContPage({ params }) {
             </select>
             {user?.referred_by_name && (
               <span style={{ fontSize: '12px', color: user?.referred_by ? 'var(--color-text-muted)' : '#b45309' }}>
-                Scris la înscriere: „{user.referred_by_name}"{!user?.referred_by ? ' — neatribuit, alege plannerul din listă și salvează' : ''}
+                Scris la înscriere: „{user.referred_by_name}”{!user?.referred_by ? ' — neatribuit, alege plannerul din listă și salvează' : ''}
               </span>
             )}
-            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Se salvează cu butonul „Salvează modificările" de jos.</span>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Se salvează cu butonul „Salvează modificările” de jos.</span>
           </div>
         </div>
       </div>

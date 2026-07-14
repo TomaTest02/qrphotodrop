@@ -9,7 +9,23 @@ export const runtime = 'nodejs';
 // Ordinea e critică: curățăm R2 COMPLET și CONFIRMAT înainte de a atinge Auth/DB.
 // Dacă R2 eșuează, ne oprim și NU răspundem success — cheile rămân în DB pentru retry
 // (o reapelare reia curățarea), deci nu pierdem referințele.
-export async function POST() {
+export async function POST(request) {
+  const requestOrigin = new URL(request.url).origin;
+  const origin = request.headers.get('origin');
+  if (origin !== requestOrigin || request.headers.get('sec-fetch-site') === 'cross-site') {
+    return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Confirmare invalidă' }, { status: 400 });
+  }
+  if (body?.confirmation !== 'STERGE') {
+    return NextResponse.json({ error: 'Confirmarea ștergerii lipsește.' }, { status: 400 });
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

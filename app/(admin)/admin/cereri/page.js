@@ -1,13 +1,10 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import styles from '../conturi/conturi.module.css';
+import { requireActiveAdminPage } from '@/lib/pageAuth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CereriPage() {
-  const supabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+  const { admin: supabase } = await requireActiveAdminPage();
 
   // Toate mesajele care NU sunt cereri de printare (contact + upgrade)
   const { data: requests } = await supabase

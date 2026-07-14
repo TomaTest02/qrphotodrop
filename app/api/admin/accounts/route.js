@@ -10,8 +10,8 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Verify admin
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const { data: profile } = await supabase.from('users').select('role, status').eq('id', user.id).single();
+  if (profile?.role !== 'admin' || profile.status !== 'active') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const admin = createAdminClient();
 
@@ -50,11 +50,11 @@ export async function DELETE(request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const { data: profile } = await supabase.from('users').select('role, status').eq('id', user.id).single();
+  if (profile?.role !== 'admin' || profile.status !== 'active') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const { userId } = await request.json();
-  if (!userId) return NextResponse.json({ error: 'userId lipsă' }, { status: 400 });
+  if (typeof userId !== 'string' || !/^[0-9a-f-]{36}$/i.test(userId)) return NextResponse.json({ error: 'userId invalid' }, { status: 400 });
   const admin = createAdminClient();
 
   // Protecție admin: proprietarul intangibil, fără auto-ștergere, minim 1 admin.
@@ -82,7 +82,8 @@ export async function DELETE(request) {
   }
 
   // Plasă de siguranță pentru rândul din users
-  await admin.from('users').delete().eq('id', userId);
+  const { error: profileDeleteError } = await admin.from('users').delete().eq('id', userId);
+  if (profileDeleteError) console.error('admin delete: public user cleanup failed', userId, profileDeleteError);
 
   return NextResponse.json({ success: true });
 }

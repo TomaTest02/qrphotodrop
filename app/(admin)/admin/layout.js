@@ -1,22 +1,15 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { requireActiveAdminPage } from '@/lib/pageAuth';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import styles from '@/components/admin/AdminSidebar.module.css';
 
 export const metadata = {
   title: 'Admin — QRPhotoDrop',
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminLayout({ children }) {
   // Defense-in-depth: verificăm rolul de admin AICI, nu doar în middleware (proxy.js).
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
-  const { data: profile } = await createAdminClient()
-    .from('users').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') redirect('/');
+  await requireActiveAdminPage();
 
   return (
     <div style={{ display: 'flex' }}>

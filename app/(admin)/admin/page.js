@@ -1,6 +1,7 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import styles from './admin.module.css';
 import { getSettings, num } from '@/lib/settings';
+import { requireActiveAdminPage } from '@/lib/pageAuth';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +19,7 @@ function expiryOf(r) {
 }
 
 export default async function AdminDashboard() {
-  const supabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
+  const { admin: supabase } = await requireActiveAdminPage();
 
   // Toate conturile cu agregate (un singur query la view)
   const { data: rows = [] } = await supabase.from('admin_account_overview').select('*');
@@ -167,7 +165,7 @@ export default async function AdminDashboard() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Expiră în ≤30 zile</h3>
-            <a href="/admin/conturi" className={styles.cardLink}>Vezi toate →</a>
+            <Link href="/admin/conturi" className={styles.cardLink}>Vezi toate →</Link>
           </div>
           {expiringSoon.length === 0 ? (
             <p className={styles.emptyText}>Niciun cont nu expiră curând</p>
@@ -196,7 +194,7 @@ export default async function AdminDashboard() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <h3 className={styles.cardTitle}>Conturi recente</h3>
-            <a href="/admin/conturi" className={styles.cardLink}>Vezi toate →</a>
+            <Link href="/admin/conturi" className={styles.cardLink}>Vezi toate →</Link>
           </div>
           {recentSignups.length === 0 ? (
             <p className={styles.emptyText}>Niciun cont încă</p>

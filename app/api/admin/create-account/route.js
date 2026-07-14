@@ -13,18 +13,21 @@ export async function POST(request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { data: profile } = await supabase.from('users').select('role, status').eq('id', user.id).single();
+    if (profile?.role !== 'admin' || profile.status !== 'active') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
     const { email, password, phone, eventName, eventType, packageTier, eventDate, referredBy } = body;
 
-    if (!email || !password || password.length < 6) {
-      return NextResponse.json({ error: 'Email și parolă (min 6 caractere) obligatorii.' }, { status: 400 });
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254
+        || typeof password !== 'string' || password.length < 12 || password.length > 128) {
+      return NextResponse.json({ error: 'Email valid și parolă de 12–128 caractere obligatorii.' }, { status: 400 });
     }
     if (!ALLOWED_TYPES.includes(eventType)) return NextResponse.json({ error: 'Tip eveniment invalid' }, { status: 400 });
     if (!ALLOWED_TIERS.includes(packageTier)) return NextResponse.json({ error: 'Nivel pachet invalid' }, { status: 400 });
-    if (!eventName || !eventDate || isNaN(Date.parse(eventDate))) {
+    if (typeof eventName !== 'string' || !eventName.trim() || eventName.trim().length > 200
+        || !eventDate || isNaN(Date.parse(eventDate)) || (phone && (typeof phone !== 'string' || phone.length > 40))) {
       return NextResponse.json({ error: 'Nume și dată eveniment valide obligatorii.' }, { status: 400 });
     }
 
@@ -32,7 +35,7 @@ export async function POST(request) {
 
     // 1. Creăm userul în Auth (confirmat, fără email de verificare)
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email,
+      email: normalizedEmail,
       password,
       email_confirm: true,
       user_metadata: { phone: phone || null },
@@ -42,6 +45,10 @@ export async function POST(request) {
       return NextResponse.json({ error: msg }, { status: 400 });
     }
     const newUserId = created.user.id;
+    const rollbackAuthUser = async () => {
+      const { error } = await admin.auth.admin.deleteUser(newUserId);
+      if (error) console.error('create-account rollback failed:', newUserId, error.message);
+    };
 
     // 2. Marcăm contul activ (triggerul l-a creat ca pending) + telefon
     //    + atribuire opțională către un wedding planner (dacă e valid și activ)
@@ -50,10 +57,15 @@ export async function POST(request) {
       const { data: planner } = await admin.from('wedding_planners').select('id').eq('id', referredBy).maybeSingle();
       if (planner) userUpdate.referred_by = planner.id;
     }
-    await admin.from('users').update(userUpdate).eq('id', newUserId);
+    const { error: updateError } = await admin.from('users').update(userUpdate).eq('id', newUserId);
+    if (updateError) {
+      await rollbackAuthUser();
+      console.error('create-account profile update error:', updateError);
+      return NextResponse.json({ error: 'Profilul nu a putut fi creat.' }, { status: 500 });
+    }
 
     // 3. Creăm evenimentul cu pachet + dată + cod QR + stocare
-    await admin.from('events').insert({
+    const { error: eventError } = await admin.from('events').insert({
       user_id: newUserId,
       event_code: generateEventCode(),
       event_name: eventName.trim(),
@@ -64,6 +76,11 @@ export async function POST(request) {
       package_type: eventType,
       package_tier: packageTier,
     });
+    if (eventError) {
+      await rollbackAuthUser();
+      console.error('create-account event insert error:', eventError);
+      return NextResponse.json({ error: 'Evenimentul nu a putut fi creat; contul a fost anulat.' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true, userId: newUserId });
   } catch (err) {

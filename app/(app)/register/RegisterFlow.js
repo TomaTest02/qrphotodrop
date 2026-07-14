@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft } from '@phosphor-icons/react';
 import PricingCard from '@/components/marketing/PricingCard';
@@ -81,7 +82,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
     if (!plan) { setError('Alege un pachet.'); setStep(1); return; }
     if (!eventDate) { setError('Completează data evenimentului.'); return; }
     if (password !== confirmPassword) { setError('Parolele nu se potrivesc.'); return; }
-    if (password.length < 6) { setError('Parola trebuie să aibă minim 6 caractere.'); return; }
+    if (password.length < 12) { setError('Parola trebuie să aibă minim 12 caractere.'); return; }
     if (!acceptedTerms) { setError('Trebuie să accepți Termenii și Condițiile pentru a continua.'); return; }
 
     setLoading(true);
@@ -135,10 +136,10 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
   if (step === 1) {
     return (
       <div className={styles.page} style={{ alignItems: 'flex-start', paddingTop: '40px', paddingBottom: '60px' }}>
-        <a href="/" className={styles.backButton}><ArrowLeft size={20} /> Înapoi la site</a>
+        <Link href="/" className={styles.backButton}><ArrowLeft size={20} /> Înapoi la site</Link>
         <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
           <div className={styles.header} style={{ textAlign: 'center' }}>
-            <a href="/" className={styles.logo}>QRPhotoDrop</a>
+            <Link href="/" className={styles.logo}>QRPhotoDrop</Link>
             {referralBanner && <div style={{ textAlign: 'center' }}>{referralBanner}</div>}
             <h1 className={styles.title}>Alege pachetul</h1>
             <p className={styles.subtitle}>Selectează tipul evenimentului și pachetul potrivit. Plata o confirmi cu echipa după înregistrare.</p>
@@ -177,7 +178,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
           </div>
 
           <p className={styles.helpText} style={{ textAlign: 'center', marginTop: '24px' }}>
-            Ai deja cont? <a href="/login" className={styles.helpLink}>Autentifică-te aici</a>
+            Ai deja cont? <Link href="/login" className={styles.helpLink}>Autentifică-te aici</Link>
           </p>
         </div>
       </div>
@@ -192,7 +193,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
       </button>
       <div className={styles.card}>
         <div className={styles.header}>
-          <a href="/" className={styles.logo}>QRPhotoDrop</a>
+          <Link href="/" className={styles.logo}>QRPhotoDrop</Link>
           {referralBanner}
           <h1 className={styles.title}>Detalii cont</h1>
           <p className={styles.subtitle}>
@@ -225,11 +226,11 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Parolă</label>
-            <input className={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+            <input className={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={12} maxLength={128} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Confirmă parola</label>
-            <input className={styles.input} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
+            <input className={styles.input} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={12} maxLength={128} />
           </div>
           {!referrerSlug && (
             <div className={styles.field}>
@@ -249,7 +250,7 @@ export default function RegisterFlow({ referrerSlug = null, plannerName = null }
               <a href="/termeni" target="_blank" rel="noopener noreferrer" className={styles.helpLink}>
                 Termenii și Condițiile
               </a>{' '}
-              și înțeleg că serviciul este furnizat „ca atare", pe propriul meu risc.
+              și înțeleg că serviciul este furnizat „ca atare&quot;, pe propriul meu risc.
             </span>
           </label>
           <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '0 0 4px', lineHeight: 1.5 }}>

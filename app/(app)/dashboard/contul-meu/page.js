@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Clock } from '@phosphor-icons/react';
 import styles from './contul-meu.module.css';
@@ -21,27 +21,31 @@ export default function ContulMeuPage() {
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => { loadProfile(); }, []);
-
-  async function loadProfile() {
-    const supabase = createClient();
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (u) {
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
+      if (!u || cancelled) return;
+      const [{ data }, { data: userEvent }] = await Promise.all([
+        supabase.from('users').select('*').eq('id', u.id).single(),
+        supabase.from('events').select('*').eq('user_id', u.id).single(),
+      ]);
+      if (cancelled) return;
       setUser(u);
-      const { data } = await supabase.from('users').select('*').eq('id', u.id).single();
       setProfile(data);
-      const { data: userEvent } = await supabase.from('events').select('*').eq('user_id', u.id).single();
       if (userEvent) setEvent(userEvent);
-    }
-  }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const expiryDate = event?.event_date
+  const expiryDate = useMemo(() => event?.event_date
     ? (() => {
         const d = new Date(event.expires_at || event.event_date);
         if (!event.expires_at) d.setMonth(d.getMonth() + (TIER_MONTHS[event.package_tier] || 3));
         return d;
       })()
-    : null;
+    : null, [event]);
 
   useEffect(() => {
     if (!expiryDate) return undefined;
@@ -56,11 +60,11 @@ export default function ContulMeuPage() {
     tick();
     const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [event]);
+  }, [expiryDate]);
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    if (newPassword.length < 8) { setMessage('Parola trebuie să aibă minim 8 caractere.'); return; }
+    if (newPassword.length < 12) { setMessage('Parola trebuie să aibă minim 12 caractere.'); return; }
     setLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -73,7 +77,11 @@ export default function ContulMeuPage() {
     if (confirmText !== 'STERGE') return;
     setDeleting(true);
     try {
-      const res = await fetch('/api/account/delete', { method: 'POST' });
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation: 'STERGE' }),
+      });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         setMessage(d.error || 'Ștergerea contului a eșuat.');
@@ -172,7 +180,9 @@ export default function ContulMeuPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className={styles.input}
-              placeholder="Minim 8 caractere"
+              minLength={12}
+              maxLength={128}
+              placeholder="Minim 12 caractere"
               required
             />
           </div>

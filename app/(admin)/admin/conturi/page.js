@@ -503,7 +503,7 @@ export default function AdminConturiPage() {
             <form onSubmit={submitCreate} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               {[
                 { k: 'email', l: 'Email', type: 'email', full: true },
-                { k: 'password', l: 'Parolă (min 6)', type: 'text' },
+                { k: 'password', l: 'Parolă (min 12)', type: 'password' },
                 { k: 'phone', l: 'Telefon', type: 'tel' },
                 { k: 'eventName', l: 'Nume eveniment', type: 'text', full: true },
                 { k: 'eventDate', l: 'Data evenimentului', type: 'date' },
@@ -512,6 +512,7 @@ export default function AdminConturiPage() {
                   {f.l}
                   <input
                     type={f.type} required={f.k !== 'phone'}
+                    minLength={f.k === 'password' ? 12 : undefined}
                     value={createForm[f.k]}
                     onChange={(e) => setCreateForm({ ...createForm, [f.k]: e.target.value })}
                     style={{ padding: '10px 12px', border: '1px solid var(--color-cream-darker)', borderRadius: '8px', fontSize: '14px', fontFamily: 'var(--font-sans)' }}

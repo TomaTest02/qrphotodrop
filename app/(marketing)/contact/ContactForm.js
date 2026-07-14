@@ -12,7 +12,7 @@ export default function ContactForm() {
     setLoading(true);
     const form = new FormData(e.target);
     try {
-      await fetch('/api/contact', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -24,9 +24,13 @@ export default function ContactForm() {
           message: form.get('message'),
         }),
       });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || 'Cererea nu a putut fi trimisă.');
+      }
       setSent(true);
-    } catch {
-      alert('Eroare la trimitere. Te rugăm încearcă din nou.');
+    } catch (error) {
+      alert(error.message || 'Eroare la trimitere. Te rugăm încearcă din nou.');
     }
     setLoading(false);
   };
@@ -59,20 +63,20 @@ export default function ContactForm() {
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Prenume</label>
-                    <input name="firstName" required className={styles.input} />
+                    <input name="firstName" required maxLength={100} className={styles.input} />
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Nume</label>
-                    <input name="lastName" required className={styles.input} />
+                    <input name="lastName" required maxLength={100} className={styles.input} />
                   </div>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Email *</label>
-                  <input name="email" type="email" required className={styles.input} />
+                  <input name="email" type="email" required maxLength={254} className={styles.input} />
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Telefon</label>
-                  <input name="phone" type="tel" className={styles.input} />
+                  <input name="phone" type="tel" maxLength={40} className={styles.input} />
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Tip eveniment</label>
@@ -86,7 +90,7 @@ export default function ContactForm() {
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Mesaj *</label>
-                  <textarea name="message" required rows={5} className={styles.textarea} placeholder="Cum te putem ajuta?" />
+                  <textarea name="message" required maxLength={2000} rows={5} className={styles.textarea} placeholder="Cum te putem ajuta?" />
                 </div>
                 <button type="submit" disabled={loading} className={styles.submitBtn}>
                   {loading ? 'Se trimite...' : 'Trimite mesajul'}

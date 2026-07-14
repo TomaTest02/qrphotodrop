@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sendContactForm } from '@/lib/resend';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
+import { cleanMultiline, cleanSingleLine } from '@/lib/textSecurity';
 
 const ALLOWED_DESIGNS = ['Boho Pampas', 'Floral Roz', 'Negru & Auriu', 'Auriu Elegant', 'Verde Botanic'];
 
@@ -15,10 +16,10 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { email, phone, name, eventName, design, cardText } = body;
+    const design = cleanSingleLine(body?.design, 50);
+    const cardText = cleanMultiline(body?.cardText, 500);
 
-    // Validare câmpuri obligatorii
-    if (!email || !design || !cardText) {
+    if (!design || !cardText) {
       return NextResponse.json({ error: 'Câmpuri obligatorii lipsă.' }, { status: 400 });
     }
 
@@ -27,21 +28,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Design invalid.' }, { status: 400 });
     }
 
-    // Validare lungimi
-    if (cardText.length > 500) {
-      return NextResponse.json({ error: 'Textul cartonașului este prea lung (max 500 caractere).' }, { status: 400 });
+    // Identitatea nu vine din body: o derivăm exclusiv din sesiune + DB.
+    const admin = createAdminClient();
+    const [{ data: profile }, { data: event }] = await Promise.all([
+      admin.from('users').select('email, phone, status').eq('id', user.id).single(),
+      admin.from('events').select('event_name').eq('user_id', user.id).single(),
+    ]);
+    if (profile?.status !== 'active' || !event) {
+      return NextResponse.json({ error: 'Contul sau evenimentul nu este activ.' }, { status: 403 });
     }
-    if (name && name.length > 200) {
-      return NextResponse.json({ error: 'Numele este prea lung.' }, { status: 400 });
-    }
-    if (eventName && eventName.length > 200) {
-      return NextResponse.json({ error: 'Numele evenimentului este prea lung.' }, { status: 400 });
-    }
-
-    // Validare format email
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Format email invalid.' }, { status: 400 });
-    }
+    const email = user.email || profile.email;
+    const phone = profile.phone || '';
+    const name = event.event_name || 'Organizator';
+    const eventName = event.event_name || '';
 
     const message = `
 =========================================
@@ -62,8 +61,7 @@ Text Personalizat: "${cardText}"
     `;
 
     // Salvează în baza de date pentru Admin Dashboard (folosim ES import, nu require)
-    const admin = createAdminClient();
-    await admin.from('contact_messages').insert({
+    const { error: insertError } = await admin.from('contact_messages').insert({
       first_name: name || 'Cerere',
       last_name: 'Printare',
       email: email,
@@ -71,6 +69,10 @@ Text Personalizat: "${cardText}"
       event_type: 'Comandă Printare',
       message: `Eveniment: ${eventName || 'Nespecificat'}\nDesign: ${design}\nText: ${cardText}`,
     });
+    if (insertError) {
+      console.error('Print request insert error:', insertError);
+      return NextResponse.json({ error: 'Cererea nu a putut fi salvată.' }, { status: 500 });
+    }
 
     if (process.env.RESEND_API_KEY) {
       await sendContactForm({
@@ -81,9 +83,6 @@ Text Personalizat: "${cardText}"
         eventType: 'Comandă Printare',
         message: message,
       });
-    } else {
-      console.log('--- RESEND NOT CONFIGURED. MOCKING EMAIL ---');
-      console.log(message);
     }
 
     return NextResponse.json({ success: true });
