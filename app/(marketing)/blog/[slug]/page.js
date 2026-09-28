@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import styles from './post.module.css';
 import { PortableText } from '@portabletext/react';
 import { client } from '../../../../sanity/lib/client';
@@ -18,7 +19,10 @@ const POST_QUERY = `*[_type == "post" && slug.current == $slug][0] {
   seoTitle,
   seoDescription,
   canonicalUrl,
-  tags
+  tags,
+  _updatedAt,
+  faq[]{ question, answer },
+  "imageSize": mainImage.asset->metadata.dimensions{ width, height }
 }`;
 
 export async function generateStaticParams() {
@@ -53,6 +57,7 @@ export async function generateMetadata({ params }) {
       url: `https://qrphotodrop.com/blog/${slug}`,
       type: 'article',
       publishedTime: post.publishedAt,
+      modifiedTime: post._updatedAt || post.publishedAt,
       authors: [post.author || 'QRPhotoDrop Team'],
       tags: post.tags || [post.category, 'evenimente'],
       images: ogImage ? [{ url: ogImage }] : [],
@@ -114,13 +119,8 @@ export default async function BlogPostPage({ params }) {
   const { slug } = await params;
   const post = await client.fetch(POST_QUERY, { slug });
 
-  if (!post) {
-    return (
-      <div className={styles.notFound}>
-        <h1>Articol negăsit</h1>
-      </div>
-    );
-  }
+  // Slug inexistent → 404 real (înainte răspundea 200 cu „Articol negăsit").
+  if (!post) notFound();
 
   const dateStr = new Date(post.publishedAt || Date.now()).toLocaleDateString('ro-RO', {
     day: 'numeric', month: 'long', year: 'numeric'
@@ -128,13 +128,26 @@ export default async function BlogPostPage({ params }) {
 
   const metaDesc = post.seoDescription || post.excerpt;
 
+  const pageUrl = `https://qrphotodrop.com/blog/${slug}`;
+  const coverUrl = post.mainImage?.asset ? urlForImage(post.mainImage).width(1200).height(630).url() : null;
+
+  // BlogPosting complet: imagine, date reale de publicare/modificare, publisher cu logo.
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.seoTitle || post.title,
+    '@type': 'BlogPosting',
+    headline: post.title,
     description: metaDesc,
+    ...(coverUrl && {
+      image: {
+        '@type': 'ImageObject',
+        url: coverUrl,
+        width: 1200,
+        height: 630,
+        ...(post.mainImage?.alt && { caption: post.mainImage.alt }),
+      },
+    }),
     datePublished: post.publishedAt,
-    dateModified: post.publishedAt,
+    dateModified: post._updatedAt || post.publishedAt,
     author: {
       '@type': 'Organization',
       name: post.author || 'QRPhotoDrop Team',
@@ -144,12 +157,15 @@ export default async function BlogPostPage({ params }) {
       '@type': 'Organization',
       name: 'QRPhotoDrop',
       url: 'https://qrphotodrop.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://qrphotodrop.com/apple-icon.png',
+      },
     },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `https://qrphotodrop.com/blog/${slug}`,
-    },
-    articleSection: post.category,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+    url: pageUrl,
+    ...(post.category && { articleSection: post.category }),
+    ...(post.tags?.length && { keywords: post.tags.join(', ') }),
     inLanguage: 'ro-RO',
   };
 
@@ -157,32 +173,25 @@ export default async function BlogPostPage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Acasă',
-        item: 'https://qrphotodrop.com/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Blog',
-        item: 'https://qrphotodrop.com/blog',
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: post.category || 'General',
-        item: 'https://qrphotodrop.com/blog',
-      },
-      {
-        '@type': 'ListItem',
-        position: 4,
-        name: post.title,
-        item: `https://qrphotodrop.com/blog/${slug}`,
-      },
+      { '@type': 'ListItem', position: 1, name: 'Acasă', item: 'https://qrphotodrop.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://qrphotodrop.com/blog' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: pageUrl },
     ],
   };
+
+  // FAQPage — doar dacă articolul are întrebări (afișate și vizibil în pagină, cerință Google).
+  const faqItems = (post.faq || []).filter((f) => f?.question && f?.answer);
+  const faqJsonLd = faqItems.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map((f) => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: { '@type': 'Answer', text: f.answer },
+        })),
+      }
+    : null;
 
   return (
     <article className={styles.article}>
@@ -194,6 +203,12 @@ export default async function BlogPostPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
+        />
+      )}
 
       <nav aria-label="breadcrumb" style={{ marginBottom: '32px', fontSize: '14px', fontWeight: '500', color: '#6B7280' }}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
@@ -240,6 +255,18 @@ export default async function BlogPostPage({ params }) {
           <p>Acest articol nu are conținut încă.</p>
         )}
       </div>
+
+      {faqItems.length > 0 && (
+        <section className={styles.faq} aria-labelledby="faq-title">
+          <h2 id="faq-title" className={styles.faqTitle}>Întrebări frecvente</h2>
+          {faqItems.map((f, i) => (
+            <div key={i} className={styles.faqItem}>
+              <h3 className={styles.faqQuestion}>{f.question}</h3>
+              <p className={styles.faqAnswer}>{f.answer}</p>
+            </div>
+          ))}
+        </section>
+      )}
       
       <div className={styles.footer}>
         <a href="/blog" className={styles.backLink}>← Înapoi la blog</a>
