@@ -5,7 +5,7 @@ import { urlForImage } from '../../../sanity/lib/image';
 export const revalidate = 3600; // fallback 1h; updatare instant via /api/revalidate (webhook Sanity)
 
 export const metadata = {
-  title: 'Blog',
+  title: 'Blog — Idei pentru Nuntă, Botez și Evenimente',
   description: 'Inspirație, sfaturi și tendințe pentru evenimentul tău perfect. Idei pentru nunți, botezuri și aniversări.',
   alternates: {
     canonical: 'https://qrphotodrop.com/blog',

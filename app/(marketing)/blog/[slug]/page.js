@@ -37,14 +37,18 @@ export async function generateMetadata({ params }) {
   const canonical = post.canonicalUrl || `https://qrphotodrop.com/blog/${slug}`;
   const ogImage = post.mainImage?.asset ? urlForImage(post.mainImage).width(1200).height(630).url() : undefined;
 
+  // Dacă titlul din Sanity conține deja brandul, nu mai aplicăm template-ul
+  // din layout (altfel iese „… | QRPhotoDrop — QRPhotoDrop").
+  const hasBrand = /qrphotodrop/i.test(metaTitle);
+
   return {
-    title: metaTitle,
+    title: hasBrand ? { absolute: metaTitle } : metaTitle,
     description: metaDesc,
     alternates: {
       canonical: canonical,
     },
     openGraph: {
-      title: `${metaTitle} — QRPhotoDrop Blog`,
+      title: hasBrand ? metaTitle : `${metaTitle} — QRPhotoDrop Blog`,
       description: metaDesc,
       url: `https://qrphotodrop.com/blog/${slug}`,
       type: 'article',

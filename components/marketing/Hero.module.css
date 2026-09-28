@@ -58,7 +58,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: var(--space-xl);
+  /* E <h1> (SEO) — neutralizăm stilurile globale h1 ca aspectul să rămână identic */
+  margin: 0 0 var(--space-xl);
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  line-height: normal;
+  color: inherit;
 }
 
 .titleLine {

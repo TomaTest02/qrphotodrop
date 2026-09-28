@@ -11,24 +11,32 @@ import styles from './event-type.module.css';
 const CONTENT = {
   nunta: {
     title: 'Nuntă',
+    seoTitle: 'Poze de la Nuntă prin Cod QR — Album Digital',
+    minPrice: 279,
     hero: 'Nu aștepți 2 luni, ai sute de poze și clipuri WOW de la invitați chiar a 2-a zi după nuntă',
     desc: 'QRPhotoDrop transformă nunta ta într-un album digital viu. Invitații scanează codul QR, încarcă poze și clipuri direct din browser — fără aplicații, fără conturi.',
     bgImage: '/images/events/hero_nunta.png'
   },
   botez: {
     title: 'Botez',
+    seoTitle: 'Poze de la Botez prin Cod QR — Album Digital',
+    minPrice: 279,
     hero: 'Păstrează fiecare moment prețios din ziua botezului',
     desc: 'QRPhotoDrop îți oferă un album digital dedicat botezului. Nașii, bunicii și invitații trimit poze și urări dintr-o singură scanare.',
     bgImage: '/images/events/hero_botez.png'
   },
   aniversare: {
     title: 'Aniversare',
+    seoTitle: 'Poze de la Aniversare prin Cod QR — Album Digital',
+    minPrice: 279,
     hero: 'Surprinde fiecare moment al aniversării tale speciale',
     desc: 'Fie că e ziua ta, a partenerului sau a familiei — QRPhotoDrop adună pozele și urările într-un album digital elegant.',
     bgImage: '/images/events/hero_aniversare.png'
   },
   corporate: {
     title: 'Corporate',
+    seoTitle: 'Poze de la Evenimente Corporate prin Cod QR',
+    minPrice: 279,
     hero: 'Documentează teambuilding-uri, conferințe și gale corporate',
     desc: 'QRPhotoDrop oferă o soluție profesională pentru colectarea conținutului de la evenimentele corporate. Simplu, rapid, fără complicații tehnice.',
     bgImage: '/images/events/hero_corporate.png'
@@ -43,7 +51,7 @@ export async function generateMetadata({ params }) {
   const pageUrl = `${baseUrl}/eveniment/${type}`;
 
   return {
-    title: `QRPhotoDrop — ${content.title}`,
+    title: content.seoTitle,
     description: content.desc,
     alternates: {
       canonical: pageUrl,
@@ -79,25 +87,29 @@ export default async function EventTypePage({ params }) {
     return <div style={{ padding: '100px 20px', textAlign: 'center' }}><h1>Pagină negăsită</h1></div>;
   }
 
+  // Service (nu Event): pagina descrie un serviciu, nu un eveniment programat.
+  // Schema Event cere startDate și genera erori în Search Console.
   const eventSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: `Soluție colectare poze — ${content.title}`,
+    '@type': 'Service',
+    name: `Colectare poze prin cod QR — ${content.title}`,
+    serviceType: 'Album digital cu poze de la invitați prin cod QR',
     description: content.desc,
     url: `https://qrphotodrop.com/eveniment/${type}`,
     image: `https://qrphotodrop.com${content.bgImage}`,
-    organizer: {
+    areaServed: { '@type': 'Country', name: 'România' },
+    provider: {
       '@type': 'Organization',
       name: 'QRPhotoDrop',
       url: 'https://qrphotodrop.com',
     },
     offers: {
       '@type': 'Offer',
-      name: `Pachet ${content.title}`,
-      description: `Colectare poze și clipuri pentru ${type}`,
+      name: `Pachet ${content.title} Basic`,
+      description: `Colectare poze și clipuri pentru ${content.title.toLowerCase()}`,
       url: 'https://qrphotodrop.com/preturi',
       priceCurrency: 'RON',
-      price: '249', // Basic tier
+      price: String(content.minPrice), // pachetul Basic afișat în PricingSection
       availability: 'https://schema.org/InStock',
     },
   };

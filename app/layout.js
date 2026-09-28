@@ -60,9 +60,6 @@ export const metadata = {
     description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment.',
     images: ['/og-image.png'],
   },
-  alternates: {
-    canonical: 'https://qrphotodrop.com',
-  },
 };
 
 export default function RootLayout({ children }) {

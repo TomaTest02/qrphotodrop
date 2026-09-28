@@ -11,7 +11,7 @@ import CTABanner from '@/components/marketing/CTABanner';
 export const revalidate = 3600; // ISR: regenerează la fiecare oră
 
 export const metadata = {
-  title: 'QRPhotoDrop — Album Digital pentru Evenimente',
+  title: { absolute: 'Poze de la Invitați prin Cod QR — Album Digital | QRPhotoDrop' },
   description: 'Sute de poze și clipuri WOW de la invitați, chiar a 2-a zi după eveniment. Fără aplicație, fără cont.',
   alternates: {
     canonical: 'https://qrphotodrop.com',

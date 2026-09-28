@@ -187,14 +187,14 @@ export default function Hero() {
           Creează amintiri nemuritoare
         </span>
 
-        <div className={styles.titleWrapper}>
+        <h1 className={styles.titleWrapper}>
           <span className={styles.titleLine}>
             <span className={styles.titleInner}>Toate momentele voastre,</span>
           </span>
           <span className={styles.titleLine}>
             <span className={styles.titleInner}>într-un singur <span className={styles.italic}>loc.</span></span>
           </span>
-        </div>
+        </h1>
 
         <div className={styles.subtitleWrapper}>
           <p className={styles.subtitle}>
