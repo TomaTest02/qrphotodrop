@@ -1,10 +1,13 @@
 import styles from './termeni.module.css';
 
 export const metadata = {
-  title: 'Termeni și Condiții · QRPhotoDrop',
+  title: 'Termeni și Condiții',
   description:
     'Termenii și condițiile de utilizare a platformei QRPhotoDrop. Serviciul este furnizat „ca atare", iar utilizatorul își asumă riscul folosirii.',
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: 'https://qrphotodrop.com/termeni',
+  },
 };
 
 export default function TermeniPage() {

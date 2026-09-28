@@ -1,10 +1,13 @@
 import styles from '../termeni/termeni.module.css';
 
 export const metadata = {
-  title: 'Politica de Confidențialitate · QRPhotoDrop',
+  title: 'Politica de Confidențialitate',
   description:
     'Cum colectează, folosește și protejează QRPhotoDrop datele personale, conform GDPR (Regulamentul UE 2016/679).',
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: 'https://qrphotodrop.com/confidentialitate',
+  },
 };
 
 export default function ConfidentialitatePage() {

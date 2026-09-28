@@ -1,10 +1,13 @@
 import styles from '../termeni/termeni.module.css';
 
 export const metadata = {
-  title: 'Politica de Cookies · QRPhotoDrop',
+  title: 'Politica de Cookies',
   description:
     'Ce cookie-uri folosește QRPhotoDrop. Folosim cookie-uri esențiale de autentificare și statistici fără cookie-uri.',
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: 'https://qrphotodrop.com/cookies',
+  },
 };
 
 export default function CookiesPage() {

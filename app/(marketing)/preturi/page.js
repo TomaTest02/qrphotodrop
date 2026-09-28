@@ -3,8 +3,8 @@ import PricingSection from '@/components/marketing/PricingSection';
 export const revalidate = 3600; // ISR: 1 oră
 
 export const metadata = {
-  title: 'Prețuri',
-  description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse. De la 249 RON.',
+  title: 'Prețuri Album Foto cu Cod QR — de la 279 RON',
+  description: 'Pachete transparente pentru nuntă, botez, aniversare și corporate. Fără costuri ascunse. De la 279 RON.',
   alternates: {
     canonical: 'https://qrphotodrop.com/preturi',
   },
