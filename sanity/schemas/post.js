@@ -120,6 +120,25 @@ export const post = {
         { type: 'image', options: { hotspot: true } }
       ],
     },
+    {
+      name: 'faq',
+      title: 'Întrebări frecvente (FAQ)',
+      type: 'array',
+      group: 'content',
+      description: 'Apar la finalul articolului și în Google ca date structurate FAQPage. Ideal 3–5 întrebări.',
+      of: [
+        {
+          type: 'object',
+          name: 'faqItem',
+          title: 'Întrebare',
+          fields: [
+            { name: 'question', title: 'Întrebare', type: 'string', validation: (Rule) => Rule.required() },
+            { name: 'answer', title: 'Răspuns', type: 'text', rows: 3, validation: (Rule) => Rule.required() },
+          ],
+          preview: { select: { title: 'question', subtitle: 'answer' } },
+        },
+      ],
+    },
 
     // ==========================================
     // GRUP: SEO

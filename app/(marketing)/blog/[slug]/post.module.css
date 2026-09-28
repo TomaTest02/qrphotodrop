@@ -125,6 +125,10 @@
   padding-left: 24px;
 }
 
+/* Reset-ul global (ul, ol { list-style: none }) ascundea bulinele din articole */
+.content ul { list-style: disc; }
+.content ol { list-style: decimal; }
+
 .content li {
   margin-bottom: 12px;
   padding-left: 8px;
@@ -171,4 +175,44 @@
 .backLink:hover {
   opacity: 0.8;
   text-decoration: underline;
+}
+
+/* Întrebări frecvente (sincronizat cu FAQPage JSON-LD) */
+.faq {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.faqTitle {
+  font-family: var(--font-serif, serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.5px;
+  margin-bottom: 24px;
+}
+
+.faqItem {
+  background: #F9FAFB;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.faqQuestion {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.faqAnswer {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #374151;
+  margin: 0;
 }
