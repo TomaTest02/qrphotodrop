@@ -135,6 +135,7 @@ export default async function BlogPostPage({ params }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
+    '@id': `${pageUrl}#article`,
     headline: post.title,
     description: metaDesc,
     ...(coverUrl && {
